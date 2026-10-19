@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "title": "Black-body radiation",
+  "playable": true,
+  "unplayable_reason": null,
+  "experiment": "Changing the temperature moves the peak of Planck's curve as λmax = b/T, which is Wien's law in §2.",
+  "archetype": "sweep",
+  "archetype_reason": "The document gives a closed-form radiance formula; the claim is about how its shape depends on T.",
+  "fixed": {},
+  "params": [
+    { "name": "T", "label": "temperature", "kind": "range", "min": 1000, "max": 10000, "step": 100, "default": 5800, "unit": "K",
+      "source": { "section": "2", "quote": "The Sun's surface, near 5800 K, peaks around 500 nm" } },
+    { "name": "T_ref", "label": "comparison body", "kind": "range", "min": 1000, "max": 10000, "step": 100, "default": 3000, "unit": "K",
+      "source": { "section": "2", "quote": "a 3000 K lamp filament peaks in the infrared near 970 nm." } },
+    { "name": "show_rj", "label": "classical law", "kind": "toggle", "default": false,
+      "source": { "section": "3", "quote": "The classical Rayleigh–Jeans law B = 2ckT/λ⁴ agrees at long wavelengths but grows without bound at short ones" } }
+  ],
+  "metrics": [
+    { "name": "peak_nm", "label": "peak", "unit": "nm", "meaning": "wavelength where the radiance at T is largest" },
+    { "name": "uv_ratio", "label": "rayleigh–jeans ÷ planck at 200 nm", "unit": "", "meaning": "how far the classical law overshoots at 200 nm" }
+  ],
+  "steps": 0,
+  "reproduce": {
+    "claim": "At 5800 K the curve peaks near 500 nm.",
+    "source": { "section": "2", "quote": "The Sun's surface, near 5800 K, peaks around 500 nm" },
+    "params": { "T": 5800 },
+    "expect": [ { "metric": "peak_nm", "op": "between", "value": [480, 520] } ]
+  },
+  "contrast": {
+    "claim": "At 3000 K the peak sits at more than 1.8× the 5800 K wavelength, as λmax ∝ 1/T predicts.",
+    "source": { "section": "2", "quote": "a 3000 K lamp filament peaks in the infrared near 970 nm." },
+    "params": { "T": 3000 },
+    "expect": [ { "metric": "peak_nm", "op": ">", "ref": "reproduce", "factor": 1.8 } ]
+  },
+  "fallback": null
+}

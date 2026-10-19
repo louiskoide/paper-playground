@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "title": "Predator and prey",
+  "playable": true,
+  "unplayable_reason": null,
+  "experiment": "Switching on a prey carrying capacity turns the closed predator–prey cycles of §2 into a spiral toward equilibrium, which is the claim of §3.",
+  "archetype": "dynamical",
+  "archetype_reason": "Two populations change continuously under the ODEs written in §1.",
+  "fixed": { "beta": 0.1, "delta": 0.1, "K": 30, "y0": 5 },
+  "params": [
+    { "name": "alpha", "label": "prey growth α", "kind": "range", "min": 0.2, "max": 2, "step": 0.05, "default": 1, "unit": "",
+      "source": { "section": "1", "quote": "Prey x grow at rate α and are eaten at rate βxy" } },
+    { "name": "gamma", "label": "predator death γ", "kind": "range", "min": 0.2, "max": 2, "step": 0.05, "default": 1, "unit": "",
+      "source": { "section": "1", "quote": "predators y gain δxy and die at rate γ" } },
+    { "name": "x0", "label": "starting prey", "kind": "range", "min": 1, "max": 40, "step": 1, "default": 20, "unit": "",
+      "source": { "section": "2", "quote": "prey sit at the equilibrium x* = γ/δ, whatever the starting point." } },
+    { "name": "logistic", "label": "carrying capacity", "kind": "toggle", "default": false,
+      "source": { "section": "3", "quote": "Give prey a carrying capacity K, so they grow as αx(1 − x/K), and the cycles damp out" } }
+  ],
+  "metrics": [
+    { "name": "amp_ratio", "label": "swing ratio", "unit": "", "meaning": "prey swing (max − min) over the last quarter of the run divided by the swing over the first quarter" },
+    { "name": "mean_prey", "label": "mean prey", "unit": "", "meaning": "time average of prey over the whole run" }
+  ],
+  "steps": 600,
+  "reproduce": {
+    "claim": "Without a carrying capacity the swings keep their size and prey average x* = γ/δ = 10.",
+    "source": { "section": "2", "quote": "every orbit is closed and the swings never shrink. Averaged over the cycles, prey sit at the equilibrium x* = γ/δ" },
+    "params": { "logistic": false },
+    "steps": 600,
+    "expect": [
+      { "metric": "amp_ratio", "op": "between", "value": [0.9, 1.1] },
+      { "metric": "mean_prey", "op": "between", "value": [9, 11] }
+    ]
+  },
+  "contrast": {
+    "claim": "With a carrying capacity the late swings shrink to under a third of the cycling case.",
+    "source": { "section": "3", "quote": "the cycles damp out: the populations spiral into the equilibrium." },
+    "params": { "logistic": true },
+    "steps": 600,
+    "expect": [ { "metric": "amp_ratio", "op": "<", "ref": "reproduce", "factor": 0.3 } ]
+  },
+  "fallback": null
+}

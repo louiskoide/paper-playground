@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "title": "Central limit theorem",
+  "playable": true,
+  "unplayable_reason": null,
+  "experiment": "Drawing many sample means shows them pile into a normal curve of width σ/√n, until the draws come from a distribution without finite variance (§5.3).",
+  "archetype": "stochastic",
+  "archetype_reason": "The claim is about the distribution of a statistic over repeated random samples.",
+  "fixed": {},
+  "params": [
+    { "name": "n", "label": "draws per mean n", "kind": "range", "min": 1, "max": 100, "step": 1, "default": 30, "scale": "log", "unit": "",
+      "source": { "section": "5.2", "quote": "As n grows, X̄ₙ is approximately normal with standard deviation σ/√n." } },
+    { "name": "dist", "label": "draw from", "kind": "select", "default": "uniform",
+      "options": [ { "value": "uniform", "label": "uniform [0, 1]" }, { "value": "exponential", "label": "exponential" }, { "value": "cauchy", "label": "cauchy" } ],
+      "source": { "section": "5.3", "quote": "The theorem needs finite variance. The mean of n Cauchy draws is itself Cauchy" } }
+  ],
+  "metrics": [
+    { "name": "sd", "label": "sd of means", "unit": "", "meaning": "standard deviation of all sample means so far" },
+    { "name": "iqr", "label": "iqr of means", "unit": "", "meaning": "interquartile range of all sample means so far; robust when sd is not" }
+  ],
+  "steps": 40,
+  "reproduce": {
+    "claim": "Means of 30 uniform draws have standard deviation near 0.053.",
+    "source": { "section": "5.2", "quote": "so means of n = 30 draws have standard deviation close to 0.053." },
+    "params": { "n": 30, "dist": "uniform" },
+    "steps": 40,
+    "expect": [ { "metric": "sd", "op": "between", "value": [0.0475, 0.058] } ]
+  },
+  "contrast": {
+    "claim": "Means of 30 Cauchy draws stay as spread as single draws: their IQR is over 10× the uniform case.",
+    "source": { "section": "5.3", "quote": "exactly as spread out as a single draw, however large n is." },
+    "params": { "n": 30, "dist": "cauchy" },
+    "steps": 40,
+    "expect": [ { "metric": "iqr", "op": ">", "ref": "reproduce", "factor": 10 } ]
+  },
+  "fallback": null
+}

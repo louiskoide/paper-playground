@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "title": "The median voter",
+  "playable": true,
+  "unplayable_reason": null,
+  "experiment": "Dragging two candidates along the policy line shows the one nearer the median voter winning even when the other sits at the mean, which is the claim of §2.",
+  "archetype": "diagram",
+  "archetype_reason": "The theory is qualitative, but each configuration of candidates yields a computable vote share.",
+  "fixed": { "electorate": "two normal blocs: N(0.3, 0.08) and N(0.8, 0.05), weighted by right" },
+  "params": [
+    { "name": "a", "label": "candidate a", "kind": "range", "min": 0, "max": 1, "step": 0.01, "default": 0.2, "unit": "",
+      "source": { "section": "1", "quote": "each votes for the nearer of two candidates." } },
+    { "name": "b", "label": "candidate b", "kind": "range", "min": 0, "max": 1, "step": 0.01, "default": 0.6, "unit": "",
+      "source": { "section": "1", "quote": "each votes for the nearer of two candidates." } },
+    { "name": "right", "label": "right bloc share", "kind": "range", "min": 0, "max": 0.6, "step": 0.05, "default": 0.3, "unit": "",
+      "source": { "section": "3", "quote": "a large bloc near 0.3 and a smaller one near 0.8, so the mean lies well to the right of the median." } }
+  ],
+  "metrics": [
+    { "name": "share_a", "label": "a's vote share", "unit": "", "meaning": "share of voters nearer to candidate a" },
+    { "name": "median", "label": "median voter", "unit": "", "meaning": "position of the median voter" }
+  ],
+  "steps": 0,
+  "reproduce": {
+    "claim": "A candidate at the median (0.34) beats one at the mean (0.45).",
+    "source": { "section": "2", "quote": "The candidate nearer the median voter wins" },
+    "params": { "a": 0.34, "b": 0.45, "right": 0.3 },
+    "expect": [ { "metric": "share_a", "op": ">", "value": 0.5 } ]
+  },
+  "contrast": {
+    "claim": "Moving a to 0.2, farther from the median than b, makes a lose.",
+    "source": { "section": "2", "quote": "Where the mean voter sits does not matter." },
+    "params": { "a": 0.2, "b": 0.45, "right": 0.3 },
+    "expect": [ { "metric": "share_a", "op": "<", "value": 0.5 } ]
+  },
+  "fallback": null
+}

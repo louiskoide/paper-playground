@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "title": "PageRank by power iteration",
+  "playable": true,
+  "unplayable_reason": null,
+  "experiment": "Raising the damping factor d toward 1 slows power iteration, whose error shrinks by about a factor of d per step, which is why §3 can promise three decimals in fifty iterations at d = 0.85.",
+  "archetype": "iterative",
+  "archetype_reason": "PageRank is computed by repeating one update until it stops changing; one step is one iteration.",
+  "fixed": {
+    "graph": "8 pages in two link cycles joined by one link; page 7 has no out-links"
+  },
+  "params": [
+    {
+      "name": "d",
+      "label": "damping d",
+      "kind": "range",
+      "min": 0.05,
+      "max": 0.99,
+      "step": 0.01,
+      "default": 0.85,
+      "unit": "",
+      "source": {
+        "section": "2",
+        "quote": "follows a random out-link with probability d, the damping factor, and jumps to a random page otherwise. We usually set d to 0.85."
+      }
+    },
+    {
+      "name": "fix_dangling",
+      "label": "spread dangling rank",
+      "kind": "toggle",
+      "default": true,
+      "source": {
+        "section": "2",
+        "quote": "unless their rank is spread over all pages, rank leaks out of the web at every step."
+      }
+    },
+    {
+      "name": "start",
+      "label": "start vector",
+      "kind": "select",
+      "default": "page0",
+      "options": [
+        {
+          "value": "uniform",
+          "label": "uniform"
+        },
+        {
+          "value": "page0",
+          "label": "all on page 0"
+        }
+      ],
+      "source": {
+        "section": "2",
+        "quote": "The ranks are the fixed point of this update and do not depend on the starting vector."
+      }
+    }
+  ],
+  "metrics": [
+    {
+      "name": "residual",
+      "label": "residual",
+      "unit": "",
+      "meaning": "L1 change of the rank vector in the last iteration"
+    },
+    {
+      "name": "mass",
+      "label": "rank mass",
+      "unit": "",
+      "meaning": "sum of all ranks; stays 1 unless rank leaks"
+    },
+    {
+      "name": "top",
+      "label": "top rank",
+      "unit": "",
+      "meaning": "largest single page rank"
+    }
+  ],
+  "steps": 50,
+  "reproduce": {
+    "claim": "At d = 0.85, fifty iterations bring the residual below 10⁻³.",
+    "source": {
+      "section": "3",
+      "quote": "with d = 0.85 about fifty iterations reach three decimal places."
+    },
+    "params": {
+      "d": 0.85
+    },
+    "steps": 50,
+    "expect": [
+      {
+        "metric": "residual",
+        "op": "<",
+        "value": 0.001
+      }
+    ]
+  },
+  "contrast": {
+    "claim": "At d = 0.99 the same fifty iterations leave the residual at least 100× larger, and above 10⁻⁴.",
+    "source": {
+      "section": "3",
+      "quote": "As d approaches 1 convergence slows sharply."
+    },
+    "params": {
+      "d": 0.99
+    },
+    "steps": 50,
+    "expect": [
+      {
+        "metric": "residual",
+        "op": ">",
+        "ref": "reproduce",
+        "factor": 100
+      },
+      {
+        "metric": "residual",
+        "op": ">",
+        "value": 0.0001
+      }
+    ]
+  },
+  "fallback": null
+}

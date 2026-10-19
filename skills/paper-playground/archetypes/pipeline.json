@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "title": "Smooth, then differentiate",
+  "playable": true,
+  "unplayable_reason": null,
+  "experiment": "Removing the Gaussian smoothing stage lets the derivative filter turn pixel noise into false edges, which is the argument of §2–§3.",
+  "archetype": "pipeline",
+  "archetype_reason": "Edge detection is a fixed chain (image → smooth → gradient → threshold) whose intermediates carry the argument.",
+  "fixed": { "image": "48×48, a square and a disk at intensity 1 on 0", "edge_scale": "a clean unit step gives Sobel magnitude 4" },
+  "params": [
+    { "name": "noise", "label": "pixel noise", "kind": "range", "min": 0, "max": 0.6, "step": 0.01, "default": 0.25, "unit": "",
+      "source": { "section": "2", "quote": "a derivative filter applied to a noisy image responds to every pixel-level fluctuation" } },
+    { "name": "sigma", "label": "smoothing σ", "kind": "range", "min": 0, "max": 4, "step": 0.1, "default": 1.5, "unit": "px",
+      "source": { "section": "3", "quote": "Smoothing with a Gaussian of width σ before differentiating suppresses those responses" } },
+    { "name": "threshold", "label": "edge threshold", "kind": "range", "min": 0.2, "max": 4, "step": 0.1, "default": 1.5, "unit": "",
+      "source": { "section": "4", "quote": "An edge is declared wherever the gradient magnitude exceeds a threshold." } }
+  ],
+  "metrics": [
+    { "name": "false_rate", "label": "false edges", "unit": "", "meaning": "fraction of pixels more than 2 px from any true edge that are marked as edges" },
+    { "name": "recall", "label": "edges found", "unit": "", "meaning": "fraction of true edge pixels with a detection within 1 px" }
+  ],
+  "steps": 3,
+  "reproduce": {
+    "claim": "With σ = 1.5 at noise 0.25, almost no flat pixel is marked as an edge and most true edges are found.",
+    "source": { "section": "3", "quote": "suppresses those responses, while true edges, which extend over many pixels, survive." },
+    "params": { "noise": 0.25, "sigma": 1.5, "threshold": 1.5 },
+    "expect": [
+      { "metric": "false_rate", "op": "<", "value": 0.01 },
+      { "metric": "recall", "op": ">", "value": 0.8 }
+    ]
+  },
+  "contrast": {
+    "claim": "Without smoothing the same threshold marks at least 10% more of the flat pixels as edges.",
+    "source": { "section": "2", "quote": "thresholding its output marks edges all over flat regions." },
+    "params": { "noise": 0.25, "sigma": 0, "threshold": 1.5 },
+    "expect": [ { "metric": "false_rate", "op": ">", "ref": "reproduce", "by": 0.1 } ]
+  },
+  "fallback": null
+}

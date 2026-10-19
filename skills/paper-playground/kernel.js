@@ -1,0 +1,744 @@
+/* paper-playground kernel 0.1.0
+ * Inlined by scripts/build.mjs after window.__PP_SPEC__ (the frozen extraction) and before the
+ * generated code. Generated code never edits this file: it calls playground({...}) and the helpers
+ * exported at the bottom. API reference: kernel.d.ts. */
+(() => {
+'use strict';
+const KERNEL = '0.1.0';
+const SPEC = window.__PP_SPEC__ || {};
+const ARCH = SPEC.archetype || 'iterative';
+const PARAMS = SPEC.params || [];
+const METRICS = SPEC.metrics || [];
+const SEED = SPEC.seed ?? 1;
+const RUN_MS = 1500, TOTAL_MS = 8000;
+const ERRORS = [];
+addEventListener('error', e => ERRORS.push(e.message || String(e.error)));
+addEventListener('unhandledrejection', e => ERRORS.push(String(e.reason)));
+
+/* ---------- rng + math helpers (exported) ---------- */
+function mulberry32(seed) {
+  let a = seed >>> 0, spare = null;
+  const r = () => {
+    a = (a + 0x6D2B79F5) >>> 0; let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  r.normal = () => {
+    if (spare !== null) { const s = spare; spare = null; return s; }
+    let u = 0; while (u === 0) u = r();
+    const m = Math.sqrt(-2 * Math.log(u)), v = 2 * Math.PI * r();
+    spare = m * Math.sin(v); return m * Math.cos(v);
+  };
+  return r;
+}
+let RNG = mulberry32(SEED);
+const withRng = (r, fn) => { const prev = RNG; RNG = r; try { return fn(); } finally { RNG = prev; } };
+const rand = () => RNG();
+const randn = () => RNG.normal();
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const linspace = (a, b, n) => Array.from({ length: n }, (_, i) => n === 1 ? a : a + (b - a) * i / (n - 1));
+const logspace = (a, b, n) => linspace(Math.log10(a), Math.log10(b), n).map(e => 10 ** e);
+const sum = xs => { let s = 0; for (const x of xs) s += x; return s; };
+const mean = xs => xs.length ? sum(xs) / xs.length : NaN;
+const std = xs => { const m = mean(xs); let s = 0; for (const x of xs) s += (x - m) ** 2; return Math.sqrt(s / xs.length); };
+const argmax = xs => { let k = 0; for (let i = 1; i < xs.length; i++) if (xs[i] > xs[k]) k = i; return k; };
+const softmax = (xs, temp = 1) => { const m = Math.max(...xs), e = xs.map(x => Math.exp((x - m) / temp)), z = sum(e); return e.map(x => x / z); };
+const zeros = (r, c) => Array.from({ length: r }, () => new Array(c).fill(0));
+const matmul = (A, B) => A.map(row => B[0].map((_, j) => { let s = 0; for (let k = 0; k < row.length; k++) s += row[k] * B[k][j]; return s; }));
+const transpose = A => A[0].map((_, j) => A.map(r => r[j]));
+const makeGrid = (w, h, fill = 0) => ({ w, h, data: new Float32Array(w * h).fill(fill) });
+const finite = xs => { const out = []; for (const v of xs) if (Number.isFinite(v)) out.push(v); return out; };
+function extent(...arrs) {
+  let lo = Infinity, hi = -Infinity;
+  const visit = a => { for (const v of a) { if (v && typeof v === 'object') visit(v); else if (Number.isFinite(v)) { if (v < lo) lo = v; if (v > hi) hi = v; } } };
+  arrs.forEach(visit);
+  if (lo > hi) return [0, 1];
+  if (lo === hi) return [lo - 1, hi + 1];
+  const p = (hi - lo) * 0.05; return [lo - p, hi + p];
+}
+function fmt(x, d = 3) {
+  if (x == null) return '–';
+  if (typeof x !== 'number') return String(x);
+  if (Number.isNaN(x)) return 'nan';
+  if (!Number.isFinite(x)) return x > 0 ? '∞' : '−∞';
+  if (x === 0) return '0';
+  const a = Math.abs(x);
+  if (a >= 1e5 || a < 1e-3) return x.toExponential(Math.max(0, d - 1)).replace(/\.?0+e/, 'e').replace('e+', 'e');
+  return Number.isInteger(x) ? String(x) : String(+x.toPrecision(d));
+}
+function rk4(f, y, p, t, h) {
+  const n = y.length, at = (k, s) => { const r = new Array(n); for (let i = 0; i < n; i++) r[i] = y[i] + k[i] * s; return r; };
+  const k1 = f(y, p, t), k2 = f(at(k1, h / 2), p, t + h / 2), k3 = f(at(k2, h / 2), p, t + h / 2), k4 = f(at(k3, h), p, t + h);
+  const r = new Array(n);
+  for (let i = 0; i < n; i++) r[i] = y[i] + h / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
+  return r;
+}
+
+/* ---------- render hash: every g.* call feeds it, so the self-test can tell whether output changed ---------- */
+function hasher() {
+  let h = 2166136261;
+  const f32 = new Float32Array(1), u32 = new Uint32Array(f32.buffer);
+  const num = x => { f32[0] = x; h = Math.imul(h ^ u32[0], 16777619); };
+  const add = v => {
+    if (v == null) num(-7);
+    else if (typeof v === 'number') num(v);
+    else if (typeof v === 'boolean') num(v ? -1 : -2);
+    else if (typeof v === 'string') for (let i = 0; i < v.length; i++) num(v.charCodeAt(i));
+    else if (ArrayBuffer.isView(v) || Array.isArray(v)) { num(v.length); for (let i = 0; i < v.length; i++) add(v[i]); }
+    else if (typeof v === 'object') for (const k of Object.keys(v).sort()) { add(k); add(v[k]); }
+  };
+  return { add, get value() { return (h >>> 0).toString(16); } };
+}
+
+/* ---------- drawing ---------- */
+const hex = c => { c = (c || '#888').replace('#', ''); if (c.length === 3) c = [...c].map(x => x + x).join(''); const n = parseInt(c, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+const mixRGB = (A, B, t) => { t = clamp(t, 0, 1); return `rgb(${Math.round(A[0] + (B[0] - A[0]) * t)},${Math.round(A[1] + (B[1] - A[1]) * t)},${Math.round(A[2] + (B[2] - A[2]) * t)})`; };
+function readTheme() {
+  const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+  const T = { panel: v('--panel'), line: v('--line'), dim: v('--dim'), text: v('--text'), live: v('--live'), neg: v('--neg'), mono: v('--mono') || 'monospace' };
+  T.rgb = { panel: hex(T.panel), live: hex(T.live), neg: hex(T.neg) };
+  return T;
+}
+function dom(d, log) {
+  let [a, b] = Array.isArray(d) && d.length >= 2 ? d.map(Number) : [0, 1];
+  if (log) { a = a > 0 ? a : 1e-6; b = b > a ? b : a * 10; }
+  if (!Number.isFinite(a) || !Number.isFinite(b)) [a, b] = [0, 1];
+  if (a === b) { a -= 1; b += 1; }
+  return [a, b];
+}
+function scale(d, p0, p1, log) {
+  const tf = log ? Math.log10 : v => v, d0 = tf(d[0]), k = (p1 - p0) / (tf(d[1]) - d0);
+  const f = v => clamp(p0 + (tf(v) - d0) * k, -1e5, 1e5);
+  f.inv = px => { const u = d0 + (px - p0) / k; return log ? 10 ** u : u; };
+  return f;
+}
+function ticks(a, b, n, log) {
+  if (log) { const out = []; for (let e = Math.ceil(Math.log10(a) - 1e-9); e <= Math.floor(Math.log10(b) + 1e-9); e++) out.push(10 ** e); return out.length >= 2 ? out : [a, b]; }
+  const lo = Math.min(a, b), hi = Math.max(a, b), raw = (hi - lo) / Math.max(1, n), mag = 10 ** Math.floor(Math.log10(raw)), e = raw / mag;
+  const step = (e >= 7.5 ? 10 : e >= 3.5 ? 5 : e >= 1.5 ? 2 : 1) * mag, out = [];
+  for (let v = Math.ceil(lo / step - 1e-9) * step; v <= hi + step * 1e-9; v += step) out.push(Math.abs(v) < step * 1e-9 ? 0 : +v.toPrecision(12));
+  return out;
+}
+const GREEK = /([\u0370-\u03FF\u1F00-\u1FFF]+)/, GREEK_RUNS_NOT = /[^\u0370-\u03FF\u1F00-\u1FFF]+/g; // uppercase captions must not turn σ into Σ
+const SERIES = [['live', []], ['line', []], ['line', [5, 4]], ['line', [1.5, 3]]];
+
+class G {
+  constructor(ctx, rect, H, T, hits) {
+    Object.assign(this, { ctx, rect, H, T, hits, legend: [], subs: [], top: 0, hasAxes: false });
+    this.frame([0, 1], [0, 1]);
+  }
+  frame(x, y, xlog = false, ylog = false, pad = { l: 8, r: 8, t: 8, b: 8 }) {
+    const R = this.rect;
+    const P = this.plot = { x: R.x + pad.l, y: R.y + this.top + pad.t, w: Math.max(10, R.w - pad.l - pad.r), h: Math.max(10, R.h - this.top - pad.t - pad.b) };
+    this.xd = x; this.yd = y;
+    this.sx = scale(x, P.x, P.x + P.w, xlog); this.sy = scale(y, P.y + P.h, P.y, ylog);
+  }
+  rec(...a) { for (const v of a) this.H.add(v); }
+  font(px = 10.5) { return `${px}px ${this.T.mono}`; }
+  clip(fn) { const c = this.ctx, P = this.plot; c.save(); c.beginPath(); c.rect(P.x - 2, P.y - 2, P.w + 4, P.h + 4); c.clip(); try { fn(c); } finally { c.restore(); } }
+  stroke(series, width) { const [col, dash] = SERIES[series % 4]; const c = this.ctx; c.strokeStyle = this.T[col]; c.setLineDash(dash); c.lineWidth = width ?? (series % 4 === 0 ? 1.75 : 1.25); return this.T[col]; }
+  split(spec = '1x2', gap = 20) {
+    const [r, c] = typeof spec === 'number' ? [1, spec] : String(spec).split('x').map(Number), R = this.rect, out = [];
+    const cw = (R.w - gap * (c - 1)) / c, rh = (R.h - gap * (r - 1)) / r;
+    for (let i = 0; i < r; i++) for (let j = 0; j < c; j++) out.push(new G(this.ctx, { x: R.x + j * (cw + gap), y: R.y + i * (rh + gap), w: cw, h: rh }, this.H, this.T, this.hits));
+    this.rec('split', r, c); this.subs.push(...out); return out;
+  }
+  title(s) {
+    this.rec('title', String(s)); this.top = 18; this.frame(this.xd, this.yd);
+    if (!this.ctx) return this;
+    const c = this.ctx; c.font = this.font(10.5); c.fillStyle = this.T.text; c.textAlign = 'left'; c.textBaseline = 'top';
+    if ('letterSpacing' in c) c.letterSpacing = '1.5px';
+    c.fillText(String(s).replace(GREEK_RUNS_NOT, m => m.toUpperCase()), this.rect.x + 2, this.rect.y + 2);
+    if ('letterSpacing' in c) c.letterSpacing = '0px';
+    return this;
+  }
+  axes({ x = [0, 1], y = [0, 1], xlabel = '', ylabel = '', xlog = false, ylog = false, xticks = true, yticks = true } = {}) {
+    x = dom(x, xlog); y = dom(y, ylog);
+    this.rec('axes', x, y, xlabel, ylabel, xlog, ylog); this.hasAxes = true;
+    this.frame(x, y, xlog, ylog, { l: yticks ? 50 : 12, r: 12, t: ylabel ? 20 : 8, b: xlabel ? 36 : 24 });
+    if (!this.ctx) return this;
+    const c = this.ctx, P = this.plot, T = this.T;
+    c.setLineDash([]); c.strokeStyle = T.line; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(P.x, P.y); c.lineTo(P.x, P.y + P.h); c.lineTo(P.x + P.w, P.y + P.h); c.stroke();
+    c.font = this.font(10.5); c.fillStyle = T.text;
+    if (xticks) {
+      c.textAlign = 'center'; c.textBaseline = 'top';
+      for (const v of ticks(x[0], x[1], P.w / 90, xlog)) { const X = this.sx(v); c.beginPath(); c.moveTo(X, P.y + P.h); c.lineTo(X, P.y + P.h + 4); c.stroke(); c.fillText(fmt(v), X, P.y + P.h + 6); }
+    }
+    if (yticks) {
+      c.textAlign = 'right'; c.textBaseline = 'middle';
+      for (const v of ticks(y[0], y[1], P.h / 50, ylog)) { const Y = this.sy(v); c.beginPath(); c.moveTo(P.x - 4, Y); c.lineTo(P.x, Y); c.stroke(); c.fillText(fmt(v), P.x - 7, Y); }
+    }
+    if (xlabel) { c.textAlign = 'right'; c.textBaseline = 'bottom'; c.fillText(xlabel, P.x + P.w, this.rect.y + this.rect.h); }
+    if (ylabel) { c.textAlign = 'left'; c.textBaseline = 'bottom'; c.fillText(ylabel, P.x + 6, P.y - 6); }
+    return this;
+  }
+  line(xs, ys, o = {}) {
+    if (ys === undefined || (ys && !Array.isArray(ys) && !ArrayBuffer.isView(ys))) { o = ys || {}; ys = xs; xs = Array.from(ys, (_, i) => i); }
+    const { series = 0, label, dash, width } = o;
+    this.rec('line', xs, ys, series); if (label) this.legend.push({ label, series });
+    if (!this.ctx) return this;
+    this.clip(c => {
+      this.stroke(series, width); if (dash) c.setLineDash(dash);
+      c.beginPath(); let pen = false;
+      for (let i = 0; i < xs.length; i++) {
+        const X = this.sx(xs[i]), Y = this.sy(ys[i]);
+        if (!Number.isFinite(X) || !Number.isFinite(Y)) { pen = false; continue; }
+        pen ? c.lineTo(X, Y) : c.moveTo(X, Y); pen = true;
+      }
+      c.stroke(); c.setLineDash([]);
+    });
+    return this;
+  }
+  scatter(xs, ys, { series = 0, r = 2.5, label, live = -1 } = {}) {
+    this.rec('scatter', xs, ys, series, live); if (label) this.legend.push({ label, series, dot: true });
+    if (!this.ctx) return this;
+    this.clip(c => {
+      const col = this.T[SERIES[series % 4][0]];
+      for (let i = 0; i < xs.length; i++) {
+        const X = this.sx(xs[i]), Y = this.sy(ys[i]); if (!Number.isFinite(X) || !Number.isFinite(Y)) continue;
+        c.beginPath(); c.arc(X, Y, i === live ? r + 2 : r, 0, 7);
+        if (series % 4 === 0 || i === live) { c.fillStyle = i === live ? this.T.live : col; c.fill(); } else { c.strokeStyle = col; c.lineWidth = 1; c.setLineDash([]); c.stroke(); }
+      }
+    });
+    return this;
+  }
+  bars(labels, values, { series = 0, live = -1, y } = {}) {
+    this.rec('bars', labels, values, series, live);
+    const n = values.length, v = finite(values);
+    if (!this.hasAxes) this.axes({ x: [0, n], y: y || [Math.min(0, ...v), Math.max(1e-9, ...v) * 1.12], xticks: false });
+    if (!this.ctx) return this;
+    const c = this.ctx, T = this.T, P = this.plot;
+    this.clip(() => {
+      for (let i = 0; i < n; i++) {
+        const x0 = this.sx(i + 0.18), x1 = this.sx(i + 0.82), y0 = this.sy(0), y1 = this.sy(values[i]); if (!Number.isFinite(y1)) continue;
+        c.fillStyle = i === live ? T.live : T.dim; c.fillRect(x0, Math.min(y0, y1), x1 - x0, Math.abs(y1 - y0));
+        this.stroke(i === live ? 0 : series, 1); c.strokeRect(x0, Math.min(y0, y1), x1 - x0, Math.abs(y1 - y0));
+      }
+    });
+    c.font = this.font(10.5); c.fillStyle = T.text; c.textAlign = 'center'; c.textBaseline = 'top';
+    for (let i = 0; i < n; i++) c.fillText(String(labels[i] ?? i), this.sx(i + 0.5), P.y + P.h + 6);
+    return this;
+  }
+  hist(values, { bins = 30, range, series = 0, density = false, label } = {}) {
+    const v = finite(values), [a, b] = range ? dom(range) : v.length ? dom([Math.min(...v), Math.max(...v)]) : [0, 1];
+    const w = (b - a) / bins, counts = new Array(bins).fill(0);
+    for (const x of v) { const k = x === b ? bins - 1 : Math.floor((x - a) / w); if (k >= 0 && k < bins) counts[k]++; }
+    const ys = density ? counts.map(n => n / ((v.length || 1) * w)) : counts;
+    this.rec('hist', a, b, ys, series); if (label) this.legend.push({ label, series });
+    if (!this.hasAxes) this.axes({ x: [a, b], y: [0, Math.max(1e-9, ...ys) * 1.15] });
+    if (!this.ctx) return this;
+    this.clip(c => {
+      c.fillStyle = this.T.dim;
+      for (let k = 0; k < bins; k++) { const x0 = this.sx(a + k * w), x1 = this.sx(a + (k + 1) * w), y1 = this.sy(ys[k]), y0 = this.sy(0); c.fillRect(x0, y1, x1 - x0, y0 - y1); }
+      this.stroke(series); c.beginPath(); c.moveTo(this.sx(a), this.sy(0));
+      for (let k = 0; k < bins; k++) { c.lineTo(this.sx(a + k * w), this.sy(ys[k])); c.lineTo(this.sx(a + (k + 1) * w), this.sy(ys[k])); }
+      c.lineTo(this.sx(b), this.sy(0)); c.stroke(); c.setLineDash([]);
+    });
+    return this;
+  }
+  heatmap(M, { range, rowLabels, colLabels, diverging = false, values = false } = {}) {
+    const isGrid = M && M.data, rows = isGrid ? M.h : M.length, cols = isGrid ? M.w : (M[0]?.length || 0);
+    const at = isGrid ? (i, j) => M.data[i * M.w + j] : (i, j) => M[i][j];
+    this.rec('heatmap', rows, cols, diverging, isGrid ? M.data : M);
+    let [lo, hi] = range || (() => { let lo = Infinity, hi = -Infinity; for (let i = 0; i < rows; i++) for (let j = 0; j < cols; j++) { const v = at(i, j); if (Number.isFinite(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); } } return lo > hi ? [0, 1] : lo === hi ? [lo - 1, hi + 1] : [lo, hi]; })();
+    if (diverging) { const m = Math.max(Math.abs(lo), Math.abs(hi)) || 1; lo = -m; hi = m; }
+    const P = this.plot, L = rowLabels ? 44 : 0, B = colLabels ? 18 : 0;
+    const cs = Math.max(0.5, Math.min((P.w - L) / Math.max(1, cols), (P.h - B) / Math.max(1, rows)));
+    const x0 = P.x + L + (P.w - L - cs * cols) / 2, y0 = P.y + (P.h - B - cs * rows) / 2;
+    this.sx = scale([0, cols], x0, x0 + cs * cols); this.sy = scale([0, rows], y0, y0 + cs * rows); this.xd = [0, cols]; this.yd = [0, rows];
+    if (!this.ctx) return this;
+    const c = this.ctx, T = this.T, R = T.rgb;
+    for (let i = 0; i < rows; i++) for (let j = 0; j < cols; j++) {
+      const v = at(i, j), t = diverging ? v / hi : (v - lo) / (hi - lo);
+      c.fillStyle = !Number.isFinite(v) ? T.panel : diverging && t < 0 ? mixRGB(R.panel, R.neg, -t) : mixRGB(R.panel, R.live, t);
+      c.fillRect(x0 + j * cs, y0 + i * cs, cs + 0.6, cs + 0.6);
+      if (values && cs >= 24) { c.font = this.font(Math.min(11, cs / 3.2)); c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = Math.abs(t) > 0.55 ? T.panel : T.text; c.fillText(fmt(v, 2), x0 + (j + 0.5) * cs, y0 + (i + 0.5) * cs); }
+    }
+    c.setLineDash([]); c.strokeStyle = T.dim; c.lineWidth = 1; c.strokeRect(x0, y0, cs * cols, cs * rows);
+    c.font = this.font(10.5); c.fillStyle = T.text;
+    if (rowLabels) { c.textAlign = 'right'; c.textBaseline = 'middle'; rowLabels.forEach((s, i) => c.fillText(String(s), x0 - 6, y0 + (i + 0.5) * cs)); }
+    if (colLabels) { c.textAlign = 'center'; c.textBaseline = 'top'; colLabels.forEach((s, j) => c.fillText(String(s), x0 + (j + 0.5) * cs, y0 + rows * cs + 4)); }
+    return this;
+  }
+  cells(grid, o) { return this.heatmap(grid, o); }
+  field(fn, { n = 15, series = 1 } = {}) {
+    const [x0, x1] = this.xd, [y0, y1] = this.yd, V = [];
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const x = lerp(x0, x1, (j + 0.5) / n), y = lerp(y0, y1, (i + 0.5) / n), [u, v] = fn(x, y); V.push(x, y, u, v); }
+    this.rec('field', V, series);
+    if (!this.ctx) return this;
+    const P = this.plot, kx = P.w / (x1 - x0), ky = P.h / (y1 - y0), cell = Math.min(P.w, P.h) / n;
+    let max = 0; for (let k = 0; k < V.length; k += 4) { const m = Math.hypot(V[k + 2] * kx, V[k + 3] * ky); if (Number.isFinite(m)) max = Math.max(max, m); }
+    this.clip(c => {
+      this.stroke(series, 1);
+      for (let k = 0; k < V.length; k += 4) {
+        const pu = V[k + 2] * kx, pv = -V[k + 3] * ky, m = Math.hypot(pu, pv); if (!(m > 0) || !Number.isFinite(m)) continue;
+        const L = cell * 0.85 * m / max, ux = pu / m, uy = pv / m, X = this.sx(V[k]) - ux * L / 2, Y = this.sy(V[k + 1]) - uy * L / 2, X2 = X + ux * L, Y2 = Y + uy * L;
+        c.beginPath(); c.moveTo(X, Y); c.lineTo(X2, Y2); c.lineTo(X2 - ux * 3 - uy * 2, Y2 - uy * 3 + ux * 2); c.moveTo(X2, Y2); c.lineTo(X2 - ux * 3 + uy * 2, Y2 - uy * 3 - ux * 2); c.stroke();
+      }
+    });
+    return this;
+  }
+  graph(nodes, edges = [], { r = 6, arrows = false } = {}) {
+    this.rec('graph', nodes.map(n => [n.x, n.y, n.label, !!n.live]), edges.map(e => Array.isArray(e) ? e : [e.a, e.b, e.label, !!e.live]));
+    if (!this.ctx) return this;
+    const c = this.ctx, T = this.T;
+    c.font = this.font(10.5);
+    for (const e of edges) {
+      const [a, b] = Array.isArray(e) ? e : [e.a, e.b], A = nodes[a], B = nodes[b]; if (!A || !B) continue;
+      const X1 = this.sx(A.x), Y1 = this.sy(A.y), X2 = this.sx(B.x), Y2 = this.sy(B.y);
+      this.stroke(e.live ? 0 : 1, e.live ? 1.75 : 1); if (e.dash) c.setLineDash([4, 4]);
+      c.beginPath(); c.moveTo(X1, Y1); c.lineTo(X2, Y2); c.stroke(); c.setLineDash([]);
+      if (arrows || e.arrow) {
+        const L = Math.hypot(X2 - X1, Y2 - Y1) || 1, ux = (X2 - X1) / L, uy = (Y2 - Y1) / L, tx = X2 - ux * ((B.r ?? r) + 3), ty = Y2 - uy * ((B.r ?? r) + 3);
+        c.beginPath(); c.moveTo(tx, ty); c.lineTo(tx - ux * 7 - uy * 3.5, ty - uy * 7 + ux * 3.5); c.lineTo(tx - ux * 7 + uy * 3.5, ty - uy * 7 - ux * 3.5); c.closePath(); c.fillStyle = c.strokeStyle; c.fill();
+      }
+      if (e.label) { c.fillStyle = T.text; c.textAlign = 'center'; c.textBaseline = 'bottom'; c.fillText(String(e.label), (X1 + X2) / 2, (Y1 + Y2) / 2 - 4); }
+    }
+    nodes.forEach(n => {
+      const X = this.sx(n.x), Y = this.sy(n.y), rr = n.r ?? r;
+      c.beginPath(); c.arc(X, Y, rr, 0, 7); c.fillStyle = n.live ? T.live : T.panel; c.fill();
+      c.setLineDash([]); c.lineWidth = n.drag ? 1.75 : 1; c.strokeStyle = n.live || n.drag ? T.live : T.line; c.stroke();
+      if (n.label != null) { c.fillStyle = n.live ? T.live : T.text; c.textAlign = 'left'; c.textBaseline = 'bottom'; c.fillText(String(n.label), X + rr + 3, Y - rr / 2); }
+      if (n.drag) this.hits.push({ key: n.drag, g: this, x: X, y: Y, r: rr + 8 });
+    });
+    return this;
+  }
+  text(x, y, s, { anchor = 'start', live = false, size = 10.5, baseline = 'middle' } = {}) {
+    this.rec('text', x, y, String(s));
+    if (!this.ctx) return this;
+    const c = this.ctx; c.font = this.font(size); c.fillStyle = live ? this.T.live : this.T.text;
+    c.textAlign = anchor === 'middle' ? 'center' : anchor; c.textBaseline = baseline; c.fillText(String(s), this.sx(x), this.sy(y));
+    return this;
+  }
+  marker(x, y, { label, r = 4 } = {}) {
+    this.rec('marker', x, y, label);
+    if (!this.ctx) return this;
+    const c = this.ctx, X = this.sx(x), Y = this.sy(y); if (!Number.isFinite(X) || !Number.isFinite(Y)) return this;
+    this.stroke(0, 1.5); c.beginPath(); c.arc(X, Y, r, 0, 7); c.stroke();
+    if (label != null) { c.font = this.font(10.5); c.fillStyle = this.T.live; c.textAlign = 'left'; c.textBaseline = 'bottom'; c.fillText(String(label), X + r + 3, Y - 2); }
+    return this;
+  }
+  vline(x, { label, series = 1, dash = [3, 3] } = {}) { return this.rule('v', x, label, series, dash); }
+  hline(y, { label, series = 1, dash = [3, 3] } = {}) { return this.rule('h', y, label, series, dash); }
+  rule(kind, v, label, series, dash) {
+    this.rec('rule', kind, v, label, series);
+    if (!this.ctx) return this;
+    const c = this.ctx, P = this.plot;
+    this.clip(() => {
+      this.stroke(series, 1); c.setLineDash(dash); c.beginPath();
+      if (kind === 'v') { const X = this.sx(v); c.moveTo(X, P.y); c.lineTo(X, P.y + P.h); } else { const Y = this.sy(v); c.moveTo(P.x, Y); c.lineTo(P.x + P.w, Y); }
+      c.stroke(); c.setLineDash([]);
+      if (label != null) {
+        c.font = this.font(10.5); c.fillStyle = this.T.text; c.textBaseline = 'top';
+        if (kind === 'v') { c.textAlign = 'left'; c.fillText(String(label), this.sx(v) + 4, P.y + 2); } else { c.textAlign = 'right'; c.fillText(String(label), P.x + P.w - 2, this.sy(v) + 3); }
+      }
+    });
+    return this;
+  }
+}
+function drawLegends(g) {
+  if (g.ctx && g.legend.length) {
+    const c = g.ctx, P = g.plot, T = g.T; c.font = g.font(10.5);
+    const w = Math.max(...g.legend.map(l => c.measureText(l.label).width)) + 28, x = P.x + P.w - w - 2, h = g.legend.length * 15 + 6;
+    c.fillStyle = T.panel; c.globalAlpha = 0.85; c.fillRect(x - 4, P.y + 2, w + 6, h); c.globalAlpha = 1;
+    g.legend.forEach((l, i) => {
+      const y = P.y + 10 + i * 15;
+      if (l.dot) { c.fillStyle = T[SERIES[l.series % 4][0]]; c.beginPath(); c.arc(x + 9, y, 2.5, 0, 7); c.fill(); }
+      else { g.stroke(l.series); c.beginPath(); c.moveTo(x, y); c.lineTo(x + 18, y); c.stroke(); c.setLineDash([]); }
+      c.fillStyle = T.text; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText(l.label, x + 24, y);
+    });
+  }
+  g.subs.forEach(drawLegends);
+}
+
+/* ---------- simulation core (DOM-free) ---------- */
+let DEF = null, A = null, HORIZON = 0, RATE = 1, MOUNT_ERR = null;
+const defaults = () => Object.fromEntries(PARAMS.map(q => [q.name, q.default]));
+const metricNames = () => METRICS.map(m => m.name);
+const TIMELESS = ARCH === 'sweep' || ARCH === 'diagram';
+
+function adapter(def) {
+  const need = (...ks) => { for (const k of ks) if (typeof def[k] !== 'function') throw new Error(`a ${ARCH} playground needs ${k}()`); };
+  need('metrics');
+  if (ARCH !== 'pipeline') need('draw');
+  const steps = Math.max(SPEC.steps || 0, SPEC.reproduce?.steps || 0, SPEC.contrast?.steps || 0) || 200;
+  if (ARCH === 'dynamical' && def.deriv) {
+    need('init', 'deriv');
+    const dt = def.dt ?? 0.1, sub = def.substeps || 1, h = dt / sub;
+    return {
+      horizon: def.horizon ?? steps,
+      init: P => { const s = def.init(P, rand); s.t = s.t ?? 0; s.k = 0; s.t0 = s.t; s.path = { t: [s.t], y: s.y.map(v => [v]) }; return s; },
+      step: (s, P) => { for (let i = 0; i < sub; i++) { s.y = rk4(def.deriv, s.y, P, s.t, h); s.t = s.t0 + ++s.k * h; } s.path.t.push(s.t); s.y.forEach((v, i) => s.path.y[i].push(v)); },
+    };
+  }
+  if (ARCH === 'sweep') {
+    need('f');
+    return {
+      horizon: 0,
+      init: P => {
+        const [a, b, n = 200, kind] = def.domain ? def.domain(P) : [0, 1, 200];
+        const x = kind === 'log' ? logspace(a, b, n) : linspace(a, b, n), ys = x.map(v => def.f(v, P));
+        const y = Array.isArray(ys[0]) ? ys[0].map((_, k) => ys.map(r => r[k])) : [ys];
+        return Object.assign({ x, y }, def.init ? def.init(P, rand, { x, y }) : {});
+      },
+    };
+  }
+  if (ARCH === 'stochastic') {
+    need('sample');
+    const batch = def.batch ?? 50;
+    return {
+      horizon: def.horizon ?? steps,
+      init: P => Object.assign({ samples: [], draws: [] }, def.init ? def.init(P, rand) : {}),
+      step: (s, P) => { for (let i = 0; i < batch; i++) { const v = def.sample(P, rand); if (v && typeof v === 'object') { s.samples.push(v.value); s.draws.push(v); if (s.draws.length > 4000) s.draws.shift(); } else s.samples.push(v); } },
+    };
+  }
+  if (ARCH === 'pipeline') {
+    if (!Array.isArray(def.stages) || def.stages.length < 2) throw new Error('a pipeline playground needs stages: [{name, run, draw}, …] (at least 2)');
+    def.stages.forEach((st, i) => { if (typeof st.run !== 'function' || typeof st.draw !== 'function') throw new Error(`stage ${i} needs run() and draw()`); });
+    return {
+      horizon: def.stages.length - 1,
+      init: P => { const s = Object.assign({ outs: [], view: 0 }, def.init ? def.init(P, rand) : {}); s.outs[0] = def.stages[0].run(null, P, rand, s); return s; },
+      step: (s, P) => { const k = s.outs.length; if (k >= def.stages.length) return; s.outs[k] = def.stages[k].run(s.outs[k - 1], P, rand, s); s.view = k; },
+    };
+  }
+  if (ARCH === 'diagram') { need('init'); return { horizon: 0, init: P => def.init(P, rand) }; }
+  const step = def.step || def.update;
+  need('init'); if (typeof step !== 'function') throw new Error(`a ${ARCH} playground needs ${ARCH === 'grid' ? 'update' : 'step'}()`);
+  return { horizon: def.horizon ?? steps, init: P => def.init(P, rand), step: (s, P) => step(s, P, rand) };
+}
+
+function newSim(P) { return { P: { ...P }, rng: mulberry32(SEED), s: null, t: 0, status: 'ok', err: null, m: {}, trace: { t: [] } }; }
+function measure(sim) {
+  if (ARCH === 'pipeline' && sim.s.outs.length < DEF.stages.length) return {};
+  const m = DEF.metrics(sim.s, sim.P, sim.trace);
+  return m && typeof m === 'object' ? m : {};
+}
+function settleStatus(sim) {
+  let bad = null;
+  for (const k in sim.m) { const v = sim.m[k]; if (typeof v === 'number' && !Number.isFinite(v)) { bad = k; break; } }
+  if (!bad && ARCH === 'dynamical' && DEF.deriv && sim.s?.y?.some(v => !Number.isFinite(v))) bad = 'y';
+  if (bad) { sim.status = 'diverged'; sim.divergedAt = sim.t; sim.bad = bad; return; }
+  const tr = sim.trace; tr.t.push(sim.t);
+  for (const k of (METRICS.length ? metricNames() : Object.keys(sim.m))) (tr[k] ||= []).push(sim.m[k] ?? null);
+}
+function simInit(sim) {
+  try { withRng(sim.rng, () => { sim.s = A.init(sim.P); sim.m = measure(sim); }); }
+  catch (e) { sim.status = 'error'; sim.err = e; return; }
+  settleStatus(sim);
+}
+function simStep(sim) {
+  if (sim.status !== 'ok' || !A.step) return false;
+  try { withRng(sim.rng, () => { const r = A.step(sim.s, sim.P); if (r !== undefined) sim.s = r; sim.t++; sim.m = measure(sim); }); }
+  catch (e) { sim.status = 'error'; sim.err = e; return false; }
+  settleStatus(sim);
+  return sim.status === 'ok';
+}
+function drawSim(g, sim, all = false) {
+  if (ARCH === 'pipeline') {
+    const outs = sim.s.outs, ks = all ? outs.map((_, k) => k) : [clamp(sim.s.view ?? outs.length - 1, 0, outs.length - 1)];
+    for (const k of ks) DEF.stages[k].draw(g, outs[k], sim.P, sim.s);
+  } else DEF.draw(g, sim.s, sim.P, sim.m, sim.trace);
+}
+
+/* ---------- self-test ---------- */
+function headless(P, steps) {
+  const sim = newSim(P), t0 = performance.now();
+  simInit(sim);
+  const n = TIMELESS ? 0 : ARCH === 'pipeline' ? HORIZON : steps;
+  while (sim.status === 'ok' && sim.t < n) { simStep(sim); if (performance.now() - t0 > RUN_MS) { sim.status = 'slow'; break; } }
+  const H = hasher();
+  if (sim.status === 'ok') { try { withRng(sim.rng, () => drawSim(new G(null, { x: 0, y: 0, w: 640, h: 400 }, H, null, []), sim, true)); } catch (e) { sim.status = 'error'; sim.err = e; } }
+  H.add(sim.status); H.add(sim.divergedAt ?? -1);
+  return { status: sim.status, err: sim.err, m: sim.m, hash: H.value, ms: Math.round(performance.now() - t0), t: sim.t, divergedAt: sim.divergedAt, bad: sim.bad };
+}
+const describe = r => r.status === 'ok' ? `ok in ${r.ms} ms` : r.status === 'diverged' ? `diverged at step ${r.divergedAt} (${r.bad} non-finite)`
+  : r.status === 'slow' ? `exceeded ${RUN_MS} ms at step ${r.t}` : `error: ${r.err?.message || r.err}`;
+const round6 = m => Object.fromEntries(Object.entries(m || {}).map(([k, v]) => [k, typeof v === 'number' ? +v.toPrecision(6) : v]));
+const sig = r => `${r.hash}|${r.status}|${JSON.stringify(round6(r.m))}`;
+function sweepValues(q) {
+  if (q.kind === 'toggle') return [q.default, !q.default];
+  if (q.kind === 'select') return [q.default, ...(q.options || []).map(o => o && typeof o === 'object' ? o.value : o).filter(v => v !== q.default)];
+  return [...new Set([q.default, q.min, q.max])];
+}
+function evalExpect(e, r, ref) {
+  const v = r.m?.[e.metric];
+  if (e.op === 'diverges') { const ok = r.status === 'diverged' || (e.bound != null && Math.abs(v) > e.bound); return { ok, desc: ok ? '' : `expected to diverge${e.bound != null ? ` (|${e.metric}| > ${e.bound})` : ''}, ${describe(r)}${typeof v === 'number' ? `, ${e.metric} ${fmt(v)}` : ''}` }; }
+  if (r.status !== 'ok') return { ok: false, desc: describe(r) };
+  if (e.op === 'finite') return { ok: true, desc: '' };
+  if (typeof v !== 'number') return { ok: false, desc: `metric ${e.metric} missing` };
+  let thr = e.value, how = '';
+  if (e.ref) {
+    const rv = ref?.m?.[e.metric];
+    if (ref?.status !== 'ok' || typeof rv !== 'number') return { ok: false, desc: `reference run unavailable (${ref ? describe(ref) : 'missing'})` };
+    if (e.factor != null && Math.abs(v) < 1e-9 && Math.abs(rv) < 1e-9) return { ok: false, desc: `${e.metric} is ~0 in both runs (${fmt(v)} vs ${fmt(rv)}); a ratio there is meaningless` };
+    thr = e.factor != null ? rv * e.factor : rv + (e.by ?? 0);
+    how = ` (reproduce ${fmt(rv)}${e.factor != null ? ` × ${e.factor}` : e.by ? ` + ${e.by}` : ''})`;
+  }
+  const ok = e.op === '<' ? v < thr : e.op === '<=' ? v <= thr : e.op === '>' ? v > thr : e.op === '>=' ? v >= thr
+    : e.op === 'between' ? v >= thr[0] && v <= thr[1] : false;
+  const want = e.op === 'between' ? `in [${fmt(thr[0])}, ${fmt(thr[1])}]` : `${e.op} ${fmt(thr)}`;
+  return { ok, desc: ok ? '' : `${e.metric} ${fmt(v)}, expected ${want}${how}` };
+}
+async function selftest() {
+  const t0 = performance.now(), checks = [], add = (id, ok, extra = {}) => checks.push({ id, ok, ...extra });
+  const report = () => {
+    const failures = checks.filter(c => !c.ok).map(c => `${c.id}: ${c.msg || 'failed'}`);
+    const r = { type: 'pp:selftest', ok: failures.length === 0, kernel: KERNEL, ms: Math.round(performance.now() - t0), checks, failures };
+    window.__selftestResult = r; if (window.parent !== window) window.parent.postMessage(r, '*');
+    return r;
+  };
+  if (!DEF || MOUNT_ERR) { add('mount', false, { msg: MOUNT_ERR ? MOUNT_ERR.message : `playground() was never called${ERRORS[0] ? ` (${ERRORS[0]})` : ''}` }); return report(); }
+  const tick = () => new Promise(r => setTimeout(r, 0)), over = () => performance.now() - t0 > TOTAL_MS;
+  const steps = SPEC.steps ?? HORIZON, base = headless(defaults(), steps), runs = [base];
+  add('default', base.status === 'ok', { msg: describe(base), ms: base.ms });
+  if (base.status === 'ok') {
+    const missing = metricNames().filter(k => typeof base.m?.[k] !== 'number');
+    add('metrics', missing.length === 0, { msg: `missing or non-numeric: ${missing.join(', ')}` });
+  }
+  await tick();
+  add('determinism', sig(headless(defaults(), steps)) === sig(base), { msg: 'same seed and params gave different output (Math.random, Date, or state leaking between runs?)' });
+  for (const q of PARAMS) {
+    const seen = new Set();
+    for (const v of sweepValues(q)) {
+      if (over()) break;
+      await tick();
+      const r = v === q.default ? base : headless({ ...defaults(), [q.name]: v }, steps);
+      if (r !== base) runs.push(r);
+      seen.add(sig(r));
+      add(`sweep:${q.name}=${fmt(v)}`, r.status === 'ok' || r.status === 'diverged', { msg: describe(r), ms: r.ms });
+    }
+    add(`decorative:${q.name}`, seen.size > 1, { msg: 'render and metrics identical at every swept value' });
+  }
+  let rep = null;
+  for (const key of ['reproduce', 'contrast']) {
+    const c = SPEC[key];
+    if (!c) { add(key, false, { msg: 'missing from extraction' }); continue; }
+    const unknown = Object.keys(c.params || {}).filter(k => !PARAMS.some(q => q.name === k));
+    if (unknown.length) { add(key, false, { msg: `unknown params: ${unknown.join(', ')}` }); continue; }
+    await tick();
+    const r = headless({ ...defaults(), ...c.params }, c.steps ?? steps); runs.push(r);
+    if (key === 'reproduce') rep = r;
+    const res = (c.expect || []).map(e => evalExpect(e, r, rep)), ok = res.length > 0 && res.every(x => x.ok);
+    add(key, ok, { msg: (res.length ? res.filter(x => !x.ok).map(x => x.desc).join('; ') : 'no expectations') + (c.source?.section ? ` (§${c.source.section})` : ''), observed: round6(r.m), status: r.status, section: c.source?.section });
+  }
+  const predicated = new Set([...(SPEC.reproduce?.expect || []), ...(SPEC.contrast?.expect || [])].map(e => e.metric).filter(Boolean));
+  for (const k of predicated) {
+    const vals = new Set(runs.filter(r => r.status === 'ok').map(r => r.m?.[k]).filter(Number.isFinite).map(v => v.toPrecision(6)));
+    add(`varies:${k}`, vals.size > 1, { msg: `${k} is identical in every run (hard-coded?)` });
+  }
+  if (ERRORS.length) add('uncaught', false, { msg: ERRORS.slice(0, 3).join(' | ') });
+  if (over()) add('budget', false, { msg: `self-test exceeded ${TOTAL_MS} ms` });
+  return report();
+}
+window.__selftest = selftest;
+addEventListener('message', e => {
+  if (e.source !== window.parent || !e.data) return;
+  if (e.data.type === 'pp:run-selftest') selftest();
+  if (e.data.type === 'pp:theme') { if (e.data.theme) document.documentElement.dataset.theme = e.data.theme; else delete document.documentElement.dataset.theme; THEME = null; if (ui) ui.dirty = true; }
+});
+
+/* ---------- UI ---------- */
+let ui = null, THEME = null;
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const post = msg => { if (window.parent !== window) window.parent.postMessage(msg, '*'); };
+const label = k => METRICS.find(m => m.name === k)?.label || k;
+const caps = (cls, text) => { const e = el('span', cls); String(text).split(GREEK).forEach((part, i) => { if (part) e.append(i % 2 ? el('span', 'keep', part) : part); }); return e; };
+
+function mount(def) {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const plate = el('figure', 'plate');
+  const top = el('div', 'cap top'); top.append(el('span', 'fig', `Fig ${SPEC.fig ?? 1}`), caps('title', SPEC.title || ''));
+  const body = el('div', 'body'), stage = el('div', 'stage'), side = el('div', 'side');
+  const chips = el('div', 'stages'), canvas = el('canvas');
+  canvas.setAttribute('role', 'img'); canvas.tabIndex = 0;
+  canvas.setAttribute('aria-label', [SPEC.experiment, def.caption].filter(Boolean).join(' '));
+  stage.append(chips, canvas);
+  const transport = el('div', 'transport'), params = el('div', 'params');
+  side.append(transport, params);
+  body.append(stage, side);
+  const bot = el('div', 'cap bot'), readout = el('span', 'readout'), live = el('span', 'sr');
+  live.setAttribute('aria-live', 'polite');
+  bot.append(caps('instr', def.caption || ''), readout, live);
+  plate.append(top, body, bot);
+  document.body.append(plate);
+  ui = { P: defaults(), sim: null, view: null, target: 0, playing: false, dirty: true, last: 0, settled: false, hits: [], drag: null, controls: {}, canvas, readout, live };
+  if (MOUNT_ERR) { readout.textContent = `error · ${MOUNT_ERR.message}`; return; }
+
+  const rebuild = () => { ui.sim = newSim(ui.P); simInit(ui.sim); ui.view = null; ui.settled = false; ui.dirty = true; };
+  const setParams = upd => {
+    for (const [name, raw] of Object.entries(upd)) {
+      const q = PARAMS.find(q => q.name === name); if (!q) continue;
+      let v = raw;
+      if (q.kind !== 'toggle' && q.kind !== 'select') { v = clamp(+v, q.min, q.max); if (q.step) v = +(q.min + Math.round((v - q.min) / q.step) * q.step).toPrecision(12); }
+      ui.P[name] = v; ui.controls[name]?.sync(v);
+    }
+    rebuild();
+  };
+
+  // transport
+  const btn = (txt, name, fn) => { const b = el('button', null, txt); b.type = 'button'; b.setAttribute('aria-label', name); b.title = name; b.addEventListener('click', fn); transport.append(b); return b; };
+  const play = btn('▶', 'play', () => {
+    if (ui.playing) { ui.playing = false; return; }
+    if (ui.sim.status !== 'ok' || ui.sim.t >= HORIZON) { rebuild(); ui.target = 0; }
+    ui.target = Math.min(HORIZON, Math.max(ui.target, ui.sim.t + 1));
+    ui.playing = true;
+  });
+  btn('›', 'step', () => { ui.playing = false; if (ui.sim.status === 'ok' && (ARCH !== 'pipeline' || ui.sim.t < HORIZON)) ui.target = ui.sim.t + 1; });
+  btn('⇥', 'run to end', () => { ui.playing = false; ui.target = Math.max(HORIZON, ui.sim.t); });
+  btn('↺', 'reset', () => { ui.playing = false; rebuild(); ui.target = 0; });
+  if (TIMELESS) transport.hidden = true;
+
+  // params
+  for (const q of PARAMS) {
+    const row = el('div', 'param'), head = el('div', 'phead'), id = `p-${q.name}`;
+    const lab = el('label', 'plabel', q.label || q.name); lab.htmlFor = id;
+    const val = el('span', 'pval');
+    let input, show;
+    if (q.kind === 'toggle') {
+      input = el('input'); input.type = 'checkbox'; input.checked = !!ui.P[q.name];
+      input.addEventListener('change', () => setParams({ [q.name]: input.checked }));
+      show = v => { input.checked = !!v; val.textContent = v ? 'on' : 'off'; };
+      head.append(input, lab, val);
+    } else if (q.kind === 'select') {
+      input = el('select');
+      const opts = (q.options || []).map(o => o && typeof o === 'object' ? o : { value: o, label: String(o) });
+      opts.forEach((o, i) => { const op = el('option', null, o.label ?? String(o.value)); op.value = i; input.append(op); });
+      input.addEventListener('change', () => setParams({ [q.name]: opts[+input.value].value }));
+      show = v => { input.value = Math.max(0, opts.findIndex(o => o.value === v)); val.textContent = ''; };
+      head.append(lab, val); row.append(head, input);
+    } else {
+      input = el('input'); input.type = 'range';
+      const log = q.scale === 'log' && q.min > 0;
+      const toPos = log ? v => Math.round(1000 * Math.log(v / q.min) / Math.log(q.max / q.min)) : v => v;
+      const fromPos = log ? p => q.min * (q.max / q.min) ** (p / 1000) : Number;
+      if (log) { input.min = 0; input.max = 1000; input.step = 1; } else { input.min = q.min; input.max = q.max; input.step = q.step ?? 'any'; }
+      input.addEventListener('input', () => setParams({ [q.name]: fromPos(+input.value) }));
+      show = v => { input.value = toPos(v); val.textContent = fmt(v) + (q.unit ? ` ${q.unit}` : ''); };
+      head.append(lab, val); row.append(head, input);
+    }
+    input.id = id;
+    if (q.source) {
+      const src = el('span', 'src', `§${q.source.section}`); src.tabIndex = 0;
+      src.title = `“${q.source.quote}” (§${q.source.section})`;
+      const hover = () => post({ type: 'pp:param-hover', name: q.name, section: q.source.section });
+      src.addEventListener('mouseenter', hover); src.addEventListener('focus', hover);
+      head.append(src);
+    }
+    if (q.kind === 'toggle') row.append(head);
+    params.append(row);
+    ui.controls[q.name] = { sync: show }; show(ui.P[q.name]);
+  }
+
+  // pipeline stage chips
+  const chipEls = ARCH === 'pipeline' ? def.stages.map((st, k) => {
+    const b = el('button', null, `${k + 1} ${st.name}`); b.type = 'button';
+    b.addEventListener('click', () => { ui.playing = false; if (k < ui.sim.s.outs.length) { ui.sim.s.view = k; ui.dirty = true; } else ui.target = k; });
+    chips.append(b); return b;
+  }) : [];
+  if (!chipEls.length) chips.hidden = true;
+
+  // dragging (diagram nodes with a drag key map back to params via def.drag)
+  const local = e => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  const hitAt = ({ x, y }) => ui.hits.find(h => (h.x - x) ** 2 + (h.y - y) ** 2 <= h.r ** 2);
+  canvas.addEventListener('pointerdown', e => { const h = hitAt(local(e)); if (!h || !def.drag) return; ui.drag = h.key; canvas.setPointerCapture(e.pointerId); e.preventDefault(); });
+  canvas.addEventListener('pointermove', e => {
+    const p = local(e);
+    if (!ui.drag) { canvas.style.cursor = def.drag && hitAt(p) ? 'grab' : ''; return; }
+    const h = ui.hits.find(h => h.key === ui.drag); if (!h) return;
+    const upd = def.drag(ui.drag, h.g.sx.inv(p.x), h.g.sy.inv(p.y), { ...ui.P });
+    if (upd) setParams(upd);
+  });
+  const drop = () => { ui.drag = null; };
+  canvas.addEventListener('pointerup', drop); canvas.addEventListener('pointercancel', drop);
+
+  addEventListener('keydown', e => {
+    const a = document.activeElement;
+    if (e.metaKey || e.ctrlKey || e.altKey || TIMELESS || (a && a !== document.body && a !== canvas)) return;
+    if (e.key === ' ') { play.click(); e.preventDefault(); }
+    else if (e.key === 'ArrowRight') { transport.children[1].click(); e.preventDefault(); }
+    else if (e.key === 'r') transport.children[3].click();
+  });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { THEME = null; ui.dirty = true; });
+  new ResizeObserver(() => { ui.dirty = true; }).observe(stage);
+
+  const settle = () => {
+    ui.settled = true; ui.playing = false;
+    if (ui.sim.status !== 'diverged' || !ui.sim.divergedAt) return;
+    const v = newSim(ui.P), t0 = performance.now(); simInit(v);
+    while (v.status === 'ok' && v.t < ui.sim.divergedAt - 1 && performance.now() - t0 < 200) simStep(v);
+    if (v.status === 'ok' && v.t === ui.sim.divergedAt - 1) ui.view = v;
+  };
+  let lastLive = 0;
+  const readoutText = () => {
+    const sim = ui.sim, v = ui.view || sim;
+    if (sim.status === 'error') return `error · ${sim.err?.message || sim.err}`;
+    const head = ARCH === 'pipeline' ? `stage ${(v.s?.view ?? 0) + 1}/${def.stages.length} · ${def.stages[v.s?.view ?? 0].name}` : TIMELESS ? '' : `step ${sim.t}`;
+    if (sim.status === 'diverged') return `diverged at step ${sim.divergedAt} · ${label(sim.bad)} ${fmt(sim.m[sim.bad])} · reset`;
+    let tail;
+    if (def.readout) { try { tail = def.readout(v.s, v.P, v.m); } catch (e) { tail = `readout error · ${e.message}`; } }
+    else tail = METRICS.filter(q => v.m[q.name] != null).map(q => `${q.label || q.name} ${fmt(v.m[q.name])}${q.unit ? ` ${q.unit}` : ''}`).join(' · ');
+    return [head, tail].filter(Boolean).join(' · ');
+  };
+  const render = () => {
+    const sim = ui.view || ui.sim, W = Math.max(240, stage.clientWidth || 640), H = Math.round(clamp(W / (def.aspect || 1.6), 220, 640)), dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) { canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); canvas.style.height = `${H}px`; }
+    const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+    const T = THEME ||= readTheme(); ui.hits = [];
+    if (sim.s && sim.status !== 'error') {
+      const g = new G(ctx, { x: 0, y: 0, w: W, h: H }, hasher(), T, ui.hits);
+      try { withRng(sim.rng, () => drawSim(g, sim)); drawLegends(g); }
+      catch (e) { ui.sim.status = 'error'; ui.sim.err = e; ERRORS.push(`draw: ${e.message}`); }
+    }
+    if (ui.sim.status !== 'ok') {
+      const msg = ui.sim.status === 'diverged' ? `diverged at step ${ui.sim.divergedAt}` : 'error';
+      ctx.font = `12px ${T.mono}`; const w = ctx.measureText(msg).width + 24;
+      ctx.fillStyle = T.panel; ctx.fillRect(W / 2 - w / 2, H / 2 - 14, w, 28); ctx.strokeStyle = T.live; ctx.lineWidth = 1; ctx.setLineDash([]); ctx.strokeRect(W / 2 - w / 2, H / 2 - 14, w, 28);
+      ctx.fillStyle = T.live; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(msg, W / 2, H / 2);
+    }
+    const text = readoutText(); readout.textContent = text;
+    const now = performance.now(); if (!ui.playing && now - lastLive > 800) { live.textContent = text; lastLive = now; }
+    play.textContent = ui.playing ? '❚❚' : '▶'; play.setAttribute('aria-label', ui.playing ? 'pause' : 'play'); play.setAttribute('aria-pressed', String(ui.playing));
+    chipEls.forEach((b, k) => { b.classList.toggle('on', k === (ui.sim.s?.view ?? -1)); b.classList.toggle('pending', k >= (ui.sim.s?.outs?.length ?? 0)); });
+  };
+  const frame = now => {
+    const dt = Math.min(0.1, (now - (ui.last || now)) / 1000); ui.last = now;
+    if (ui.playing) ui.target = Math.min(HORIZON, ui.target + RATE * dt);
+    const t0 = performance.now(); let moved = false;
+    while (ui.sim.status === 'ok' && ui.sim.t < Math.floor(ui.target + 1e-9) && performance.now() - t0 < 12) moved = simStep(ui.sim) || true;
+    if (ui.sim.status !== 'ok' && !ui.settled) { settle(); moved = true; }
+    if (ui.playing && ui.sim.t >= HORIZON) { ui.playing = false; moved = true; }
+    if (moved || ui.dirty) { ui.dirty = false; render(); }
+    requestAnimationFrame(frame);
+  };
+
+  rebuild();
+  if (reduced || TIMELESS) ui.target = HORIZON; else ui.playing = true;
+  window.__pp = {
+    get params() { return { ...ui.P }; }, set: (name, v) => setParams({ [name]: v }),
+    play: () => { if (!ui.playing) play.click(); }, pause: () => { ui.playing = false; }, step: () => transport.children[1].click(),
+    end: () => transport.children[2].click(), reset: () => transport.children[3].click(),
+    get t() { return ui.sim.t; }, get status() { return ui.sim.status; }, get state() { return ui.sim.s; }, get metrics() { return { ...ui.sim.m }; },
+    readout: () => readout.textContent,
+  };
+  requestAnimationFrame(frame);
+  post({ type: 'pp:ready', kernel: KERNEL });
+}
+
+function playground(def) {
+  if (DEF) throw new Error('playground() called twice');
+  DEF = def || {};
+  try {
+    A = adapter(DEF); HORIZON = A.horizon;
+    RATE = DEF.rate ?? (ARCH === 'pipeline' ? 1.25 : Math.max(1, HORIZON / 4));
+  } catch (e) { MOUNT_ERR = e; }
+  const go = () => mount(DEF);
+  document.body ? go() : addEventListener('DOMContentLoaded', go);
+}
+
+Object.assign(window, {
+  playground, rand, randn, fmt, clamp, lerp, linspace, logspace, sum, mean, std, argmax, softmax, zeros, matmul, transpose,
+  makeGrid, extent, rk4, fixed: Object.freeze({ ...(SPEC.fixed || {}) }),
+});
+})();

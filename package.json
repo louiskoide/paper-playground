@@ -1,0 +1,12 @@
+{
+  "name": "paper-playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:examples": "node skills/paper-playground/scripts/examples.mjs",
+    "test:examples": "node skills/paper-playground/scripts/examples.mjs --test"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1"
+  }
+}
