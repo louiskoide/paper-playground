@@ -3,18 +3,18 @@
   "expect": {
     "archetype": "iterative"
   },
-  "skill": "bd6acedf59b9",
+  "skill": "affda990e92d",
   "models": {
     "extract": "claude-opus-5-5",
     "generate": "claude-opus-5-5"
   },
-  "date": "2026-10-19T22:44:38.648Z",
+  "date": "2026-10-19T22:48:15.260Z",
   "extraction": {
     "archetype": "iterative",
-    "experiment": "Turning off Adam's bias correction with β2 close to 1 makes the early steps several times larger than α, while with correction each step stays at about α. This is the initialization-bias mechanism of §3 and §5, and the trust-region bound of §2.1.",
-    "reproduce": "With bias correction, every step has magnitude at most about α, even with β2 = 0.999.",
-    "contrast": "Without bias correction and with β2 close to 1, the early steps are several times larger than α.",
-    "fallback": false
+    "experiment": "Switching off bias correction with β2 near 1 makes Adam's steps jump to many times the stepsize α. With correction on, every step stays within about α. This is the §3/§5 claim that the uncorrected method takes very large stepsizes.",
+    "reproduce": "With bias correction, every step Adam takes stays at or below the stepsize α, even with β2 = 0.9999.",
+    "contrast": "Without bias correction and with β2 = 0.9999, the first step is (1−β1)/√(1−β2) = 10 times α, and later steps grow even larger.",
+    "fallback": true
   },
   "outcome": "pass",
   "attempts": [
@@ -24,12 +24,12 @@
       "failures": [],
       "observed": {
         "reproduce": {
-          "max_step_ratio": 1,
-          "distance_moved": 0.0496943
+          "first_step_ratio": 1,
+          "max_step_ratio": 1
         },
         "contrast": {
-          "max_step_ratio": 6.51952,
-          "distance_moved": 0.267503
+          "first_step_ratio": 9.99999,
+          "max_step_ratio": 20.2413
         }
       }
     }
@@ -37,15 +37,15 @@
   "calls": [
     {
       "step": "extract-1",
-      "cost": 0.204564,
-      "ms": 30532
+      "cost": 0.122338,
+      "ms": 50770
     },
     {
       "step": "generate",
-      "cost": 0.237276,
-      "ms": 25014
+      "cost": 0.25318,
+      "ms": 29034
     }
   ],
-  "cost_usd": 0.442,
-  "seconds": 59
+  "cost_usd": 0.376,
+  "seconds": 83
 }

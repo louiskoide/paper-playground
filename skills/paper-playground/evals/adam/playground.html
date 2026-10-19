@@ -45,7 +45,7 @@ select{font:inherit;font-size:12px;background:var(--panel);color:var(--live);bor
 </style>
 </head>
 <body>
-<script>window.__PP_SPEC__ = {"schema":1,"title":"Adam: A Method for Stochastic Optimization","playable":true,"unplayable_reason":null,"experiment":"Turning off Adam's bias correction with β2 close to 1 makes the early steps several times larger than α, while with correction each step stays at about α. This is the initialization-bias mechanism of §3 and §5, and the trust-region bound of §2.1.","archetype":"iterative","archetype_reason":"Adam is one update rule repeated step by step, and the claim is about the size of each iteration's parameter step","fixed":{"objective":"deterministic 1-D quadratic f(θ) = 0.5·θ², gradient g_t = θ_{t-1}","theta0":1,"epsilon":1e-8,"m0":0,"v0":0,"update_with_correction":"m_t = β1·m_{t-1} + (1-β1)·g_t; v_t = β2·v_{t-1} + (1-β2)·g_t²; m̂ = m_t/(1-β1^t); v̂ = v_t/(1-β2^t); θ_t = θ_{t-1} - α·m̂/(√v̂ + ε)","update_without_correction":"same as above but m̂ = m_t and v̂ = v_t (RMSProp with momentum, as in section 6.4)"},"params":[{"name":"bias_correction","label":"bias correction","kind":"toggle","default":true,"source":{"section":"3","quote":"In algorithm 1 we therefore divide by this term to correct the initialization bias."}},{"name":"beta2","label":"decay rate β2","kind":"range","min":0.9,"max":0.9999,"step":0.0001,"default":0.999,"scale":"linear","unit":"","source":{"section":"2","quote":"the hyper-parameters β1, β2 ∈ [0, 1) control the exponential decay rates of these moving averages"}},{"name":"beta1","label":"decay rate β1","kind":"range","min":0,"max":0.99,"step":0.01,"default":0.9,"scale":"linear","unit":"","source":{"section":"Algorithm 1","quote":"Good default settings for the tested machine learning problems are α = 0.001, β1 = 0.9, β2 = 0.999"}},{"name":"alpha","label":"stepsize α","kind":"range","min":0.0001,"max":0.01,"step":0.0001,"default":0.001,"scale":"log","unit":"","source":{"section":"2.1","quote":"Since α sets (an upper bound of) the magnitude of steps in parameter space"}}],"metrics":[{"name":"max_step_ratio","label":"largest step / α","unit":"","meaning":"maximum over t = 1..steps of |θ_t − θ_{t-1}| divided by α"},{"name":"distance_moved","label":"distance moved","unit":"","meaning":"|θ_steps − θ0| after the run"}],"steps":50,"reproduce":{"claim":"With bias correction, every step has magnitude at most about α, even with β2 = 0.999.","source":{"section":"2.1","quote":"The effective magnitude of the steps taken in parameter space at each timestep are approximately bounded by the stepsize setting α"},"params":{"bias_correction":true,"beta1":0.9,"beta2":0.999,"alpha":0.001},"expect":[{"metric":"max_step_ratio","op":"\u003c=","value":1.05},{"metric":"max_step_ratio","op":">=","value":0.8}]},"contrast":{"claim":"Without bias correction and with β2 close to 1, the early steps are several times larger than α.","source":{"section":"5","quote":"not correcting the bias leads to very large stepsizes and often divergence"},"params":{"bias_correction":false,"beta1":0.9,"beta2":0.999,"alpha":0.001},"expect":[{"metric":"max_step_ratio","op":">","ref":"reproduce","factor":4},{"metric":"distance_moved","op":">","ref":"reproduce","factor":3}]},"fallback":null};</script>
+<script>window.__PP_SPEC__ = {"schema":1,"title":"Adam: A Method for Stochastic Optimization","playable":true,"unplayable_reason":null,"experiment":"Switching off bias correction with β2 near 1 makes Adam's steps jump to many times the stepsize α. With correction on, every step stays within about α. This is the §3/§5 claim that the uncorrected method takes very large stepsizes.","archetype":"iterative","archetype_reason":"Adam is one repeated update rule (Algorithm 1), and the claim concerns the size of each iteration's parameter step","fixed":{"objective":"f(θ) = θ²/2, deterministic, gradient g_t = θ_{t-1}","theta0":1,"epsilon":1e-8,"m0_v0":"m_0 = 0, v_0 = 0","uncorrected_update":"θ_t = θ_{t-1} − α · m_t / (√v_t + ε), using raw m_t and v_t","corrected_update":"Algorithm 1 exactly: m̂_t = m_t/(1−β1^t), v̂_t = v_t/(1−β2^t), θ_t = θ_{t-1} − α · m̂_t/(√v̂_t + ε)"},"params":[{"name":"alpha","label":"stepsize α","kind":"range","min":0.00001,"max":0.1,"step":0.00001,"default":0.001,"scale":"log","unit":"","source":{"section":"1","quote":"Good default settings for the tested machine learning problems are α = 0.001,"}},{"name":"beta1","label":"first-moment decay β1","kind":"range","min":0,"max":0.9,"step":0.1,"default":0.9,"scale":"linear","unit":"","source":{"section":"2","quote":"the hyper-parameters β1, β2 ∈ [0, 1) control the exponential decay rates of these moving averages"}},{"name":"beta2","label":"second-moment decay β2","kind":"select","default":0.999,"options":[{"value":0.99,"label":"0.99"},{"value":0.999,"label":"0.999"},{"value":0.9999,"label":"0.9999"}],"source":{"section":"6.4","quote":"Values of β2 close to 1, required for robustness to sparse gradients, results in larger initialization bias"}},{"name":"bias_correction","label":"bias correction","kind":"toggle","default":true,"source":{"section":"3","quote":"In algorithm 1 we therefore divide by this term to correct the initialization bias."}}],"metrics":[{"name":"first_step_ratio","label":"first step / α","unit":"","meaning":"|θ_1 − θ_0| / α, the size of the very first parameter update in units of the stepsize"},{"name":"max_step_ratio","label":"largest step / α","unit":"","meaning":"max over t = 1..steps of |θ_t − θ_{t-1}| / α"}],"steps":100,"reproduce":{"claim":"With bias correction, every step Adam takes stays at or below the stepsize α, even with β2 = 0.9999.","source":{"section":"2.1","quote":"The effective magnitude of the steps taken in parameter space at each timestep are approximately bounded by the stepsize setting α"},"params":{"alpha":0.001,"beta1":0.9,"beta2":0.9999,"bias_correction":true},"expect":[{"metric":"first_step_ratio","op":"between","value":[0.95,1.05]},{"metric":"max_step_ratio","op":"between","value":[0.95,1.05]}]},"contrast":{"claim":"Without bias correction and with β2 = 0.9999, the first step is (1−β1)/√(1−β2) = 10 times α, and later steps grow even larger.","source":{"section":"5","quote":"since in that case not correcting the bias leads to very large stepsizes and often divergence"},"params":{"alpha":0.001,"beta1":0.9,"beta2":0.9999,"bias_correction":false},"expect":[{"metric":"first_step_ratio","op":"between","value":[9.5,10.5]},{"metric":"max_step_ratio","op":">","ref":"reproduce","factor":5}]},"fallback":{"schema":1,"title":"Adam: A Method for Stochastic Optimization","playable":true,"unplayable_reason":null,"experiment":"Changing β1 and β2 changes the size of the first uncorrected step relative to α. That size is (1−β1)/√(1−β2), which matches 1 when (1−β1) = √(1−β2) and grows when β2 approaches 1 (§2.1, §3).","archetype":"diagram","archetype_reason":"a closed-form step-size bound computed from the chosen decay rates and shown as a bar against α","fixed":{"first_gradient":"g_1 = 1, m_0 = v_0 = 0, ε = 0"},"params":[{"name":"beta1","label":"first-moment decay β1","kind":"range","min":0,"max":0.9,"step":0.1,"default":0.9,"scale":"linear","unit":"","source":{"section":"2","quote":"the hyper-parameters β1, β2 ∈ [0, 1) control the exponential decay rates of these moving averages"}},{"name":"beta2","label":"second-moment decay β2","kind":"select","default":0.999,"options":[{"value":0.99,"label":"0.99"},{"value":0.999,"label":"0.999"},{"value":0.9999,"label":"0.9999"}],"source":{"section":"6.4","quote":"Values of β2 close to 1, required for robustness to sparse gradients, results in larger initialization bias"}}],"metrics":[{"name":"uncorrected_first_step","label":"uncorrected first step / α","unit":"","meaning":"(1 − β1) / √(1 − β2), the first-step size without bias correction for g_1 = 1, in units of α"}],"steps":0,"reproduce":{"claim":"When (1 − β1) equals √(1 − β2), as with β1 = 0.9 and β2 = 0.99, the step is about α.","source":{"section":"2.1","quote":"This typically makes it relatively easy to know the right scale of α in advance."},"params":{"beta1":0.9,"beta2":0.99},"expect":[{"metric":"uncorrected_first_step","op":"between","value":[0.95,1.05]}]},"contrast":{"claim":"With β1 = 0 and β2 = 0.9999 and no correction, the first step is 100 times α.","source":{"section":"3","quote":"it is exactly this case of small β2 where a lack of initialisation bias correction would lead to initial steps that are much larger"},"params":{"beta1":0,"beta2":0.9999},"expect":[{"metric":"uncorrected_first_step","op":">","ref":"reproduce","factor":50}]},"fallback":null}};</script>
 <script>/* paper-playground kernel 0.1.0
  * Inlined by scripts/build.mjs after window.__PP_SPEC__ (the frozen extraction) and before the
  * generated code. Generated code never edits this file: it calls playground({...}) and the helpers
@@ -791,76 +791,68 @@ Object.assign(window, {
 });
 })();
 </script>
-<script>// Adam on the deterministic quadratic f(θ) = ½θ², g_t = θ_{t-1} (fixed.objective).
-// The live run uses the reader's bias_correction setting; a second run with the opposite
-// setting is shown in grey for comparison. Metrics come only from the live run.
+<script>// Adam (Algorithm 1) on the deterministic toy objective f(θ) = θ²/2, so g_t = θ_{t-1}.
+// The figure tracks each step |θ_t − θ_{t-1}| in units of α. With bias correction (m̂, v̂) the step
+// stays near α. Without it, the raw m_t / √v_t is inflated by up to (1−β1)/√(1−β2) at t = 1, and the
+// inflation keeps growing for a while, because v_t is still far below g² when β2 is near 1.
 
-const EPS = fixed.epsilon;
-
-function newRun() {
-  return { theta: fixed.theta0, m: fixed.m0, v: fixed.v0, ratios: [], thetas: [fixed.theta0] };
-}
-
-// One iteration of Algorithm 1. Without correction, m̂ = m_t and v̂ = v_t (§5, §6.4).
-function adamStep(o, t, p, correct) {
-  const g = o.theta;                                     // g_t = ∇f(θ_{t-1}) = θ_{t-1}
-  o.m = p.beta1 * o.m + (1 - p.beta1) * g;               // biased first moment
-  o.v = p.beta2 * o.v + (1 - p.beta2) * g * g;           // biased second raw moment
-  const mh = correct ? o.m / (1 - Math.pow(p.beta1, t)) : o.m;
-  const vh = correct ? o.v / (1 - Math.pow(p.beta2, t)) : o.v;
-  const delta = p.alpha * mh / (Math.sqrt(vh) + EPS);    // Δ_t
-  o.theta = o.theta - delta;
-  o.ratios.push(Math.abs(delta) / p.alpha);
-  o.thetas.push(o.theta);
-}
+const EPS = Number(fixed.epsilon);
+const THETA0 = Number(fixed.theta0);
 
 playground({
-  caption: 'turn off bias correction and watch steps exceed α',
+  caption: 'turn off bias correction and watch steps leap past α',
 
   init() {
-    return { t: 0, live: newRun(), other: newRun() };
+    return { theta: THETA0, m: 0, v: 0, t: 0, thetas: [THETA0], ratios: [], first: null, maxr: null };
   },
 
   step(s, p) {
+    const b1 = Number(p.beta1), b2 = Number(p.beta2), a = Number(p.alpha);
     s.t += 1;
-    adamStep(s.live, s.t, p, !!p.bias_correction);
-    adamStep(s.other, s.t, p, !p.bias_correction);
-  },
-
-  metrics(s) {
-    const r = s.live.ratios;
-    return {
-      max_step_ratio: r.length ? Math.max(...r) : null,
-      distance_moved: Math.abs(s.live.theta - fixed.theta0),
-    };
-  },
-
-  draw(g, s, p, m) {
-    const [left, right] = g.split('1x2');
-    const liveLbl = p.bias_correction ? 'corrected' : 'uncorrected';
-    const otherLbl = p.bias_correction ? 'uncorrected' : 'corrected';
-    const T = Math.max(50, s.t);
-
-    left.title('step size |Δt| / α');
-    const allR = s.live.ratios.concat(s.other.ratios);
-    const yMax = Math.max(1.5, (allR.length ? Math.max(...allR) : 1) * 1.1);
-    left.axes({ x: [0, T], y: [0, yMax], xlabel: 'iteration t' });
-    left.hline(1, { series: 3, label: 'α' });
-    const xs = s.live.ratios.map((_, i) => i + 1);
-    left.line(xs, s.other.ratios, { series: 1, label: otherLbl });
-    left.line(xs, s.live.ratios, { series: 0, label: liveLbl });
-    if (m.max_step_ratio != null) {
-      const k = argmax(s.live.ratios);
-      left.marker(k + 1, s.live.ratios[k], { label: `max ${fmt(m.max_step_ratio)}` });
+    const g = s.theta;                                // ∇θ (θ²/2) at θ_{t-1}
+    s.m = b1 * s.m + (1 - b1) * g;                    // biased first moment
+    s.v = b2 * s.v + (1 - b2) * g * g;                // biased second raw moment
+    let delta;
+    if (p.bias_correction) {
+      const mhat = s.m / (1 - Math.pow(b1, s.t));
+      const vhat = s.v / (1 - Math.pow(b2, s.t));
+      delta = a * mhat / (Math.sqrt(vhat) + EPS);
+    } else {
+      delta = a * s.m / (Math.sqrt(s.v) + EPS);
     }
+    const prev = s.theta;
+    s.theta = prev - delta;
+    const r = Math.abs(s.theta - prev) / a;
+    s.ratios.push(r);
+    s.thetas.push(s.theta);
+    if (s.first == null) s.first = r;
+    s.maxr = s.maxr == null ? r : Math.max(s.maxr, r);
+  },
 
-    right.title('parameter θ');
-    const ext = extent(s.live.thetas, s.other.thetas, [fixed.theta0, fixed.theta0 - 50 * p.alpha]);
-    right.axes({ x: [0, T], y: ext, xlabel: 'iteration t' });
-    const ts = s.live.thetas.map((_, i) => i);
-    right.line(ts, s.other.thetas, { series: 1, label: otherLbl });
-    right.line(ts, s.live.thetas, { series: 0, label: liveLbl });
-    right.marker(s.t, s.live.theta);
+  metrics: s => ({ first_step_ratio: s.first, max_step_ratio: s.maxr }),
+
+  draw(g, s, p) {
+    const [left, right] = g.split('1x2');
+    const b1 = Number(p.beta1), b2 = Number(p.beta2);
+    const bound = (1 - b1) / Math.sqrt(1 - b2);
+    const T = Math.max(100, s.t);
+    const LO = 0.01;
+    const ratios = s.ratios.map(r => Math.max(LO, r));
+    const top = Math.max(2, bound, ...ratios) * 2;
+
+    left.title('step size / α per iteration');
+    left.axes({ x: [0, T], y: [LO, top], ylog: true, xlabel: 'iteration t', ylabel: '|Δθ| / α' });
+    left.hline(1, { series: 1, label: 'α' });
+    left.hline(bound, { series: 2, label: '(1−β1)/√(1−β2)' });
+    const ts = ratios.map((_, i) => i + 1);
+    left.line(ts, ratios, { series: 0, label: p.bias_correction ? 'corrected' : 'uncorrected' });
+    if (ratios.length) left.marker(ts.at(-1), ratios.at(-1));
+
+    right.title('θ on f = θ²/2');
+    const [ylo, yhi] = extent(s.thetas, [0, THETA0]);
+    right.axes({ x: [0, T], y: [ylo, yhi], xlabel: 'iteration t', ylabel: 'θ' });
+    right.hline(0, { series: 3 });
+    right.line(s.thetas.map((_, i) => i), s.thetas, { series: 0 });
   },
 });</script>
 </body>

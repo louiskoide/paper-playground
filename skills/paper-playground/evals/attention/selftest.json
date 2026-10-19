@@ -5,13 +5,13 @@
     "type": "pp:selftest",
     "ok": true,
     "kernel": "0.1.0",
-    "ms": 23,
+    "ms": 54,
     "checks": [
       {
         "id": "default",
         "ok": true,
-        "msg": "ok in 2 ms",
-        "ms": 2
+        "msg": "ok in 7 ms",
+        "ms": 7
       },
       {
         "id": "metrics",
@@ -26,20 +26,20 @@
       {
         "id": "sweep:d_k=64",
         "ok": true,
-        "msg": "ok in 2 ms",
-        "ms": 2
+        "msg": "ok in 7 ms",
+        "ms": 7
       },
       {
         "id": "sweep:d_k=4",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "sweep:d_k=512",
         "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
+        "msg": "ok in 13 ms",
+        "ms": 13
       },
       {
         "id": "decorative:d_k",
@@ -49,34 +49,17 @@
       {
         "id": "sweep:scaled=true",
         "ok": true,
-        "msg": "ok in 2 ms",
-        "ms": 2
+        "msg": "ok in 7 ms",
+        "ms": 7
       },
       {
         "id": "sweep:scaled=false",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
-      },
-      {
-        "id": "decorative:scaled",
-        "ok": true,
-        "msg": "render and metrics identical at every swept value"
-      },
-      {
-        "id": "sweep:mask=none",
-        "ok": true,
         "msg": "ok in 2 ms",
         "ms": 2
       },
       {
-        "id": "sweep:mask=causal",
-        "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
-      },
-      {
-        "id": "decorative:mask",
+        "id": "decorative:scaled",
         "ok": true,
         "msg": "render and metrics identical at every swept value"
       },
@@ -85,9 +68,8 @@
         "ok": true,
         "msg": " (§3.2.1)",
         "observed": {
-          "max_weight": 0.378314,
-          "logit_std": 1.03571,
-          "softmax_grad": 0.0949665
+          "max_weight": 0.35564,
+          "logit_std": 0.998803
         },
         "status": "ok",
         "section": "3.2.1"
@@ -97,17 +79,11 @@
         "ok": true,
         "msg": " (§3.2.1)",
         "observed": {
-          "max_weight": 0.965096,
-          "logit_std": 23.4355,
-          "softmax_grad": 0.0074431
+          "max_weight": 0.962557,
+          "logit_std": 22.6003
         },
         "status": "ok",
         "section": "3.2.1"
-      },
-      {
-        "id": "varies:max_weight",
-        "ok": true,
-        "msg": "max_weight is identical in every run (hard-coded?)"
       },
       {
         "id": "varies:logit_std",
@@ -115,9 +91,9 @@
         "msg": "logit_std is identical in every run (hard-coded?)"
       },
       {
-        "id": "varies:softmax_grad",
+        "id": "varies:max_weight",
         "ok": true,
-        "msg": "softmax_grad is identical in every run (hard-coded?)"
+        "msg": "max_weight is identical in every run (hard-coded?)"
       }
     ],
     "failures": []
@@ -144,22 +120,12 @@
         "readoutChanged": true,
         "canvasChanged": true,
         "ok": true
-      },
-      {
-        "name": "mask",
-        "kind": "select",
-        "tried": [
-          "next option"
-        ],
-        "readoutChanged": true,
-        "canvasChanged": true,
-        "ok": true
       }
     ],
     "transport": {
-      "reset": "stage 1/6 · q, k, v",
-      "step": "stage 2/6 · qkᵀ",
-      "playing": "stage 3/6 · scale",
+      "reset": "stage 1/5 · q, k · softmax input std – · √d_k 8 · max weight – (uniform 0.125)",
+      "step": "stage 2/5 · qkᵀ · softmax input std – · √d_k 8 · max weight – (uniform 0.125)",
+      "playing": "stage 3/5 · ÷ √d_k · softmax input std – · √d_k 8 · max weight – (uniform 0.125)",
       "ok": true
     }
   },

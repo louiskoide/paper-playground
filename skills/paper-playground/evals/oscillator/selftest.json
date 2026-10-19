@@ -5,13 +5,13 @@
     "type": "pp:selftest",
     "ok": true,
     "kernel": "0.1.0",
-    "ms": 64,
+    "ms": 44,
     "checks": [
       {
         "id": "default",
         "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
+        "msg": "ok in 0 ms",
+        "ms": 0
       },
       {
         "id": "metrics",
@@ -24,102 +24,10 @@
         "msg": "same seed and params gave different output (Math.random, Date, or state leaking between runs?)"
       },
       {
-        "id": "sweep:m=1",
-        "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
-      },
-      {
-        "id": "sweep:m=0.5",
-        "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
-      },
-      {
-        "id": "sweep:m=5",
-        "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
-      },
-      {
-        "id": "decorative:m",
-        "ok": true,
-        "msg": "render and metrics identical at every swept value"
-      },
-      {
-        "id": "sweep:k=1",
-        "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
-      },
-      {
-        "id": "sweep:k=0.5",
-        "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
-      },
-      {
-        "id": "sweep:k=5",
-        "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
-      },
-      {
-        "id": "decorative:k",
-        "ok": true,
-        "msg": "render and metrics identical at every swept value"
-      },
-      {
-        "id": "sweep:b=0.1",
-        "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
-      },
-      {
-        "id": "sweep:b=0.05",
-        "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
-      },
-      {
-        "id": "sweep:b=2",
-        "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
-      },
-      {
-        "id": "decorative:b",
-        "ok": true,
-        "msg": "render and metrics identical at every swept value"
-      },
-      {
-        "id": "sweep:F0=1",
-        "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
-      },
-      {
-        "id": "sweep:F0=0.1",
-        "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
-      },
-      {
-        "id": "sweep:F0=5",
-        "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
-      },
-      {
-        "id": "decorative:F0",
-        "ok": true,
-        "msg": "render and metrics identical at every swept value"
-      },
-      {
         "id": "sweep:omega=1",
         "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
+        "msg": "ok in 0 ms",
+        "ms": 0
       },
       {
         "id": "sweep:omega=0.1",
@@ -139,13 +47,82 @@
         "msg": "render and metrics identical at every swept value"
       },
       {
+        "id": "sweep:b=0.1",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:b=0.02",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:b=1",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "decorative:b",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
+        "id": "sweep:m=1",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:m=0.25",
+        "ok": true,
+        "msg": "ok in 1 ms",
+        "ms": 1
+      },
+      {
+        "id": "sweep:m=4",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "decorative:m",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
+        "id": "sweep:k=1",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:k=0.25",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:k=4",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "decorative:k",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
         "id": "reproduce",
         "ok": true,
         "msg": " (§15.6)",
         "observed": {
           "amplitude": 10,
-          "peak_amplitude": 10.012,
-          "width": 0.173
+          "width": 0.174091,
+          "quality": 5.74412
         },
         "status": "ok",
         "section": "15.6"
@@ -155,9 +132,9 @@
         "ok": true,
         "msg": " (§15.6)",
         "observed": {
-          "amplitude": 2.5,
-          "peak_amplitude": 2.55155,
-          "width": 0.772
+          "amplitude": 3.33333,
+          "width": 0.547638,
+          "quality": 1.82602
         },
         "status": "ok",
         "section": "15.6"
@@ -166,11 +143,6 @@
         "id": "varies:amplitude",
         "ok": true,
         "msg": "amplitude is identical in every run (hard-coded?)"
-      },
-      {
-        "id": "varies:peak_amplitude",
-        "ok": true,
-        "msg": "peak_amplitude is identical in every run (hard-coded?)"
       },
       {
         "id": "varies:width",
@@ -184,17 +156,7 @@
     "ok": true,
     "controls": [
       {
-        "name": "mass m",
-        "kind": "range",
-        "tried": [
-          "max"
-        ],
-        "readoutChanged": true,
-        "canvasChanged": true,
-        "ok": true
-      },
-      {
-        "name": "spring constant k",
+        "name": "driving frequency ω",
         "kind": "range",
         "tried": [
           "max"
@@ -214,7 +176,7 @@
         "ok": true
       },
       {
-        "name": "driving force F_0",
+        "name": "mass m",
         "kind": "range",
         "tried": [
           "max"
@@ -224,7 +186,7 @@
         "ok": true
       },
       {
-        "name": "driving frequency ω",
+        "name": "spring constant k",
         "kind": "range",
         "tried": [
           "max"

@@ -45,7 +45,7 @@ select{font:inherit;font-size:12px;background:var(--panel);color:var(--live);bor
 </style>
 </head>
 <body>
-<script>window.__PP_SPEC__ = {"schema":1,"title":"Forced Oscillations","playable":true,"unplayable_reason":null,"experiment":"Sweeping the driving frequency ω traces the amplitude curve of Eq. 15.29, which peaks at the natural frequency ω_0. Raising the damping b lowers that peak and widens it, which is the behaviour shown in Figure 15.31.","archetype":"sweep","archetype_reason":"the steady-state amplitude A(ω) is a closed-form formula (Eq. 15.29), and its shape depends on m, k, b and F_0","fixed":{"amplitude_formula":"A(ω) = F_0 / sqrt(m^2 (ω^2 - ω_0^2)^2 + b^2 ω^2), with ω_0 = sqrt(k/m)","omega_grid":"ω sampled uniformly on [0.001, 3] rad/s with 3000 points, used for the peak and width metrics","width_definition":"half-maximum amplitude width, following Figure 15.32; clipped to the grid ends if a crossing lies outside the grid"},"params":[{"name":"m","label":"mass m","kind":"range","min":0.5,"max":5,"step":0.1,"default":1,"scale":"linear","unit":"kg","source":{"section":"15.6","quote":"Attach a mass m to a spring in a viscous fluid"}},{"name":"k","label":"spring constant k","kind":"range","min":0.5,"max":5,"step":0.1,"default":1,"scale":"linear","unit":"N/m","source":{"section":"Eq. 15.29","quote":"where ω_0=√((k)/(m)) is the natural frequency of the mass/spring system"}},{"name":"b","label":"damping b","kind":"range","min":0.05,"max":2,"step":0.05,"default":0.1,"scale":"log","unit":"kg/s","source":{"section":"15.6","quote":"taking this to the limit where there is no damping (b=0) , the amplitude becomes infinite"}},{"name":"F0","label":"driving force F_0","kind":"range","min":0.1,"max":5,"step":0.1,"default":1,"scale":"linear","unit":"N","source":{"section":"15.6","quote":"The rotating disk provides energy to the system by the work done by the driving force (F_d=F_0sin(ωt))"}},{"name":"omega","label":"driving frequency ω","kind":"range","min":0.1,"max":3,"step":0.01,"default":1,"scale":"linear","unit":"rad/s","source":{"section":"15.6","quote":"The motor turns with an angular driving frequency of ω"}}],"metrics":[{"name":"amplitude","label":"amplitude at ω","unit":"m","meaning":"A from Eq. 15.29 evaluated at the current params, including the slider value of ω"},{"name":"peak_amplitude","label":"peak amplitude","unit":"m","meaning":"maximum of A(ω) from Eq. 15.29 over the fixed ω grid [0.001, 3] (3000 points), with the other params at their current values"},{"name":"width","label":"half-max width Δω","unit":"rad/s","meaning":"on the fixed ω grid, the largest ω where A ≥ peak_amplitude/2 minus the smallest ω where A ≥ peak_amplitude/2"}],"steps":0,"reproduce":{"claim":"Driving at the natural frequency gives the maximum amplitude A_max = F_0/(bω). With m = k = F_0 = 1 and b = 0.1, this is about 10 at ω = ω_0 = 1.","source":{"section":"15.6","quote":"The maximum amplitude results when the frequency of the driving force equals the natural frequency of the system"},"params":{"b":0.1,"omega":1},"steps":0,"expect":[{"metric":"amplitude","op":"between","value":[9.5,10.5]},{"metric":"peak_amplitude","op":"between","value":[9.5,10.5]}]},"contrast":{"claim":"With four times the damping, the same oscillator has a much lower and much wider resonance peak.","source":{"section":"15.6","quote":"the widths of the resonance curves shown in Figure 15.31 depend on damping: the less the damping, the narrower the resonance"},"params":{"b":0.4,"omega":1},"expect":[{"metric":"peak_amplitude","op":"\u003c","ref":"reproduce","factor":0.5},{"metric":"width","op":">","ref":"reproduce","factor":2}]},"fallback":null};</script>
+<script>window.__PP_SPEC__ = {"schema":1,"title":"Forced Oscillations","playable":true,"unplayable_reason":null,"experiment":"Sweeping the driving frequency ω shows the steady-state amplitude A of Eq. 15.29 peaking at the natural frequency ω_0. Raising the damping b lowers and widens that peak, which is the document's resonance claim (Figure 15.31).","archetype":"sweep","archetype_reason":"the claim is about the shape of the closed-form amplitude A(ω) in Eq. 15.29 and how damping changes it, so no time stepping is needed","fixed":{"F_0":1,"amplitude_formula":"A(ω) = F_0 / sqrt(m^2 (ω^2 − ω_0^2)^2 + b^2 ω^2), with ω_0 = sqrt(k/m) (Eq. 15.29)","curve_grid":"A(ω) evaluated at 3000 evenly spaced ω from 0 to 3·ω_0 inclusive, for the current b, m, k","width_rule":"the ω where A(ω) first rises above A_max/2 and the ω where it last falls below A_max/2 on the curve grid, found by linear interpolation between grid points"},"params":[{"name":"omega","label":"driving frequency ω","kind":"range","min":0.1,"max":3,"step":0.01,"default":1,"scale":"linear","unit":"rad/s","source":{"section":"15.6","quote":"Recall that the angular frequency, and therefore the frequency, of the motor can be adjusted."}},{"name":"b","label":"damping b","kind":"range","min":0.02,"max":1,"step":0.01,"default":0.1,"scale":"log","unit":"kg/s","source":{"section":"15.6","quote":"The highest peak, or greatest response, is for the least amount of damping, because less energy is removed by the damping force."}},{"name":"m","label":"mass m","kind":"range","min":0.25,"max":4,"step":0.05,"default":1,"scale":"log","unit":"kg","source":{"section":"15.6","quote":"Attach a mass m to a spring in a viscous fluid"}},{"name":"k","label":"spring constant k","kind":"range","min":0.25,"max":4,"step":0.05,"default":1,"scale":"log","unit":"N/m","source":{"section":"15.6","quote":"where ω_0=√((k)/(m)) is the natural frequency of the mass/spring system"}}],"metrics":[{"name":"amplitude","label":"amplitude a","unit":"m","meaning":"steady-state amplitude A from Eq. 15.29 at the current ω, b, m, k with F_0 = 1"},{"name":"width","label":"half-amplitude width Δω","unit":"rad/s","meaning":"on the fixed curve grid, A_max is the largest A(ω); width is the upper half-amplitude crossing minus the lower one, located by the fixed width rule; it does not depend on the current ω"},{"name":"quality","label":"quality q","unit":"","meaning":"ω_0 / width, with ω_0 = sqrt(k/m)"}],"steps":0,"reproduce":{"claim":"Driving at the natural frequency with light damping gives the maximum amplitude F_0/(bω_0) = 10 for m = k = 1, b = 0.1.","source":{"section":"15.6","quote":"The maximum amplitude results when the frequency of the driving force equals the natural frequency of the system"},"params":{"omega":1,"b":0.1,"m":1,"k":1},"expect":[{"metric":"amplitude","op":"between","value":[9.5,10.5]}]},"contrast":{"claim":"Tripling the damping at the same resonant drive gives a much lower peak and a much wider resonance curve.","source":{"section":"15.6","quote":"the widths of the resonance curves shown in Figure 15.31 depend on damping: the less the damping, the narrower the resonance"},"params":{"omega":1,"b":0.3,"m":1,"k":1},"expect":[{"metric":"amplitude","op":"\u003c","ref":"reproduce","factor":0.5},{"metric":"width","op":">","ref":"reproduce","factor":2}]},"fallback":null};</script>
 <script>/* paper-playground kernel 0.1.0
  * Inlined by scripts/build.mjs after window.__PP_SPEC__ (the frozen extraction) and before the
  * generated code. Generated code never edits this file: it calls playground({...}) and the helpers
@@ -791,73 +791,75 @@ Object.assign(window, {
 });
 })();
 </script>
-<script>// Eq. 15.29: steady-state amplitude of the driven, damped oscillator.
-// The fixed ω grid is [0.001, 3] rad/s with 3000 points (extraction.fixed.omega_grid).
-const W_LO = 0.001, W_HI = 3, W_N = 3000;
+<script>// Forced, damped oscillator: steady-state amplitude A(ω) from Eq. 15.29, with F_0 from `fixed`.
+// Width follows the fixed rule: linear-interpolated half-maximum crossings on the 3000-point grid
+// from 0 to 3·ω_0. When the curve already starts above A_max/2 at ω = 0 (heavy damping, no lower
+// rise), the width and the quality are undefined and reported as null.
 
+const F0 = fixed.F_0;
 const omega0 = (p) => Math.sqrt(p.k / p.m);
-
 const amp = (w, p) => {
   const w0sq = p.k / p.m;
   const d = w * w - w0sq;
-  return p.F0 / Math.sqrt(p.m * p.m * d * d + p.b * p.b * w * w);
+  return F0 / Math.sqrt(p.m * p.m * d * d + p.b * p.b * w * w);
 };
 
-// Half-maximum crossings on the grid. If a crossing lies outside the grid, it is
-// clipped to the grid end (extraction.fixed.width_definition).
-function halfMax(xs, ys) {
-  const peak = Math.max(...ys);
-  const half = peak / 2;
+function halfCrossings(x, y) {
+  const i0 = argmax(y);
+  const Amax = y[i0];
+  const half = Amax / 2;
   let lo = null, hi = null;
-  for (let i = 0; i < ys.length; i++) {
-    if (ys[i] >= half) {
-      if (lo === null) lo = xs[i];
-      hi = xs[i];
+  for (let i = 1; i <= i0; i++) {
+    if (y[i - 1] <= half && y[i] > half) {
+      lo = x[i - 1] + (half - y[i - 1]) / (y[i] - y[i - 1]) * (x[i] - x[i - 1]);
+      break;
     }
   }
-  return { peak, half, lo, hi };
+  for (let i = y.length - 2; i >= i0; i--) {
+    if (y[i] > half && y[i + 1] <= half) {
+      hi = x[i] + (y[i] - half) / (y[i] - y[i + 1]) * (x[i + 1] - x[i]);
+      break;
+    }
+  }
+  return { Amax, half, lo, hi, wpeak: x[i0] };
 }
 
 playground({
   caption: 'raise damping b and watch the peak drop and widen',
-  aspect: 1.7,
+  aspect: 1.8,
 
-  domain: () => [W_LO, W_HI, W_N],
+  domain: (p) => [0, 3 * omega0(p), 3000],
   f: (w, p) => amp(w, p),
 
   metrics(s, p) {
-    const h = halfMax(s.x, s.y[0]);
+    const c = halfCrossings(s.x, s.y[0]);
+    const width = (c.lo !== null && c.hi !== null) ? c.hi - c.lo : null;
     return {
       amplitude: amp(p.omega, p),
-      peak_amplitude: h.peak,
-      width: h.lo === null ? null : h.hi - h.lo,
+      width,
+      quality: width ? omega0(p) / width : null,
     };
   },
 
   draw(g, s, p, m) {
-    const ys = s.y[0];
-    const h = halfMax(s.x, ys);
-    const top = Math.max(h.peak, m.amplitude) * 1.15;
     const w0 = omega0(p);
-
-    g.title('steady-state amplitude a(ω)');
-    g.axes({ x: [0, W_HI], y: [0, top], xlabel: 'driving frequency ω (rad/s)', ylabel: 'amplitude A (m)' });
-
-    if (w0 <= W_HI) g.vline(w0, { series: 3, label: `ω₀ ${fmt(w0)}` });
-    g.hline(h.half, { series: 2, label: 'half max' });
-    if (h.lo !== null) {
-      g.line([h.lo, h.hi], [h.half, h.half], { series: 1, width: 2, label: `Δω ${fmt(h.hi - h.lo)}` });
-    }
-
-    g.line(s.x, ys, { label: `b = ${fmt(p.b)} kg/s` });
-    g.marker(p.omega, m.amplitude, { label: `ω ${fmt(p.omega)} · A ${fmt(m.amplitude)}` });
+    const c = halfCrossings(s.x, s.y[0]);
+    const A = m.amplitude;
+    const xmax = Math.max(3 * w0, p.omega * 1.05);
+    const top = Math.max(c.Amax, A) * 1.15;
+    g.title('steady-state amplitude vs driving frequency');
+    g.axes({ x: [0, xmax], y: [0, top], xlabel: 'driving frequency ω (rad/s)', ylabel: 'amplitude A (m)' });
+    g.vline(w0, { series: 3, label: 'ω₀' });
+    g.hline(c.half, { series: 2, label: 'A_max / 2' });
+    if (c.lo !== null) g.vline(c.lo, { series: 1 });
+    if (c.hi !== null) g.vline(c.hi, { series: 1 });
+    g.line(s.x, s.y[0], { label: `b = ${fmt(p.b)} kg/s` });
+    g.marker(p.omega, A, { label: `A ${fmt(A)} m` });
   },
 
-  readout(s, p, m) {
-    const w0 = omega0(p);
-    const q = m.width ? w0 / m.width : null;
-    return `A(ω) ${fmt(m.amplitude)} m · peak ${fmt(m.peak_amplitude)} m · F₀/(bω₀) ${fmt(p.F0 / (p.b * w0))} m · Δω ${fmt(m.width)} rad/s · Q ${fmt(q)} · mω₀/b ${fmt(p.m * w0 / p.b)}`;
-  },
+  readout: (s, p, m) =>
+    `ω ${fmt(p.omega)} rad/s · ω₀ ${fmt(omega0(p))} rad/s · amplitude ${fmt(m.amplitude)} m · ` +
+    `F₀/(bω₀) ${fmt(F0 / (p.b * omega0(p)))} m · Δω ${fmt(m.width)} rad/s · q ${fmt(m.quality)} · mω₀/b ${fmt(p.m * omega0(p) / p.b)}`,
 });</script>
 </body>
 </html>

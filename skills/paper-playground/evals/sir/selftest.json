@@ -5,13 +5,13 @@
     "type": "pp:selftest",
     "ok": true,
     "kernel": "0.1.0",
-    "ms": 28,
+    "ms": 50,
     "checks": [
       {
         "id": "default",
         "ok": true,
-        "msg": "ok in 3 ms",
-        "ms": 3
+        "msg": "ok in 11 ms",
+        "ms": 11
       },
       {
         "id": "metrics",
@@ -26,11 +26,11 @@
       {
         "id": "sweep:alpha_factor=1",
         "ok": true,
-        "msg": "ok in 3 ms",
-        "ms": 3
+        "msg": "ok in 11 ms",
+        "ms": 11
       },
       {
-        "id": "sweep:alpha_factor=0.25",
+        "id": "sweep:alpha_factor=0.1",
         "ok": true,
         "msg": "ok in 2 ms",
         "ms": 2
@@ -38,8 +38,8 @@
       {
         "id": "sweep:alpha_factor=4",
         "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
+        "msg": "ok in 4 ms",
+        "ms": 4
       },
       {
         "id": "decorative:alpha_factor",
@@ -49,20 +49,20 @@
       {
         "id": "sweep:beta_factor=1",
         "ok": true,
-        "msg": "ok in 3 ms",
-        "ms": 3
+        "msg": "ok in 11 ms",
+        "ms": 11
       },
       {
         "id": "sweep:beta_factor=0.25",
         "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
+        "msg": "ok in 3 ms",
+        "ms": 3
       },
       {
         "id": "sweep:beta_factor=4",
         "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
+        "msg": "ok in 2 ms",
+        "ms": 2
       },
       {
         "id": "decorative:beta_factor",
@@ -72,26 +72,26 @@
       {
         "id": "reproduce",
         "ok": true,
-        "msg": " (§Epidemic management in the SIR framework)",
+        "msg": " (§III)",
         "observed": {
-          "peak_frac": 0.300445,
-          "t_peak": 41,
-          "final_frac": 0.94048
+          "peak_frac": 0.300453,
+          "peak_day": 81.8,
+          "t_safe": 188.8
         },
         "status": "ok",
-        "section": "Epidemic management in the SIR framework"
+        "section": "III"
       },
       {
         "id": "contrast",
         "ok": true,
-        "msg": " (§Scaling properties of the SIR equations)",
+        "msg": " (§II.3)",
         "observed": {
           "peak_frac": 0.300445,
-          "t_peak": 82,
-          "final_frac": 0.94048
+          "peak_day": 41,
+          "t_safe": 94.4
         },
         "status": "ok",
-        "section": "Scaling properties of the SIR equations"
+        "section": "II.3"
       },
       {
         "id": "varies:peak_frac",
@@ -99,14 +99,14 @@
         "msg": "peak_frac is identical in every run (hard-coded?)"
       },
       {
-        "id": "varies:t_peak",
+        "id": "varies:peak_day",
         "ok": true,
-        "msg": "t_peak is identical in every run (hard-coded?)"
+        "msg": "peak_day is identical in every run (hard-coded?)"
       },
       {
-        "id": "varies:final_frac",
+        "id": "varies:t_safe",
         "ok": true,
-        "msg": "final_frac is identical in every run (hard-coded?)"
+        "msg": "t_safe is identical in every run (hard-coded?)"
       }
     ],
     "failures": []
@@ -136,9 +136,9 @@
       }
     ],
     "transport": {
-      "reset": "step 0 · S₀/γ 6 · peak I*/N 1.67e-7 · peak day 0 · ever infected 0",
-      "step": "step 1 · S₀/γ 6 · peak I*/N 2.75e-7 · peak day 1 · ever infected 2.16e-8",
-      "playing": "step 31 · S₀/γ 6 · peak I*/N 0.382 · peak day 31 · ever infected 0.114",
+      "reset": "step 0 · peak 1.67e-7 N · day 0 · safe day – · N/γ 6",
+      "step": "step 1 · peak 1.84e-7 N · day 0.2 · safe day – · N/γ 6",
+      "playing": "step 152 · peak 0.334 N · day 30.4 · safe day – · N/γ 6",
       "ok": true
     }
   },

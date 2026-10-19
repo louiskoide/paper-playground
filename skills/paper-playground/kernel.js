@@ -544,6 +544,7 @@ let ui = null, THEME = null;
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const post = msg => { if (window.parent !== window) window.parent.postMessage(msg, '*'); };
 const label = k => METRICS.find(m => m.name === k)?.label || k;
+const stageName = (k, P) => { const n = DEF.stages[k].name; try { return String(typeof n === 'function' ? n(P) : n); } catch { return `stage ${k + 1}`; } };
 const caps = (cls, text) => { const e = el('span', cls); String(text).split(GREEK).forEach((part, i) => { if (part) e.append(i % 2 ? el('span', 'keep', part) : part); }); return e; };
 
 function mount(def) {
@@ -633,7 +634,7 @@ function mount(def) {
 
   // pipeline stage chips
   const chipEls = ARCH === 'pipeline' ? def.stages.map((st, k) => {
-    const b = el('button', null, `${k + 1} ${st.name}`); b.type = 'button';
+    const b = el('button', null, `${k + 1} ${stageName(k, ui.P)}`); b.type = 'button';
     b.addEventListener('click', () => { ui.playing = false; if (k < ui.sim.s.outs.length) { ui.sim.s.view = k; ui.dirty = true; } else ui.target = k; });
     chips.append(b); return b;
   }) : [];
@@ -674,7 +675,7 @@ function mount(def) {
   const readoutText = () => {
     const sim = ui.sim, v = ui.view || sim;
     if (sim.status === 'error') return `error · ${sim.err?.message || sim.err}`;
-    const head = ARCH === 'pipeline' ? `stage ${(v.s?.view ?? 0) + 1}/${def.stages.length} · ${def.stages[v.s?.view ?? 0].name}` : TIMELESS ? '' : `step ${sim.t}`;
+    const head = ARCH === 'pipeline' ? `stage ${(v.s?.view ?? 0) + 1}/${def.stages.length} · ${stageName(v.s?.view ?? 0, v.P)}` : TIMELESS ? '' : `step ${sim.t}`;
     if (sim.status === 'diverged') return `diverged at step ${sim.divergedAt} · ${label(sim.bad)} ${fmt(sim.m[sim.bad])} · reset`;
     let tail;
     if (def.readout) { try { tail = def.readout(v.s, v.P, v.m); } catch (e) { tail = `readout error · ${e.message}`; } }
@@ -700,7 +701,7 @@ function mount(def) {
     const text = readoutText(); readout.textContent = text;
     const now = performance.now(); if (!ui.playing && now - lastLive > 800) { live.textContent = text; lastLive = now; }
     play.textContent = ui.playing ? '❚❚' : '▶'; play.setAttribute('aria-label', ui.playing ? 'pause' : 'play'); play.setAttribute('aria-pressed', String(ui.playing));
-    chipEls.forEach((b, k) => { b.classList.toggle('on', k === (ui.sim.s?.view ?? -1)); b.classList.toggle('pending', k >= (ui.sim.s?.outs?.length ?? 0)); });
+    chipEls.forEach((b, k) => { b.textContent = `${k + 1} ${stageName(k, ui.P)}`; b.classList.toggle('on', k === (ui.sim.s?.view ?? -1)); b.classList.toggle('pending', k >= (ui.sim.s?.outs?.length ?? 0)); });
   };
   const frame = now => {
     const dt = Math.min(0.1, (now - (ui.last || now)) / 1000); ui.last = now;

@@ -1,67 +1,71 @@
-// SIR model (Eq. 1), integrated in absolute counts with the paper's α, β and N.
-// The epidemic peak occurs where S = γ = β/α (dI/dt = 0), so the right panel marks that line.
+// SIR model of §II, Eq. (1), integrated with the kernel's RK4 at the paper's scale (N = 6e7, I0 = 10).
+// The analytic peak of Eq. (8) is drawn only as a reference line; all metrics come from the simulated I(t).
 
-const A = p => p.alpha_factor * fixed.alpha_0;
-const B = p => p.beta_factor * fixed.beta_0_per_day;
+const N = fixed.N, I0 = fixed.I0, R00 = fixed.R0, S0 = N - I0;   // fixed.S0 = "N - I0"
+const SAFE = 1e-4;                                                 // fixed.safety_level: I/N = 1e-4
+const T_END = 300;                                                 // run length in days (1500 steps × 0.2 d)
+
+const rates = p => ({ alpha: p.alpha_factor * fixed.alpha0, beta: p.beta_factor * fixed.beta0 });
 
 function deriv([S, I, R], p) {
-  const a = A(p), b = B(p);
-  return [-a * S * I, a * S * I - b * I, b * I];
+  const { alpha, beta } = rates(p);
+  return [-alpha * S * I, alpha * S * I - beta * I, beta * I];
 }
 
-function peakIndex(I) {
-  let k = 0;
-  for (let i = 1; i < I.length; i++) if (I[i] > I[k]) k = i;
-  return k;
+// Eq. (8): I*/N = 1 - g - g ln(1/g), g = γ/N, valid only above threshold
+function peakEq8(p) {
+  const { alpha, beta } = rates(p), g = beta / alpha / N;
+  return g < 1 ? 1 - g - g * Math.log(1 / g) : 0;
+}
+
+function analyse(s) {
+  const I = s.path.y[1], t = s.path.t, n = I.length;
+  if (n < 1) return null;
+  const k = argmax(I);
+  let ts = null;
+  for (let j = k + 1; j < n; j++) if (I[j] / N < SAFE) { ts = t[j]; break; }
+  if (ts === null && s.t >= T_END - 1e-9) ts = T_END;
+  return { k, peak_frac: I[k] / N, peak_day: t[k], t_safe: ts };
 }
 
 playground({
-  caption: 'halve α or double β and compare when the peak arrives',
-  dt: 1,
-  substeps: 10,
+  caption: 'double β instead of halving α: same peak, half the time',
+  dt: fixed.dt_days,
+  substeps: 2,
 
-  init: () => ({ y: [fixed.N - fixed.I0, fixed.I0, fixed.R0] }),
+  init: () => ({ y: [S0, I0, R00] }),
   deriv,
 
   metrics(s) {
-    const I = s.path.y[1], R = s.path.y[2];
-    if (!I || I.length === 0) return { peak_frac: null, t_peak: null, final_frac: null };
-    const k = peakIndex(I);
-    return {
-      peak_frac: I[k] / fixed.N,
-      t_peak: k,
-      final_frac: R[R.length - 1] / fixed.N,
-    };
+    const a = analyse(s);
+    if (!a) return { peak_frac: null, peak_day: null, t_safe: null };
+    return { peak_frac: a.peak_frac, peak_day: a.peak_day, t_safe: a.t_safe };
   },
 
   readout(s, p, m) {
-    const ratio = fixed.N / (B(p) / A(p));
-    return `S₀/γ ${fmt(ratio)} · peak I*/N ${fmt(m.peak_frac)} · peak day ${fmt(m.t_peak)} · ever infected ${fmt(m.final_frac)}`;
+    const { alpha, beta } = rates(p);
+    return `peak ${fmt(m.peak_frac)} N · day ${fmt(m.peak_day)} · safe day ${fmt(m.t_safe)} · N/γ ${fmt(N * alpha / beta)}`;
   },
 
   draw(g, s, p, m) {
     const [left, right] = g.split('1x2');
-    const N = fixed.N;
-    const t = s.path.t;
-    const S = s.path.y[0].map(v => v / N);
-    const I = s.path.y[1].map(v => v / N);
-    const R = s.path.y[2].map(v => v / N);
-    const gN = (B(p) / A(p)) / N;
+    const t = s.path.t, I = s.path.y[1];
+    const frac = Array.from(I, v => v / N);
+    const a = analyse(s);
+    const top = Math.max(0.6, (a ? a.peak_frac : 0) * 1.1, peakEq8(p) * 1.1);
 
-    left.title('fractions over time');
-    left.axes({ x: [0, 300], y: [0, 1], xlabel: 'day' });
-    left.line(t, S, { series: 1, label: 'S/N' });
-    left.line(t, R, { series: 2, label: 'R/N' });
-    left.line(t, I, { label: 'I/N' });
-    if (m.t_peak != null) {
-      left.vline(m.t_peak, { series: 3, label: `t* ${fmt(m.t_peak)}` });
-      left.marker(m.t_peak, m.peak_frac, { label: `I*/N ${fmt(m.peak_frac)}` });
+    left.title('infectives I(t)/N');
+    left.axes({ x: [0, T_END], y: [0, top], xlabel: 'days', ylabel: 'I/N' });
+    left.hline(peakEq8(p), { series: 2, label: 'Eq. 8 peak' });
+    left.line(t, frac, { label: 'I/N' });
+    if (a && a.k > 0) left.marker(a.peak_day, a.peak_frac, { label: `t* ${fmt(a.peak_day)}` });
+
+    right.title('log scale, safety level');
+    right.axes({ x: [0, T_END], y: [1e-7, 1], xlabel: 'days', ylog: true });
+    right.hline(SAFE, { series: 2, label: 'I/N = 1e-4' });
+    right.line(t, frac);
+    if (a && a.t_safe !== null && a.t_safe < T_END) {
+      right.vline(a.t_safe, { series: 3, label: `t_s ${fmt(a.t_safe)}` });
     }
-
-    right.title('infected vs susceptible');
-    right.axes({ x: [0, 1], y: [0, 0.6], xlabel: 'S/N', ylabel: 'I/N' });
-    if (gN <= 1) right.vline(gN, { series: 2, label: 'S = γ' });
-    right.line(S, I);
-    right.marker(S[S.length - 1], I[I.length - 1], { label: `day ${fmt(s.t)}` });
   },
 });

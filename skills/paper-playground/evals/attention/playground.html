@@ -45,7 +45,7 @@ select{font:inherit;font-size:12px;background:var(--panel);color:var(--live);bor
 </style>
 </head>
 <body>
-<script>window.__PP_SPEC__ = {"schema":1,"title":"Attention Is All You Need","playable":true,"unplayable_reason":null,"experiment":"Raising d_k with the 1/√d_k scaling switched off makes each attention row go from spread out to nearly one-hot, and the softmax gradients collapse. This is the effect §3.2.1 gives as the reason for scaling.","archetype":"pipeline","archetype_reason":"scaled dot-product attention is a fixed chain of stages on a toy input (QKᵀ, then scale, then optional mask, then softmax, then ×V), and the intermediate logits and weights are the point","fixed":{"seq_len":8,"d_v":4,"qkv_init":"Q (seq_len×d_k), K (seq_len×d_k), V (seq_len×d_v) entries i.i.d. N(0, 1), drawn from a fixed-seed PRNG and redrawn when d_k changes","softmax_input":"logits = QKᵀ, divided by √d_k when scaled is on; with causal mask, entries with key index > query index are set to -∞ before the softmax","statistics_over":"all seq_len query rows; logit_std uses only the unmasked logits"},"params":[{"name":"d_k","label":"key dim d_k","kind":"range","min":4,"max":512,"step":4,"default":64,"scale":"log","unit":"","source":{"section":"3.2.1","quote":"for large values of $d_{k}$ , the dot products grow large in magnitude"}},{"name":"scaled","label":"÷ √d_k","kind":"toggle","default":true,"source":{"section":"3.2.1","quote":"To counteract this effect, we scale the dot products by"}},{"name":"mask","label":"mask","kind":"select","default":"none","options":[{"value":"none","label":"none"},{"value":"causal","label":"causal"}],"source":{"section":"3.2.3","quote":"masking out (setting to $-\\infty$ ) all values in the input of the softmax which correspond to illegal connections"}}],"metrics":[{"name":"max_weight","label":"max weight","unit":"","meaning":"mean over the seq_len query rows of the largest softmax weight in that row"},{"name":"logit_std","label":"logit std","unit":"","meaning":"population standard deviation of all unmasked softmax-input entries (QKᵀ, divided by √d_k when scaled is on)"},{"name":"softmax_grad","label":"softmax gradient","unit":"","meaning":"mean over all unmasked entries (i, j) of p_ij·(1 − p_ij), the diagonal of the softmax Jacobian, where p_ij is the attention weight of query i on key j"}],"steps":1,"reproduce":{"claim":"With the 1/√d_k scaling, logits keep unit variance and attention stays spread out even at d_k = 512.","source":{"section":"3.2.1","quote":"To counteract this effect, we scale the dot products by"},"params":{"d_k":512,"scaled":true},"expect":[{"metric":"max_weight","op":"\u003c","value":0.7},{"metric":"logit_std","op":"between","value":[0.6,1.5]}]},"contrast":{"claim":"Without scaling, the same d_k = 512 gives dot products with standard deviation near √d_k, so the softmax saturates toward one-hot and its gradients nearly vanish.","source":{"section":"3.2.1","quote":"pushing the softmax function into regions where it has extremely small gradients"},"params":{"d_k":512,"scaled":false},"expect":[{"metric":"max_weight","op":">","ref":"reproduce","by":0.3},{"metric":"logit_std","op":">","ref":"reproduce","factor":10},{"metric":"softmax_grad","op":"\u003c","ref":"reproduce","factor":0.3}]},"fallback":null};</script>
+<script>window.__PP_SPEC__ = {"schema":1,"title":"Attention Is All You Need","playable":true,"unplayable_reason":null,"experiment":"Raising d_k with the 1/√d_k scaling switched off makes the softmax inputs grow like √d_k, so each query's attention collapses onto one key; with scaling on, the weights stay spread out. This is the motivation the paper gives for scaling in 3.2.1.","archetype":"pipeline","archetype_reason":"scaled dot-product attention is a fixed chain of stages on a toy input (QKᵀ, optional ÷√d_k, softmax), and the softmax inputs and weights are the quantities the claim is about","fixed":{"seq_len":8,"num_draws":16,"qk_init":"for each draw, Q and K are seq_len × d_k matrices with entries i.i.d. N(0, 1), as in the 3.2.1 footnote (mean 0, variance 1); use a fixed seed so runs are repeatable","values":"V is seq_len × 4 with entries i.i.d. N(0, 1); it is shown but does not affect the metrics","mask":"none; every query attends to all keys"},"params":[{"name":"d_k","label":"key dim d_k","kind":"range","min":4,"max":512,"step":4,"default":64,"scale":"log","unit":"","source":{"section":"3.2.1","quote":"We suspect that for large values of $d_{k}$ , the dot products grow large in magnitude"}},{"name":"scaled","label":"÷ √d_k","kind":"toggle","default":true,"source":{"section":"3.2.1","quote":"To counteract this effect, we scale the dot products by $\\frac{1}{\\sqrt{d_{k}}}$ ."}}],"metrics":[{"name":"max_weight","label":"max weight","unit":"","meaning":"for each draw and each query row of softmax(logits), take the largest weight in that row; report the mean over all queries and all draws (range 1/seq_len to 1)"},{"name":"logit_std","label":"softmax input std","unit":"","meaning":"population standard deviation of every entry of the softmax input matrix (QKᵀ, divided by √d_k when scaled is on), pooled over all seq_len × seq_len entries of all draws"}],"steps":1,"reproduce":{"claim":"With the 1/√d_k scaling on, the softmax inputs keep unit spread even at d_k = 512, and attention stays spread over several keys.","source":{"section":"3.2.1","quote":"We compute the dot products of the query with all keys, divide each by $\\sqrt{d_{k}}$ , and apply a softmax function"},"params":{"d_k":512,"scaled":true},"expect":[{"metric":"logit_std","op":"between","value":[0.85,1.15]},{"metric":"max_weight","op":"\u003c","value":0.7}]},"contrast":{"claim":"Without scaling at the same d_k, the dot products grow to a spread of about √d_k, and the softmax saturates toward one-hot.","source":{"section":"3.2.1","quote":"pushing the softmax function into regions where it has extremely small gradients"},"params":{"d_k":512,"scaled":false},"expect":[{"metric":"logit_std","op":">","ref":"reproduce","factor":15},{"metric":"max_weight","op":">","ref":"reproduce","by":0.3}]},"fallback":null};</script>
 <script>/* paper-playground kernel 0.1.0
  * Inlined by scripts/build.mjs after window.__PP_SPEC__ (the frozen extraction) and before the
  * generated code. Generated code never edits this file: it calls playground({...}) and the helpers
@@ -592,6 +592,7 @@ let ui = null, THEME = null;
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const post = msg => { if (window.parent !== window) window.parent.postMessage(msg, '*'); };
 const label = k => METRICS.find(m => m.name === k)?.label || k;
+const stageName = (k, P) => { const n = DEF.stages[k].name; try { return String(typeof n === 'function' ? n(P) : n); } catch { return `stage ${k + 1}`; } };
 const caps = (cls, text) => { const e = el('span', cls); String(text).split(GREEK).forEach((part, i) => { if (part) e.append(i % 2 ? el('span', 'keep', part) : part); }); return e; };
 
 function mount(def) {
@@ -681,7 +682,7 @@ function mount(def) {
 
   // pipeline stage chips
   const chipEls = ARCH === 'pipeline' ? def.stages.map((st, k) => {
-    const b = el('button', null, `${k + 1} ${st.name}`); b.type = 'button';
+    const b = el('button', null, `${k + 1} ${stageName(k, ui.P)}`); b.type = 'button';
     b.addEventListener('click', () => { ui.playing = false; if (k < ui.sim.s.outs.length) { ui.sim.s.view = k; ui.dirty = true; } else ui.target = k; });
     chips.append(b); return b;
   }) : [];
@@ -722,7 +723,7 @@ function mount(def) {
   const readoutText = () => {
     const sim = ui.sim, v = ui.view || sim;
     if (sim.status === 'error') return `error · ${sim.err?.message || sim.err}`;
-    const head = ARCH === 'pipeline' ? `stage ${(v.s?.view ?? 0) + 1}/${def.stages.length} · ${def.stages[v.s?.view ?? 0].name}` : TIMELESS ? '' : `step ${sim.t}`;
+    const head = ARCH === 'pipeline' ? `stage ${(v.s?.view ?? 0) + 1}/${def.stages.length} · ${stageName(v.s?.view ?? 0, v.P)}` : TIMELESS ? '' : `step ${sim.t}`;
     if (sim.status === 'diverged') return `diverged at step ${sim.divergedAt} · ${label(sim.bad)} ${fmt(sim.m[sim.bad])} · reset`;
     let tail;
     if (def.readout) { try { tail = def.readout(v.s, v.P, v.m); } catch (e) { tail = `readout error · ${e.message}`; } }
@@ -748,7 +749,7 @@ function mount(def) {
     const text = readoutText(); readout.textContent = text;
     const now = performance.now(); if (!ui.playing && now - lastLive > 800) { live.textContent = text; lastLive = now; }
     play.textContent = ui.playing ? '❚❚' : '▶'; play.setAttribute('aria-label', ui.playing ? 'pause' : 'play'); play.setAttribute('aria-pressed', String(ui.playing));
-    chipEls.forEach((b, k) => { b.classList.toggle('on', k === (ui.sim.s?.view ?? -1)); b.classList.toggle('pending', k >= (ui.sim.s?.outs?.length ?? 0)); });
+    chipEls.forEach((b, k) => { b.textContent = `${k + 1} ${stageName(k, ui.P)}`; b.classList.toggle('on', k === (ui.sim.s?.view ?? -1)); b.classList.toggle('pending', k >= (ui.sim.s?.outs?.length ?? 0)); });
   };
   const frame = now => {
     const dt = Math.min(0.1, (now - (ui.last || now)) / 1000); ui.last = now;
@@ -791,141 +792,137 @@ Object.assign(window, {
 });
 })();
 </script>
-<script>/* Scaled dot-product attention (§3.2.1, eq. 1) with an optional causal mask (§3.2.3), on a toy input.
- * Q, K, V entries are i.i.d. N(0,1), as in the §3.2.1 footnote, so q·k has variance d_k. Dividing by
- * √d_k restores unit variance. Without it, the softmax rows saturate toward one-hot and p(1−p) → 0.
+<script>/* Scaled dot-product attention, §3.2.1 of "Attention Is All You Need".
+ *   Attention(Q, K, V) = softmax(QKᵀ / √d_k) V                                   (eq. 1)
+ *   footnote: q, k with i.i.d. components of mean 0 and variance 1 give q·k with variance d_k.
+ * The toy input is fixed.num_draws independent draws of Q, K (seq_len × d_k, N(0,1)) and V (seq_len × 4).
+ * The ÷√d_k toggle switches between scaled and plain dot-product attention.
  */
 
-const N = fixed.seq_len || 8;
-const DV = fixed.d_v || 4;
+const N = fixed.seq_len;      // 8 queries, 8 keys
+const DRAWS = fixed.num_draws; // 16 independent draws
+const DV = 4;                 // value dimension (shown only)
+const SHOW_DIMS = 32;         // columns of Q, K drawn
 
-const randMat = (r, c) => {
-  const M = [];
-  for (let i = 0; i < r; i++) {
-    const row = [];
-    for (let j = 0; j < c; j++) row.push(randn());
-    M.push(row);
-  }
-  return M;
-};
+const QL = Array.from({ length: N }, (_, i) => `q${i + 1}`);
+const KL = Array.from({ length: N }, (_, i) => `k${i + 1}`);
 
-const maxAbs = M => {
-  let m = 0;
-  for (const row of M) for (const v of row) if (Number.isFinite(v)) m = Math.max(m, Math.abs(v));
-  return m > 0 ? m : 1;
-};
+const gauss = (r, c) => Array.from({ length: r }, () => Array.from({ length: c }, () => randn()));
 
-// Display copy: masked (-∞) entries are shown blank, as 0.
-const forShow = M => M.map(row => row.map(v => (Number.isFinite(v) ? v : 0)));
-
-// Row softmax that respects -∞ entries (they get weight exactly 0).
-function rowSoftmax(row) {
+// numerically stable softmax over one row of logits
+function softmaxRow(row) {
   let mx = -Infinity;
   for (const v of row) if (v > mx) mx = v;
-  const e = row.map(v => (Number.isFinite(v) ? Math.exp(v - mx) : 0));
+  const e = row.map(v => Math.exp(v - mx));
   const z = sum(e);
   return e.map(v => v / z);
 }
 
-const idx = n => Array.from({ length: n }, (_, i) => String(i));
+const absMax = M => {
+  let a = 0;
+  for (const r of M) for (const v of r) a = Math.max(a, Math.abs(v));
+  return a || 1;
+};
+const pooled = Ms => {
+  const out = [];
+  for (const M of Ms) for (const r of M) for (const v of r) out.push(v);
+  return out;
+};
+const rowMaxes = Ws => {
+  const out = [];
+  for (const W of Ws) for (const r of W) out.push(Math.max(...r));
+  return out;
+};
 
 playground({
-  caption: 'switch off ÷ √d_k at d_k 512 and watch rows go one-hot',
-  aspect: 1.6,
+  caption: 'untick ÷ √d_k, raise d_k and watch weights go one-hot',
+  aspect: 1.4,
 
   stages: [
     {
-      name: 'q, k, v',
-      run: (_, p) => {
-        const dk = Math.round(p.d_k);
-        return { dk, Q: randMat(N, dk), K: randMat(N, dk), V: randMat(N, DV) };
+      name: 'q, k',
+      run(_, p) {
+        const dk = Math.max(1, Math.round(p.d_k));
+        const draws = [];
+        for (let d = 0; d < DRAWS; d++) draws.push({ Q: gauss(N, dk), K: gauss(N, dk), V: gauss(N, DV) });
+        return { dk, draws };
       },
-      draw(g, o) {
-        const [a, b] = g.split('1x2');
-        const show = Math.min(o.dk, 16);
-        a.title(`q · first ${show} of ${o.dk} dims`);
-        a.heatmap(o.Q.map(r => r.slice(0, show)), { diverging: true, range: [-3, 3], rowLabels: idx(N) });
-        b.title(`k · first ${show} of ${o.dk} dims`);
-        b.heatmap(o.K.map(r => r.slice(0, show)), { diverging: true, range: [-3, 3], rowLabels: idx(N) });
+      draw(g, out) {
+        const [a, b] = g.split('2x1');
+        const c = Math.min(out.dk, SHOW_DIMS);
+        const lim = absMax(out.draws[0].Q.map(r => r.slice(0, c)).concat(out.draws[0].K.map(r => r.slice(0, c))));
+        const more = out.dk > c ? ` · first ${c} of ${out.dk} dims` : ` · ${out.dk} dims`;
+        a.title(`q · draw 1${more}`);
+        a.heatmap(out.draws[0].Q.map(r => r.slice(0, c)), { diverging: true, range: [-lim, lim], rowLabels: QL });
+        b.title(`k · draw 1${more}`);
+        b.heatmap(out.draws[0].K.map(r => r.slice(0, c)), { diverging: true, range: [-lim, lim], rowLabels: KL });
       },
     },
     {
       name: 'qkᵀ',
-      run: o => {
-        const S = matmul(o.Q, transpose(o.K));
-        return { dk: o.dk, V: o.V, S };
-      },
-      draw(g, o) {
-        const r = maxAbs(o.S);
-        g.title(`dot products qkᵀ · |max| ${fmt(r)}`);
-        g.heatmap(o.S, { diverging: true, range: [-r, r], rowLabels: idx(N), colLabels: idx(N) });
+      run: prev => prev.draws.map(d => matmul(d.Q, transpose(d.K))),
+      draw(g, L, p, s) {
+        const lim = absMax(L[0]);
+        g.title(`dot products qkᵀ · draw 1 · d_k ${s.outs[0].dk}`);
+        g.heatmap(L[0], { diverging: true, range: [-lim, lim], rowLabels: QL, colLabels: KL, values: true });
       },
     },
     {
-      name: 'scale',
-      run: (o, p) => {
-        const c = p.scaled ? 1 / Math.sqrt(o.dk) : 1;
-        return { dk: o.dk, V: o.V, L: o.S.map(row => row.map(v => v * c)) };
+      name: p => (p.scaled ? '÷ √d_k' : 'scale'),
+      run(L, p, _r, s) {
+        const c = p.scaled ? 1 / Math.sqrt(s.outs[0].dk) : 1;
+        return L.map(M => M.map(r => r.map(v => v * c)));
       },
-      draw(g, o, p) {
-        const r = maxAbs(o.L);
-        g.title(p.scaled ? `÷ √${o.dk} · |max| ${fmt(r)}` : `unscaled · |max| ${fmt(r)}`);
-        g.heatmap(o.L, { diverging: true, range: [-r, r], rowLabels: idx(N), colLabels: idx(N) });
-      },
-    },
-    {
-      name: 'mask',
-      run: (o, p) => {
-        const L = o.L.map((row, i) => row.map((v, j) => (p.mask === 'causal' && j > i ? -Infinity : v)));
-        return { dk: o.dk, V: o.V, L };
-      },
-      draw(g, o, p) {
-        const r = maxAbs(o.L);
-        g.title(p.mask === 'causal' ? 'causal mask · future keys → −∞ (blank)' : 'no mask · softmax input');
-        g.heatmap(forShow(o.L), { diverging: true, range: [-r, r], rowLabels: idx(N), colLabels: idx(N) });
+      draw(g, L, p, s) {
+        const [a, b] = g.split('1x2');
+        const lim = absMax(L[0]);
+        a.title(p.scaled ? 'softmax input · ÷ √d_k' : 'softmax input · unscaled');
+        a.heatmap(L[0], { diverging: true, range: [-lim, lim], rowLabels: QL, colLabels: KL, values: true });
+        const all = pooled(L), sd = std(all), r = Math.max(4, 4 * sd);
+        b.title('all softmax inputs, pooled');
+        b.hist(all, { bins: 30, range: [-r, r], density: true, series: 0 });
       },
     },
     {
       name: 'softmax',
-      run: o => ({ V: o.V, L: o.L, P: o.L.map(rowSoftmax) }),
-      draw(g, o) {
-        const [a, b] = g.split('1x2');
-        a.title('attention weights (rows = queries)');
-        a.heatmap(o.P, { range: [0, 1], rowLabels: idx(N), colLabels: idx(N) });
-        b.title('largest weight per row');
-        const mx = o.P.map(row => Math.max(...row));
-        b.bars(idx(N), mx, { series: 0, y: [0, 1] });
-        b.hline(1 / N, { label: 'uniform 1/n', series: 2 });
+      run: L => L.map(M => M.map(softmaxRow)),
+      draw(g, W) {
+        g.title('attention weights · draw 1');
+        g.heatmap(W[0], { range: [0, 1], rowLabels: QL, colLabels: KL, values: true });
       },
     },
     {
-      name: '× v',
-      run: o => ({ P: o.P, out: matmul(o.P, o.V) }),
-      draw(g, o) {
-        g.title(`output softmax(·) v · ${N}×${DV}`);
-        g.heatmap(o.out, { diverging: true, range: [-2.5, 2.5], rowLabels: idx(N), colLabels: idx(DV) });
+      name: 'weights · v',
+      run(W, _p, _r, s) {
+        return W.map((M, d) => matmul(M, s.outs[0].draws[d].V));
+      },
+      draw(g, O, p, s) {
+        const [a, b, c, e] = g.split('2x2');
+        const W = s.outs[3], L = s.outs[2];
+        a.title('attention weights · draw 1');
+        a.heatmap(W[0], { range: [0, 1], rowLabels: QL, colLabels: KL });
+        b.title('largest weight per query, all draws');
+        b.hist(rowMaxes(W), { bins: 20, range: [0, 1], series: 0 });
+        b.vline(1 / N, { label: 'uniform', series: 2 });
+        const all = pooled(L), sd = std(all), r = Math.max(4, 4 * sd);
+        c.title(p.scaled ? 'softmax inputs · ÷ √d_k' : 'softmax inputs · unscaled');
+        c.hist(all, { bins: 30, range: [-r, r], density: true, series: 1 });
+        const lim = absMax(O[0]);
+        e.title('output = weights · v · draw 1');
+        e.heatmap(O[0], { diverging: true, range: [-lim, lim], rowLabels: QL });
       },
     },
   ],
 
   metrics(s) {
-    const L = s.outs[3].L, P = s.outs[4].P;
-    const live = [];
-    let grad = 0, cnt = 0, mxSum = 0;
-    for (let i = 0; i < N; i++) {
-      mxSum += Math.max(...P[i]);
-      for (let j = 0; j < N; j++) {
-        if (!Number.isFinite(L[i][j])) continue;
-        live.push(L[i][j]);
-        grad += P[i][j] * (1 - P[i][j]);
-        cnt++;
-      }
-    }
-    return {
-      max_weight: mxSum / N,
-      logit_std: live.length ? std(live) : null,
-      softmax_grad: cnt ? grad / cnt : null,
-    };
+    const L = s.outs[2], W = s.outs[3];
+    if (!L || !W) return { max_weight: null, logit_std: null };
+    return { max_weight: mean(rowMaxes(W)), logit_std: std(pooled(L)) };
+  },
+
+  readout(s, p, m) {
+    const dk = s.outs[0] ? s.outs[0].dk : Math.round(p.d_k);
+    return `softmax input std ${fmt(m.logit_std)} · √d_k ${fmt(Math.sqrt(dk))} · max weight ${fmt(m.max_weight)} (uniform ${fmt(1 / N)})`;
   },
 });</script>
 </body>

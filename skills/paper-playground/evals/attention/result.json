@@ -3,17 +3,17 @@
   "expect": {
     "archetype": "pipeline"
   },
-  "skill": "bd6acedf59b9",
+  "skill": "affda990e92d",
   "models": {
     "extract": "claude-opus-5-5",
     "generate": "claude-opus-5-5"
   },
-  "date": "2026-10-19T22:44:38.680Z",
+  "date": "2026-10-19T22:48:15.291Z",
   "extraction": {
     "archetype": "pipeline",
-    "experiment": "Raising d_k with the 1/√d_k scaling switched off makes each attention row go from spread out to nearly one-hot, and the softmax gradients collapse. This is the effect §3.2.1 gives as the reason for scaling.",
-    "reproduce": "With the 1/√d_k scaling, logits keep unit variance and attention stays spread out even at d_k = 512.",
-    "contrast": "Without scaling, the same d_k = 512 gives dot products with standard deviation near √d_k, so the softmax saturates toward one-hot and its gradients nearly vanish.",
+    "experiment": "Raising d_k with the 1/√d_k scaling switched off makes the softmax inputs grow like √d_k, so each query's attention collapses onto one key; with scaling on, the weights stay spread out. This is the motivation the paper gives for scaling in 3.2.1.",
+    "reproduce": "With the 1/√d_k scaling on, the softmax inputs keep unit spread even at d_k = 512, and attention stays spread over several keys.",
+    "contrast": "Without scaling at the same d_k, the dot products grow to a spread of about √d_k, and the softmax saturates toward one-hot.",
     "fallback": false
   },
   "outcome": "pass",
@@ -24,14 +24,12 @@
       "failures": [],
       "observed": {
         "reproduce": {
-          "max_weight": 0.378314,
-          "logit_std": 1.03571,
-          "softmax_grad": 0.0949665
+          "max_weight": 0.35564,
+          "logit_std": 0.998803
         },
         "contrast": {
-          "max_weight": 0.965096,
-          "logit_std": 23.4355,
-          "softmax_grad": 0.0074431
+          "max_weight": 0.962557,
+          "logit_std": 22.6003
         }
       }
     }
@@ -39,15 +37,15 @@
   "calls": [
     {
       "step": "extract-1",
-      "cost": 0.184712,
-      "ms": 27041
+      "cost": 0.15176800000000001,
+      "ms": 24843
     },
     {
       "step": "generate",
-      "cost": 0.25196,
-      "ms": 32698
+      "cost": 0.261124,
+      "ms": 37792
     }
   ],
-  "cost_usd": 0.437,
-  "seconds": 62
+  "cost_usd": 0.413,
+  "seconds": 65
 }

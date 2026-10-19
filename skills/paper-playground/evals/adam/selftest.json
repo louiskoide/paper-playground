@@ -5,13 +5,13 @@
     "type": "pp:selftest",
     "ok": true,
     "kernel": "0.1.0",
-    "ms": 38,
+    "ms": 34,
     "checks": [
       {
         "id": "default",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "metrics",
@@ -24,30 +24,53 @@
         "msg": "same seed and params gave different output (Math.random, Date, or state leaking between runs?)"
       },
       {
-        "id": "sweep:bias_correction=true",
+        "id": "sweep:alpha=0.001",
+        "ok": true,
+        "msg": "ok in 1 ms",
+        "ms": 1
+      },
+      {
+        "id": "sweep:alpha=1e-5",
         "ok": true,
         "msg": "ok in 0 ms",
         "ms": 0
       },
       {
-        "id": "sweep:bias_correction=false",
+        "id": "sweep:alpha=0.1",
         "ok": true,
         "msg": "ok in 0 ms",
         "ms": 0
       },
       {
-        "id": "decorative:bias_correction",
+        "id": "decorative:alpha",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
+        "id": "sweep:beta1=0.9",
+        "ok": true,
+        "msg": "ok in 1 ms",
+        "ms": 1
+      },
+      {
+        "id": "sweep:beta1=0",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "decorative:beta1",
         "ok": true,
         "msg": "render and metrics identical at every swept value"
       },
       {
         "id": "sweep:beta2=0.999",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
-        "id": "sweep:beta2=0.9",
+        "id": "sweep:beta2=0.99",
         "ok": true,
         "msg": "ok in 0 ms",
         "ms": 0
@@ -64,48 +87,19 @@
         "msg": "render and metrics identical at every swept value"
       },
       {
-        "id": "sweep:beta1=0.9",
+        "id": "sweep:bias_correction=true",
+        "ok": true,
+        "msg": "ok in 1 ms",
+        "ms": 1
+      },
+      {
+        "id": "sweep:bias_correction=false",
         "ok": true,
         "msg": "ok in 0 ms",
         "ms": 0
       },
       {
-        "id": "sweep:beta1=0",
-        "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
-      },
-      {
-        "id": "sweep:beta1=0.99",
-        "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
-      },
-      {
-        "id": "decorative:beta1",
-        "ok": true,
-        "msg": "render and metrics identical at every swept value"
-      },
-      {
-        "id": "sweep:alpha=0.001",
-        "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
-      },
-      {
-        "id": "sweep:alpha=1e-4",
-        "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
-      },
-      {
-        "id": "sweep:alpha=0.01",
-        "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
-      },
-      {
-        "id": "decorative:alpha",
+        "id": "decorative:bias_correction",
         "ok": true,
         "msg": "render and metrics identical at every swept value"
       },
@@ -114,8 +108,8 @@
         "ok": true,
         "msg": " (§2.1)",
         "observed": {
-          "max_step_ratio": 1,
-          "distance_moved": 0.0496943
+          "first_step_ratio": 1,
+          "max_step_ratio": 1
         },
         "status": "ok",
         "section": "2.1"
@@ -125,21 +119,21 @@
         "ok": true,
         "msg": " (§5)",
         "observed": {
-          "max_step_ratio": 6.51952,
-          "distance_moved": 0.267503
+          "first_step_ratio": 9.99999,
+          "max_step_ratio": 20.2413
         },
         "status": "ok",
         "section": "5"
       },
       {
+        "id": "varies:first_step_ratio",
+        "ok": true,
+        "msg": "first_step_ratio is identical in every run (hard-coded?)"
+      },
+      {
         "id": "varies:max_step_ratio",
         "ok": true,
         "msg": "max_step_ratio is identical in every run (hard-coded?)"
-      },
-      {
-        "id": "varies:distance_moved",
-        "ok": true,
-        "msg": "distance_moved is identical in every run (hard-coded?)"
       }
     ],
     "failures": []
@@ -147,6 +141,37 @@
   "drive": {
     "ok": true,
     "controls": [
+      {
+        "name": "stepsize α",
+        "kind": "range",
+        "tried": [
+          "max"
+        ],
+        "readoutChanged": false,
+        "canvasChanged": true,
+        "ok": true
+      },
+      {
+        "name": "first-moment decay β1",
+        "kind": "range",
+        "tried": [
+          "max",
+          "min"
+        ],
+        "readoutChanged": false,
+        "canvasChanged": true,
+        "ok": true
+      },
+      {
+        "name": "second-moment decay β2",
+        "kind": "select",
+        "tried": [
+          "next option"
+        ],
+        "readoutChanged": false,
+        "canvasChanged": true,
+        "ok": true
+      },
       {
         "name": "bias correction",
         "kind": "checkbox",
@@ -156,42 +181,12 @@
         "readoutChanged": true,
         "canvasChanged": true,
         "ok": true
-      },
-      {
-        "name": "decay rate β2",
-        "kind": "range",
-        "tried": [
-          "max"
-        ],
-        "readoutChanged": true,
-        "canvasChanged": true,
-        "ok": true
-      },
-      {
-        "name": "decay rate β1",
-        "kind": "range",
-        "tried": [
-          "max"
-        ],
-        "readoutChanged": true,
-        "canvasChanged": true,
-        "ok": true
-      },
-      {
-        "name": "stepsize α",
-        "kind": "range",
-        "tried": [
-          "max"
-        ],
-        "readoutChanged": true,
-        "canvasChanged": true,
-        "ok": true
       }
     ],
     "transport": {
-      "reset": "step 0 · distance moved 0",
-      "step": "step 1 · largest step / α 1 · distance moved 1e-3",
-      "playing": "step 7 · largest step / α 1 · distance moved 0.007",
+      "reset": "step 0",
+      "step": "step 1 · first step / α 1 · largest step / α 1",
+      "playing": "step 12 · first step / α 1 · largest step / α 1",
       "ok": true
     }
   },

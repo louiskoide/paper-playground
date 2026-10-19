@@ -1,72 +1,64 @@
-// Adam on the deterministic quadratic f(θ) = ½θ², g_t = θ_{t-1} (fixed.objective).
-// The live run uses the reader's bias_correction setting; a second run with the opposite
-// setting is shown in grey for comparison. Metrics come only from the live run.
+// Adam (Algorithm 1) on the deterministic toy objective f(θ) = θ²/2, so g_t = θ_{t-1}.
+// The figure tracks each step |θ_t − θ_{t-1}| in units of α. With bias correction (m̂, v̂) the step
+// stays near α. Without it, the raw m_t / √v_t is inflated by up to (1−β1)/√(1−β2) at t = 1, and the
+// inflation keeps growing for a while, because v_t is still far below g² when β2 is near 1.
 
-const EPS = fixed.epsilon;
-
-function newRun() {
-  return { theta: fixed.theta0, m: fixed.m0, v: fixed.v0, ratios: [], thetas: [fixed.theta0] };
-}
-
-// One iteration of Algorithm 1. Without correction, m̂ = m_t and v̂ = v_t (§5, §6.4).
-function adamStep(o, t, p, correct) {
-  const g = o.theta;                                     // g_t = ∇f(θ_{t-1}) = θ_{t-1}
-  o.m = p.beta1 * o.m + (1 - p.beta1) * g;               // biased first moment
-  o.v = p.beta2 * o.v + (1 - p.beta2) * g * g;           // biased second raw moment
-  const mh = correct ? o.m / (1 - Math.pow(p.beta1, t)) : o.m;
-  const vh = correct ? o.v / (1 - Math.pow(p.beta2, t)) : o.v;
-  const delta = p.alpha * mh / (Math.sqrt(vh) + EPS);    // Δ_t
-  o.theta = o.theta - delta;
-  o.ratios.push(Math.abs(delta) / p.alpha);
-  o.thetas.push(o.theta);
-}
+const EPS = Number(fixed.epsilon);
+const THETA0 = Number(fixed.theta0);
 
 playground({
-  caption: 'turn off bias correction and watch steps exceed α',
+  caption: 'turn off bias correction and watch steps leap past α',
 
   init() {
-    return { t: 0, live: newRun(), other: newRun() };
+    return { theta: THETA0, m: 0, v: 0, t: 0, thetas: [THETA0], ratios: [], first: null, maxr: null };
   },
 
   step(s, p) {
+    const b1 = Number(p.beta1), b2 = Number(p.beta2), a = Number(p.alpha);
     s.t += 1;
-    adamStep(s.live, s.t, p, !!p.bias_correction);
-    adamStep(s.other, s.t, p, !p.bias_correction);
-  },
-
-  metrics(s) {
-    const r = s.live.ratios;
-    return {
-      max_step_ratio: r.length ? Math.max(...r) : null,
-      distance_moved: Math.abs(s.live.theta - fixed.theta0),
-    };
-  },
-
-  draw(g, s, p, m) {
-    const [left, right] = g.split('1x2');
-    const liveLbl = p.bias_correction ? 'corrected' : 'uncorrected';
-    const otherLbl = p.bias_correction ? 'uncorrected' : 'corrected';
-    const T = Math.max(50, s.t);
-
-    left.title('step size |Δt| / α');
-    const allR = s.live.ratios.concat(s.other.ratios);
-    const yMax = Math.max(1.5, (allR.length ? Math.max(...allR) : 1) * 1.1);
-    left.axes({ x: [0, T], y: [0, yMax], xlabel: 'iteration t' });
-    left.hline(1, { series: 3, label: 'α' });
-    const xs = s.live.ratios.map((_, i) => i + 1);
-    left.line(xs, s.other.ratios, { series: 1, label: otherLbl });
-    left.line(xs, s.live.ratios, { series: 0, label: liveLbl });
-    if (m.max_step_ratio != null) {
-      const k = argmax(s.live.ratios);
-      left.marker(k + 1, s.live.ratios[k], { label: `max ${fmt(m.max_step_ratio)}` });
+    const g = s.theta;                                // ∇θ (θ²/2) at θ_{t-1}
+    s.m = b1 * s.m + (1 - b1) * g;                    // biased first moment
+    s.v = b2 * s.v + (1 - b2) * g * g;                // biased second raw moment
+    let delta;
+    if (p.bias_correction) {
+      const mhat = s.m / (1 - Math.pow(b1, s.t));
+      const vhat = s.v / (1 - Math.pow(b2, s.t));
+      delta = a * mhat / (Math.sqrt(vhat) + EPS);
+    } else {
+      delta = a * s.m / (Math.sqrt(s.v) + EPS);
     }
+    const prev = s.theta;
+    s.theta = prev - delta;
+    const r = Math.abs(s.theta - prev) / a;
+    s.ratios.push(r);
+    s.thetas.push(s.theta);
+    if (s.first == null) s.first = r;
+    s.maxr = s.maxr == null ? r : Math.max(s.maxr, r);
+  },
 
-    right.title('parameter θ');
-    const ext = extent(s.live.thetas, s.other.thetas, [fixed.theta0, fixed.theta0 - 50 * p.alpha]);
-    right.axes({ x: [0, T], y: ext, xlabel: 'iteration t' });
-    const ts = s.live.thetas.map((_, i) => i);
-    right.line(ts, s.other.thetas, { series: 1, label: otherLbl });
-    right.line(ts, s.live.thetas, { series: 0, label: liveLbl });
-    right.marker(s.t, s.live.theta);
+  metrics: s => ({ first_step_ratio: s.first, max_step_ratio: s.maxr }),
+
+  draw(g, s, p) {
+    const [left, right] = g.split('1x2');
+    const b1 = Number(p.beta1), b2 = Number(p.beta2);
+    const bound = (1 - b1) / Math.sqrt(1 - b2);
+    const T = Math.max(100, s.t);
+    const LO = 0.01;
+    const ratios = s.ratios.map(r => Math.max(LO, r));
+    const top = Math.max(2, bound, ...ratios) * 2;
+
+    left.title('step size / α per iteration');
+    left.axes({ x: [0, T], y: [LO, top], ylog: true, xlabel: 'iteration t', ylabel: '|Δθ| / α' });
+    left.hline(1, { series: 1, label: 'α' });
+    left.hline(bound, { series: 2, label: '(1−β1)/√(1−β2)' });
+    const ts = ratios.map((_, i) => i + 1);
+    left.line(ts, ratios, { series: 0, label: p.bias_correction ? 'corrected' : 'uncorrected' });
+    if (ratios.length) left.marker(ts.at(-1), ratios.at(-1));
+
+    right.title('θ on f = θ²/2');
+    const [ylo, yhi] = extent(s.thetas, [0, THETA0]);
+    right.axes({ x: [0, T], y: [ylo, yhi], xlabel: 'iteration t', ylabel: 'θ' });
+    right.hline(0, { series: 3 });
+    right.line(s.thetas.map((_, i) => i), s.thetas, { series: 0 });
   },
 });

@@ -2,9 +2,35 @@
 
 Paste a paper link, upload a PDF, or paste text. Get back:
 
-1. **Playground**: one self-contained HTML figure that simulates the document's core idea. It is self-tested against a claim quoted from the document.
-2. **Concept map**: a 3D t-SNE of the document's chunks, clustered and labeled.
+1. **Playground**: one self-contained HTML figure that simulates the document's core mechanism. It is self-tested against claims quoted from the document before anyone sees it.
+2. **Concept map**: a t-SNE of the document's chunks, clustered and labeled, in 2D or 3D (Phase 2).
 
-The playground generator is a Claude skill (`skills/paper-playground/`). The web app uses the same files as its system prompt.
+The playground generator is a Claude skill (`skills/paper-playground/`). The web app will use the same files as its system prompts. See [PLAN.md](PLAN.md) for the design. The skill's structure is borrowed from [ai-iso-skill](https://github.com/MrBongoC/ai-iso-skill).
 
-See [PLAN.md](PLAN.md). Structure borrowed from [ai-iso-skill](https://github.com/MrBongoC/ai-iso-skill).
+## Status
+
+Phase 0, the skill alone, is done. All 5 eval cases pass in two consecutive runs: [evals/RESULTS.md](skills/paper-playground/evals/RESULTS.md).
+
+## Layout
+
+- `skills/paper-playground/`
+  - `EXTRACT.md`: extraction prompt. Picks the experiment, params, metrics and the reproduce/contrast claims.
+  - `SKILL.md`: generation prompt and Claude Code skill.
+  - `kernel.js`, `kernel.d.ts`, `template.html`: the runtime every playground is built on. The model never writes it.
+  - `archetypes/`: seven worked examples, which are also the kernel's test suite.
+  - `scripts/`: `build.mjs`, `selftest.mjs` (Playwright), `examples.mjs`, `run-eval.mjs`.
+  - `evals/`: test cases and their latest artifacts.
+- `lib/`: ingest, prompt assembly, model transport and quote checking, shared with the web app.
+
+## Run it
+
+```sh
+npm install && npx playwright install chromium-headless-shell
+npm run test:examples                                   # build + self-test the seven archetype examples
+node skills/paper-playground/scripts/run-eval.mjs       # all eval cases through the web-app path
+node skills/paper-playground/scripts/run-eval.mjs adam  # one case
+```
+
+Evals call the model through `claude -p` (tool-less, settings-free) on your Claude login, so no API key is needed. Set `PP_TRANSPORT=api` with `ANTHROPIC_API_KEY` to use the Messages API instead. `PP_EXTRACT_MODEL` and `PP_GENERATE_MODEL` override the models, which default to `claude-opus-5-5`.
+
+In Claude Code, working in this repo, the skill is available as `paper-playground` (symlinked from `.claude/skills/`).

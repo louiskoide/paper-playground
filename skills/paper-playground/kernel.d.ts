@@ -28,7 +28,7 @@ type Def = Common & (
       init?(p: Params, rand: () => number, curve: { x: number[]; y: number[][] }): object; draw: Draw } // s = { x, y[series][] }
   | { /* stochastic */ sample(p: Params, rand: () => number): number | { value: number }; batch?: number;
       init?(p: Params, rand: () => number): object; draw: Draw }  // s = { samples: number[], draws: object[] }
-  | { /* pipeline */ stages: { name: string; run(prev: any, p: Params, rand: () => number, s: any): any; draw(g: G, out: any, p: Params, s: any): void }[];
+  | { /* pipeline */ stages: { name: string | ((p: Params) => string); run(prev: any, p: Params, rand: () => number, s: any): any; draw(g: G, out: any, p: Params, s: any): void }[];
       init?(p: Params, rand: () => number): object }              // s = { outs: any[], view: number }
   | { /* diagram */ init(p: Params, rand: () => number): any; drag?(key: string, x: number, y: number, p: Params): Partial<Params> | void; draw: Draw }
 );

@@ -45,7 +45,7 @@ select{font:inherit;font-size:12px;background:var(--panel);color:var(--live);bor
 </style>
 </head>
 <body>
-<script>window.__PP_SPEC__ = {"schema":1,"title":"Size and timescale of epidemics in the SIR framework","playable":true,"unplayable_reason":null,"experiment":"Raising the threshold γ = β/α by doubling β or by halving α gives the same epidemic peak I*/N ≈ 0.30, but the peak arrives about twice as late when α is cut, which is the paper's scaling result t*(2) = t*(1)/λ (Eq. 23).","archetype":"dynamical","archetype_reason":"the claim is about the time course of I(t) under the stated SIR ODEs (Eq. 1), and the metrics are the timing and height of the peak","fixed":{"model":"classical SIR, Eq. 1: dS/dt = -α S I, dI/dt = α S I - β I, dR/dt = β I","N":60000000,"I0":10,"R0":0,"S0":"N - I0","alpha_0":1e-8,"beta_0_per_day":0.1,"alpha":"alpha_factor × alpha_0","beta":"beta_factor × beta_0","step":"one step = 1 day, integrated with RK4 using 10 substeps of 0.1 day","t_peak_definition":"day index (0-based step count) at which I is largest over the run"},"params":[{"name":"alpha_factor","label":"contact rate α / α₀","kind":"range","min":0.25,"max":4,"step":0.05,"default":1,"scale":"log","unit":"","source":{"section":"The SIR model","quote":"Here the parameter $\\alpha$ corresponds to a contact rate (also called infection rate)."}},{"name":"beta_factor","label":"removal rate β / β₀","kind":"range","min":0.25,"max":4,"step":0.05,"default":1,"scale":"log","unit":"","source":{"section":"The SIR model","quote":"The parameter $\\beta$ is a removal rate; more precisely, it is the inverse of the typical removal time"}}],"metrics":[{"name":"peak_frac","label":"peak infected I*/N","unit":"","meaning":"maximum over all simulated days of I(t) divided by N"},{"name":"t_peak","label":"peak day t*","unit":"days","meaning":"the day (step index) at which I(t) attains its maximum over the run"},{"name":"final_frac","label":"ever infected R/N","unit":"","meaning":"R(t)/N at the last simulated day"}],"steps":300,"reproduce":{"claim":"Doubling β (α unchanged) doubles γ, so the peak drops to I*/N ≈ 0.30 and arrives near day 41 (Table 1).","source":{"section":"Epidemic management in the SIR framework","quote":"Actions reducing $\\gamma$ by the same factor through action on the different parameters produce the same epidemic peak level"},"params":{"alpha_factor":1,"beta_factor":2},"expect":[{"metric":"peak_frac","op":"between","value":[0.28,0.32]},{"metric":"t_peak","op":"between","value":[33,49]},{"metric":"final_frac","op":"between","value":[0.91,0.97]}]},"contrast":{"claim":"Halving α instead (β unchanged) gives the same γ, the same peak height and the same final size, but the peak comes about twice as late.","source":{"section":"Scaling properties of the SIR equations","quote":"increasing $\\beta$ by a factor $\\lambda$ , $t_{*}$ is reduced by a factor $1/\\lambda$ , with respect to the value attained by reducing $\\alpha$ ."},"params":{"alpha_factor":0.5,"beta_factor":1},"expect":[{"metric":"peak_frac","op":"between","value":[0.28,0.32]},{"metric":"final_frac","op":"between","value":[0.91,0.97]},{"metric":"t_peak","op":">","ref":"reproduce","factor":1.7}]},"fallback":{"schema":1,"title":"Size and timescale of epidemics in the SIR framework","playable":true,"unplayable_reason":null,"experiment":"Raising the epidemic threshold γ lowers the closed-form peak I* = N − γ − γ log(N/γ) (Eq. 8), showing that the peak is a decreasing function of γ.","archetype":"diagram","archetype_reason":"the peak height is a closed-form function of γ alone, so one configuration gives one computed number","fixed":{"N":60000000,"gamma_0":10000000,"gamma":"gamma_factor × gamma_0","formula":"I* = N − γ − γ ln(N/γ) when N > γ, else 0 (Eq. 8)"},"params":[{"name":"gamma_factor","label":"threshold γ / γ₀","kind":"range","min":0.5,"max":6,"step":0.1,"default":1,"scale":"linear","unit":"","source":{"section":"Epidemic peak and total number of infected","quote":"for this reason $\\gamma$ is also known as the epidemic threshold."}}],"metrics":[{"name":"peak_frac","label":"peak infected I*/N","unit":"","meaning":"(N − γ − γ ln(N/γ)) / N, or 0 if γ ≥ N"}],"steps":0,"reproduce":{"claim":"Doubling γ gives I*/N ≈ 0.300, as in Table 1.","source":{"section":"Scaling properties of the SIR equations","quote":"the amplitude of the peak $I_{*}$ (7) and the the total number of infected (10) $R_{E}$ are decreasing functions of the parameter $\\gamma$"},"params":{"gamma_factor":2},"expect":[{"metric":"peak_frac","op":"between","value":[0.28,0.32]}]},"contrast":{"claim":"At the baseline γ₀ the peak is much higher, I*/N ≈ 0.535.","source":{"section":"Scaling properties of the SIR equations","quote":"Above the epidemic threshold ( $S_{0}/\\gamma>1$ ), $dI_{P}/d\\gamma$ is always negative"},"params":{"gamma_factor":1},"expect":[{"metric":"peak_frac","op":">","ref":"reproduce","by":0.2}]},"fallback":null}};</script>
+<script>window.__PP_SPEC__ = {"schema":1,"title":"Size and timescale of epidemics in the SIR framework","playable":true,"unplayable_reason":null,"experiment":"Halving the contact rate α and doubling the removal rate β flatten the SIR peak I(t)/N to the same height, but the reader sees the β route reach its peak and fall below the safety level in about half the time. This is the scaling law of Eq. (23) (II.3, Table 1).","archetype":"dynamical","archetype_reason":"the SIR equations (1) are ODEs integrated in time, and the claims concern the peak height and the timing of I(t)","fixed":{"N":60000000,"I0":10,"R0":0,"S0":"N - I0","alpha0":1e-8,"beta0":0.1,"alpha":"alpha_factor * alpha0","beta":"beta_factor * beta0 (per day)","equations":"dS/dt = -alpha S I; dI/dt = alpha S I - beta I; dR/dt = beta I","integrator":"RK4","dt_days":0.2,"safety_level":"I/N = 1e-4"},"params":[{"name":"alpha_factor","label":"contact rate α / α₀","kind":"range","min":0.1,"max":4,"step":0.05,"default":1,"scale":"log","unit":"","source":{"section":"II","quote":"the parameter $\\alpha$ corresponds to a contact rate (also called infection rate)"}},{"name":"beta_factor","label":"removal rate β / β₀","kind":"range","min":0.25,"max":4,"step":0.05,"default":1,"scale":"log","unit":"","source":{"section":"II","quote":"The parameter $\\beta$ is a removal rate; more precisely, it is the inverse of the typical removal time"}}],"metrics":[{"name":"peak_frac","label":"peak infectives","unit":"of N","meaning":"maximum over the run of I(t)/N"},{"name":"peak_day","label":"peak day","unit":"days","meaning":"time t in days at which I(t) attains its maximum over the run"},{"name":"t_safe","label":"time to safe level","unit":"days","meaning":"first time t after peak_day at which I(t)/N \u003c 1e-4; equals the run length (300 days) if never reached"}],"steps":1500,"reproduce":{"claim":"Raising γ twofold by halving α (social distancing) lowers the peak to about 0.30 N, but the peak arrives near day 82 and the safe level near day 189.","source":{"section":"III","quote":"Actions reducing $\\gamma$ by the same factor through action on the different parameters produce the same epidemic peak level, but with a substantially different dynamics."},"params":{"alpha_factor":0.5,"beta_factor":1},"expect":[{"metric":"peak_frac","op":"between","value":[0.28,0.32]},{"metric":"peak_day","op":"between","value":[72,92]}]},"contrast":{"claim":"Raising γ by the same factor through doubling β (early detection and isolation) gives the same peak height, but the peak and the safe level both arrive in roughly half the time.","source":{"section":"II.3","quote":"containment measures with $\\lambda=2$ reduce by a half both the time needed for the epidemic to reach the peak and the whole time-span of the epidemic"},"params":{"alpha_factor":1,"beta_factor":2},"expect":[{"metric":"peak_frac","op":"between","value":[0.28,0.32]},{"metric":"peak_day","op":"\u003c","ref":"reproduce","factor":0.6},{"metric":"t_safe","op":"\u003c","ref":"reproduce","factor":0.6}]},"fallback":{"schema":1,"title":"Size and timescale of epidemics in the SIR framework","playable":true,"unplayable_reason":null,"experiment":"Changing α and β moves the epidemic threshold γ = β/α. The reader sees the predicted peak I*/N from Eq. (8) shrink as γ grows, and drop to zero once γ exceeds N.","archetype":"diagram","archetype_reason":"the peak height is a closed-form function of γ (Eq. 8), and γ is set by the configuration of α and β","fixed":{"N":60000000,"alpha0":1e-8,"beta0":0.1,"gamma":"(beta_factor * beta0) / (alpha_factor * alpha0)","peak_formula":"I*/N = 1 - g - g*ln(1/g) with g = gamma/N if g \u003c 1, else 0"},"params":[{"name":"alpha_factor","label":"contact rate α / α₀","kind":"range","min":0.1,"max":4,"step":0.05,"default":1,"scale":"log","unit":"","source":{"section":"II","quote":"the parameter $\\alpha$ corresponds to a contact rate (also called infection rate)"}},{"name":"beta_factor","label":"removal rate β / β₀","kind":"range","min":0.25,"max":4,"step":0.05,"default":1,"scale":"log","unit":"","source":{"section":"II","quote":"The parameter $\\beta$ is a removal rate; more precisely, it is the inverse of the typical removal time"}}],"metrics":[{"name":"peak_frac","label":"peak infectives","unit":"of N","meaning":"I*/N from Eq. (8): 1 - g - g ln(1/g) with g = γ/N, or 0 when g >= 1"},{"name":"rho0","label":"basic reproduction number","unit":"","meaning":"N / γ"}],"steps":0,"reproduce":{"claim":"Doubling γ (from N/6 to N/3) gives a peak of about 0.30 N.","source":{"section":"II.1","quote":"An epidemic can start only if $S(t_{0})>\\gamma$ , and it stops spontaneously once"},"params":{"alpha_factor":0.5,"beta_factor":1},"expect":[{"metric":"peak_frac","op":"between","value":[0.28,0.32]}]},"contrast":{"claim":"Cutting α far enough that γ exceeds N leaves no epidemic at all.","source":{"section":"II.1","quote":"these expressions for $I_{*}$ apply if (and only if) $S_{0}>\\gamma$ and $N>\\gamma$ respectively: if $S_{0}\u003c\\gamma$ there is no epidemic"},"params":{"alpha_factor":0.15,"beta_factor":1},"expect":[{"metric":"peak_frac","op":"\u003c","value":0.01}]},"fallback":null}};</script>
 <script>/* paper-playground kernel 0.1.0
  * Inlined by scripts/build.mjs after window.__PP_SPEC__ (the frozen extraction) and before the
  * generated code. Generated code never edits this file: it calls playground({...}) and the helpers
@@ -791,71 +791,75 @@ Object.assign(window, {
 });
 })();
 </script>
-<script>// SIR model (Eq. 1), integrated in absolute counts with the paper's α, β and N.
-// The epidemic peak occurs where S = γ = β/α (dI/dt = 0), so the right panel marks that line.
+<script>// SIR model of §II, Eq. (1), integrated with the kernel's RK4 at the paper's scale (N = 6e7, I0 = 10).
+// The analytic peak of Eq. (8) is drawn only as a reference line; all metrics come from the simulated I(t).
 
-const A = p => p.alpha_factor * fixed.alpha_0;
-const B = p => p.beta_factor * fixed.beta_0_per_day;
+const N = fixed.N, I0 = fixed.I0, R00 = fixed.R0, S0 = N - I0;   // fixed.S0 = "N - I0"
+const SAFE = 1e-4;                                                 // fixed.safety_level: I/N = 1e-4
+const T_END = 300;                                                 // run length in days (1500 steps × 0.2 d)
+
+const rates = p => ({ alpha: p.alpha_factor * fixed.alpha0, beta: p.beta_factor * fixed.beta0 });
 
 function deriv([S, I, R], p) {
-  const a = A(p), b = B(p);
-  return [-a * S * I, a * S * I - b * I, b * I];
+  const { alpha, beta } = rates(p);
+  return [-alpha * S * I, alpha * S * I - beta * I, beta * I];
 }
 
-function peakIndex(I) {
-  let k = 0;
-  for (let i = 1; i < I.length; i++) if (I[i] > I[k]) k = i;
-  return k;
+// Eq. (8): I*/N = 1 - g - g ln(1/g), g = γ/N, valid only above threshold
+function peakEq8(p) {
+  const { alpha, beta } = rates(p), g = beta / alpha / N;
+  return g < 1 ? 1 - g - g * Math.log(1 / g) : 0;
+}
+
+function analyse(s) {
+  const I = s.path.y[1], t = s.path.t, n = I.length;
+  if (n < 1) return null;
+  const k = argmax(I);
+  let ts = null;
+  for (let j = k + 1; j < n; j++) if (I[j] / N < SAFE) { ts = t[j]; break; }
+  if (ts === null && s.t >= T_END - 1e-9) ts = T_END;
+  return { k, peak_frac: I[k] / N, peak_day: t[k], t_safe: ts };
 }
 
 playground({
-  caption: 'halve α or double β and compare when the peak arrives',
-  dt: 1,
-  substeps: 10,
+  caption: 'double β instead of halving α: same peak, half the time',
+  dt: fixed.dt_days,
+  substeps: 2,
 
-  init: () => ({ y: [fixed.N - fixed.I0, fixed.I0, fixed.R0] }),
+  init: () => ({ y: [S0, I0, R00] }),
   deriv,
 
   metrics(s) {
-    const I = s.path.y[1], R = s.path.y[2];
-    if (!I || I.length === 0) return { peak_frac: null, t_peak: null, final_frac: null };
-    const k = peakIndex(I);
-    return {
-      peak_frac: I[k] / fixed.N,
-      t_peak: k,
-      final_frac: R[R.length - 1] / fixed.N,
-    };
+    const a = analyse(s);
+    if (!a) return { peak_frac: null, peak_day: null, t_safe: null };
+    return { peak_frac: a.peak_frac, peak_day: a.peak_day, t_safe: a.t_safe };
   },
 
   readout(s, p, m) {
-    const ratio = fixed.N / (B(p) / A(p));
-    return `S₀/γ ${fmt(ratio)} · peak I*/N ${fmt(m.peak_frac)} · peak day ${fmt(m.t_peak)} · ever infected ${fmt(m.final_frac)}`;
+    const { alpha, beta } = rates(p);
+    return `peak ${fmt(m.peak_frac)} N · day ${fmt(m.peak_day)} · safe day ${fmt(m.t_safe)} · N/γ ${fmt(N * alpha / beta)}`;
   },
 
   draw(g, s, p, m) {
     const [left, right] = g.split('1x2');
-    const N = fixed.N;
-    const t = s.path.t;
-    const S = s.path.y[0].map(v => v / N);
-    const I = s.path.y[1].map(v => v / N);
-    const R = s.path.y[2].map(v => v / N);
-    const gN = (B(p) / A(p)) / N;
+    const t = s.path.t, I = s.path.y[1];
+    const frac = Array.from(I, v => v / N);
+    const a = analyse(s);
+    const top = Math.max(0.6, (a ? a.peak_frac : 0) * 1.1, peakEq8(p) * 1.1);
 
-    left.title('fractions over time');
-    left.axes({ x: [0, 300], y: [0, 1], xlabel: 'day' });
-    left.line(t, S, { series: 1, label: 'S/N' });
-    left.line(t, R, { series: 2, label: 'R/N' });
-    left.line(t, I, { label: 'I/N' });
-    if (m.t_peak != null) {
-      left.vline(m.t_peak, { series: 3, label: `t* ${fmt(m.t_peak)}` });
-      left.marker(m.t_peak, m.peak_frac, { label: `I*/N ${fmt(m.peak_frac)}` });
+    left.title('infectives I(t)/N');
+    left.axes({ x: [0, T_END], y: [0, top], xlabel: 'days', ylabel: 'I/N' });
+    left.hline(peakEq8(p), { series: 2, label: 'Eq. 8 peak' });
+    left.line(t, frac, { label: 'I/N' });
+    if (a && a.k > 0) left.marker(a.peak_day, a.peak_frac, { label: `t* ${fmt(a.peak_day)}` });
+
+    right.title('log scale, safety level');
+    right.axes({ x: [0, T_END], y: [1e-7, 1], xlabel: 'days', ylog: true });
+    right.hline(SAFE, { series: 2, label: 'I/N = 1e-4' });
+    right.line(t, frac);
+    if (a && a.t_safe !== null && a.t_safe < T_END) {
+      right.vline(a.t_safe, { series: 3, label: `t_s ${fmt(a.t_safe)}` });
     }
-
-    right.title('infected vs susceptible');
-    right.axes({ x: [0, 1], y: [0, 0.6], xlabel: 'S/N', ylabel: 'I/N' });
-    if (gN <= 1) right.vline(gN, { series: 2, label: 'S = γ' });
-    right.line(S, I);
-    right.marker(S[S.length - 1], I[I.length - 1], { label: `day ${fmt(s.t)}` });
   },
 });</script>
 </body>

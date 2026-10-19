@@ -3,17 +3,17 @@
   "expect": {
     "archetype": "dynamical|sweep"
   },
-  "skill": "bd6acedf59b9",
+  "skill": "affda990e92d",
   "models": {
     "extract": "claude-opus-5-5",
     "generate": "claude-opus-5-5"
   },
-  "date": "2026-10-19T22:44:46.905Z",
+  "date": "2026-10-19T22:48:22.420Z",
   "extraction": {
     "archetype": "sweep",
-    "experiment": "Sweeping the driving frequency ω traces the amplitude curve of Eq. 15.29, which peaks at the natural frequency ω_0. Raising the damping b lowers that peak and widens it, which is the behaviour shown in Figure 15.31.",
-    "reproduce": "Driving at the natural frequency gives the maximum amplitude A_max = F_0/(bω). With m = k = F_0 = 1 and b = 0.1, this is about 10 at ω = ω_0 = 1.",
-    "contrast": "With four times the damping, the same oscillator has a much lower and much wider resonance peak.",
+    "experiment": "Sweeping the driving frequency ω shows the steady-state amplitude A of Eq. 15.29 peaking at the natural frequency ω_0. Raising the damping b lowers and widens that peak, which is the document's resonance claim (Figure 15.31).",
+    "reproduce": "Driving at the natural frequency with light damping gives the maximum amplitude F_0/(bω_0) = 10 for m = k = 1, b = 0.1.",
+    "contrast": "Tripling the damping at the same resonant drive gives a much lower peak and a much wider resonance curve.",
     "fallback": false
   },
   "outcome": "pass",
@@ -25,13 +25,13 @@
       "observed": {
         "reproduce": {
           "amplitude": 10,
-          "peak_amplitude": 10.012,
-          "width": 0.173
+          "width": 0.174091,
+          "quality": 5.74412
         },
         "contrast": {
-          "amplitude": 2.5,
-          "peak_amplitude": 2.55155,
-          "width": 0.772
+          "amplitude": 3.33333,
+          "width": 0.547638,
+          "quality": 1.82602
         }
       }
     }
@@ -39,15 +39,15 @@
   "calls": [
     {
       "step": "extract-1",
-      "cost": 0.09631999999999999,
-      "ms": 28714
+      "cost": 0.0667192,
+      "ms": 28114
     },
     {
       "step": "generate",
-      "cost": 0.140128,
-      "ms": 16101
+      "cost": 0.155608,
+      "ms": 39526
     }
   ],
-  "cost_usd": 0.236,
-  "seconds": 47
+  "cost_usd": 0.222,
+  "seconds": 70
 }

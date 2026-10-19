@@ -3,36 +3,37 @@
   "title": "Size and timescale of epidemics in the SIR framework",
   "playable": true,
   "unplayable_reason": null,
-  "experiment": "Raising the threshold γ = β/α by doubling β or by halving α gives the same epidemic peak I*/N ≈ 0.30, but the peak arrives about twice as late when α is cut, which is the paper's scaling result t*(2) = t*(1)/λ (Eq. 23).",
+  "experiment": "Halving the contact rate α and doubling the removal rate β flatten the SIR peak I(t)/N to the same height, but the reader sees the β route reach its peak and fall below the safety level in about half the time. This is the scaling law of Eq. (23) (II.3, Table 1).",
   "archetype": "dynamical",
-  "archetype_reason": "the claim is about the time course of I(t) under the stated SIR ODEs (Eq. 1), and the metrics are the timing and height of the peak",
+  "archetype_reason": "the SIR equations (1) are ODEs integrated in time, and the claims concern the peak height and the timing of I(t)",
   "fixed": {
-    "model": "classical SIR, Eq. 1: dS/dt = -α S I, dI/dt = α S I - β I, dR/dt = β I",
     "N": 60000000,
     "I0": 10,
     "R0": 0,
     "S0": "N - I0",
-    "alpha_0": 1e-8,
-    "beta_0_per_day": 0.1,
-    "alpha": "alpha_factor × alpha_0",
-    "beta": "beta_factor × beta_0",
-    "step": "one step = 1 day, integrated with RK4 using 10 substeps of 0.1 day",
-    "t_peak_definition": "day index (0-based step count) at which I is largest over the run"
+    "alpha0": 1e-8,
+    "beta0": 0.1,
+    "alpha": "alpha_factor * alpha0",
+    "beta": "beta_factor * beta0 (per day)",
+    "equations": "dS/dt = -alpha S I; dI/dt = alpha S I - beta I; dR/dt = beta I",
+    "integrator": "RK4",
+    "dt_days": 0.2,
+    "safety_level": "I/N = 1e-4"
   },
   "params": [
     {
       "name": "alpha_factor",
       "label": "contact rate α / α₀",
       "kind": "range",
-      "min": 0.25,
+      "min": 0.1,
       "max": 4,
       "step": 0.05,
       "default": 1,
       "scale": "log",
       "unit": "",
       "source": {
-        "section": "The SIR model",
-        "quote": "Here the parameter $\\alpha$ corresponds to a contact rate (also called infection rate)."
+        "section": "II",
+        "quote": "the parameter $\\alpha$ corresponds to a contact rate (also called infection rate)"
       }
     },
     {
@@ -46,7 +47,7 @@
       "scale": "log",
       "unit": "",
       "source": {
-        "section": "The SIR model",
+        "section": "II",
         "quote": "The parameter $\\beta$ is a removal rate; more precisely, it is the inverse of the typical removal time"
       }
     }
@@ -54,66 +55,29 @@
   "metrics": [
     {
       "name": "peak_frac",
-      "label": "peak infected I*/N",
-      "unit": "",
-      "meaning": "maximum over all simulated days of I(t) divided by N"
+      "label": "peak infectives",
+      "unit": "of N",
+      "meaning": "maximum over the run of I(t)/N"
     },
     {
-      "name": "t_peak",
-      "label": "peak day t*",
+      "name": "peak_day",
+      "label": "peak day",
       "unit": "days",
-      "meaning": "the day (step index) at which I(t) attains its maximum over the run"
+      "meaning": "time t in days at which I(t) attains its maximum over the run"
     },
     {
-      "name": "final_frac",
-      "label": "ever infected R/N",
-      "unit": "",
-      "meaning": "R(t)/N at the last simulated day"
+      "name": "t_safe",
+      "label": "time to safe level",
+      "unit": "days",
+      "meaning": "first time t after peak_day at which I(t)/N < 1e-4; equals the run length (300 days) if never reached"
     }
   ],
-  "steps": 300,
+  "steps": 1500,
   "reproduce": {
-    "claim": "Doubling β (α unchanged) doubles γ, so the peak drops to I*/N ≈ 0.30 and arrives near day 41 (Table 1).",
+    "claim": "Raising γ twofold by halving α (social distancing) lowers the peak to about 0.30 N, but the peak arrives near day 82 and the safe level near day 189.",
     "source": {
-      "section": "Epidemic management in the SIR framework",
-      "quote": "Actions reducing $\\gamma$ by the same factor through action on the different parameters produce the same epidemic peak level"
-    },
-    "params": {
-      "alpha_factor": 1,
-      "beta_factor": 2
-    },
-    "expect": [
-      {
-        "metric": "peak_frac",
-        "op": "between",
-        "value": [
-          0.28,
-          0.32
-        ]
-      },
-      {
-        "metric": "t_peak",
-        "op": "between",
-        "value": [
-          33,
-          49
-        ]
-      },
-      {
-        "metric": "final_frac",
-        "op": "between",
-        "value": [
-          0.91,
-          0.97
-        ]
-      }
-    ]
-  },
-  "contrast": {
-    "claim": "Halving α instead (β unchanged) gives the same γ, the same peak height and the same final size, but the peak comes about twice as late.",
-    "source": {
-      "section": "Scaling properties of the SIR equations",
-      "quote": "increasing $\\beta$ by a factor $\\lambda$ , $t_{*}$ is reduced by a factor $1/\\lambda$ , with respect to the value attained by reducing $\\alpha$ ."
+      "section": "III",
+      "quote": "Actions reducing $\\gamma$ by the same factor through action on the different parameters produce the same epidemic peak level, but with a substantially different dynamics."
     },
     "params": {
       "alpha_factor": 0.5,
@@ -129,18 +93,45 @@
         ]
       },
       {
-        "metric": "final_frac",
+        "metric": "peak_day",
         "op": "between",
         "value": [
-          0.91,
-          0.97
+          72,
+          92
+        ]
+      }
+    ]
+  },
+  "contrast": {
+    "claim": "Raising γ by the same factor through doubling β (early detection and isolation) gives the same peak height, but the peak and the safe level both arrive in roughly half the time.",
+    "source": {
+      "section": "II.3",
+      "quote": "containment measures with $\\lambda=2$ reduce by a half both the time needed for the epidemic to reach the peak and the whole time-span of the epidemic"
+    },
+    "params": {
+      "alpha_factor": 1,
+      "beta_factor": 2
+    },
+    "expect": [
+      {
+        "metric": "peak_frac",
+        "op": "between",
+        "value": [
+          0.28,
+          0.32
         ]
       },
       {
-        "metric": "t_peak",
-        "op": ">",
+        "metric": "peak_day",
+        "op": "<",
         "ref": "reproduce",
-        "factor": 1.7
+        "factor": 0.6
+      },
+      {
+        "metric": "t_safe",
+        "op": "<",
+        "ref": "reproduce",
+        "factor": 0.6
       }
     ]
   },
@@ -149,49 +140,72 @@
     "title": "Size and timescale of epidemics in the SIR framework",
     "playable": true,
     "unplayable_reason": null,
-    "experiment": "Raising the epidemic threshold γ lowers the closed-form peak I* = N − γ − γ log(N/γ) (Eq. 8), showing that the peak is a decreasing function of γ.",
+    "experiment": "Changing α and β moves the epidemic threshold γ = β/α. The reader sees the predicted peak I*/N from Eq. (8) shrink as γ grows, and drop to zero once γ exceeds N.",
     "archetype": "diagram",
-    "archetype_reason": "the peak height is a closed-form function of γ alone, so one configuration gives one computed number",
+    "archetype_reason": "the peak height is a closed-form function of γ (Eq. 8), and γ is set by the configuration of α and β",
     "fixed": {
       "N": 60000000,
-      "gamma_0": 10000000,
-      "gamma": "gamma_factor × gamma_0",
-      "formula": "I* = N − γ − γ ln(N/γ) when N > γ, else 0 (Eq. 8)"
+      "alpha0": 1e-8,
+      "beta0": 0.1,
+      "gamma": "(beta_factor * beta0) / (alpha_factor * alpha0)",
+      "peak_formula": "I*/N = 1 - g - g*ln(1/g) with g = gamma/N if g < 1, else 0"
     },
     "params": [
       {
-        "name": "gamma_factor",
-        "label": "threshold γ / γ₀",
+        "name": "alpha_factor",
+        "label": "contact rate α / α₀",
         "kind": "range",
-        "min": 0.5,
-        "max": 6,
-        "step": 0.1,
+        "min": 0.1,
+        "max": 4,
+        "step": 0.05,
         "default": 1,
-        "scale": "linear",
+        "scale": "log",
         "unit": "",
         "source": {
-          "section": "Epidemic peak and total number of infected",
-          "quote": "for this reason $\\gamma$ is also known as the epidemic threshold."
+          "section": "II",
+          "quote": "the parameter $\\alpha$ corresponds to a contact rate (also called infection rate)"
+        }
+      },
+      {
+        "name": "beta_factor",
+        "label": "removal rate β / β₀",
+        "kind": "range",
+        "min": 0.25,
+        "max": 4,
+        "step": 0.05,
+        "default": 1,
+        "scale": "log",
+        "unit": "",
+        "source": {
+          "section": "II",
+          "quote": "The parameter $\\beta$ is a removal rate; more precisely, it is the inverse of the typical removal time"
         }
       }
     ],
     "metrics": [
       {
         "name": "peak_frac",
-        "label": "peak infected I*/N",
+        "label": "peak infectives",
+        "unit": "of N",
+        "meaning": "I*/N from Eq. (8): 1 - g - g ln(1/g) with g = γ/N, or 0 when g >= 1"
+      },
+      {
+        "name": "rho0",
+        "label": "basic reproduction number",
         "unit": "",
-        "meaning": "(N − γ − γ ln(N/γ)) / N, or 0 if γ ≥ N"
+        "meaning": "N / γ"
       }
     ],
     "steps": 0,
     "reproduce": {
-      "claim": "Doubling γ gives I*/N ≈ 0.300, as in Table 1.",
+      "claim": "Doubling γ (from N/6 to N/3) gives a peak of about 0.30 N.",
       "source": {
-        "section": "Scaling properties of the SIR equations",
-        "quote": "the amplitude of the peak $I_{*}$ (7) and the the total number of infected (10) $R_{E}$ are decreasing functions of the parameter $\\gamma$"
+        "section": "II.1",
+        "quote": "An epidemic can start only if $S(t_{0})>\\gamma$ , and it stops spontaneously once"
       },
       "params": {
-        "gamma_factor": 2
+        "alpha_factor": 0.5,
+        "beta_factor": 1
       },
       "expect": [
         {
@@ -205,20 +219,20 @@
       ]
     },
     "contrast": {
-      "claim": "At the baseline γ₀ the peak is much higher, I*/N ≈ 0.535.",
+      "claim": "Cutting α far enough that γ exceeds N leaves no epidemic at all.",
       "source": {
-        "section": "Scaling properties of the SIR equations",
-        "quote": "Above the epidemic threshold ( $S_{0}/\\gamma>1$ ), $dI_{P}/d\\gamma$ is always negative"
+        "section": "II.1",
+        "quote": "these expressions for $I_{*}$ apply if (and only if) $S_{0}>\\gamma$ and $N>\\gamma$ respectively: if $S_{0}<\\gamma$ there is no epidemic"
       },
       "params": {
-        "gamma_factor": 1
+        "alpha_factor": 0.15,
+        "beta_factor": 1
       },
       "expect": [
         {
           "metric": "peak_frac",
-          "op": ">",
-          "ref": "reproduce",
-          "by": 0.2
+          "op": "<",
+          "value": 0.01
         }
       ]
     },
