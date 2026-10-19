@@ -1,0 +1,53 @@
+{
+  "case": "oscillator",
+  "expect": {
+    "archetype": "dynamical|sweep"
+  },
+  "skill": "bd6acedf59b9",
+  "models": {
+    "extract": "claude-opus-5-5",
+    "generate": "claude-opus-5-5"
+  },
+  "date": "2026-10-19T22:44:46.905Z",
+  "extraction": {
+    "archetype": "sweep",
+    "experiment": "Sweeping the driving frequency ω traces the amplitude curve of Eq. 15.29, which peaks at the natural frequency ω_0. Raising the damping b lowers that peak and widens it, which is the behaviour shown in Figure 15.31.",
+    "reproduce": "Driving at the natural frequency gives the maximum amplitude A_max = F_0/(bω). With m = k = F_0 = 1 and b = 0.1, this is about 10 at ω = ω_0 = 1.",
+    "contrast": "With four times the damping, the same oscillator has a much lower and much wider resonance peak.",
+    "fallback": false
+  },
+  "outcome": "pass",
+  "attempts": [
+    {
+      "kind": "generate",
+      "ok": true,
+      "failures": [],
+      "observed": {
+        "reproduce": {
+          "amplitude": 10,
+          "peak_amplitude": 10.012,
+          "width": 0.173
+        },
+        "contrast": {
+          "amplitude": 2.5,
+          "peak_amplitude": 2.55155,
+          "width": 0.772
+        }
+      }
+    }
+  ],
+  "calls": [
+    {
+      "step": "extract-1",
+      "cost": 0.09631999999999999,
+      "ms": 28714
+    },
+    {
+      "step": "generate",
+      "cost": 0.140128,
+      "ms": 16101
+    }
+  ],
+  "cost_usd": 0.236,
+  "seconds": 47
+}

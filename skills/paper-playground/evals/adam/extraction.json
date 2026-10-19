@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "title": "Adam: A Method for Stochastic Optimization",
+  "playable": true,
+  "unplayable_reason": null,
+  "experiment": "Turning off Adam's bias correction with β2 close to 1 makes the early steps several times larger than α, while with correction each step stays at about α. This is the initialization-bias mechanism of §3 and §5, and the trust-region bound of §2.1.",
+  "archetype": "iterative",
+  "archetype_reason": "Adam is one update rule repeated step by step, and the claim is about the size of each iteration's parameter step",
+  "fixed": {
+    "objective": "deterministic 1-D quadratic f(θ) = 0.5·θ², gradient g_t = θ_{t-1}",
+    "theta0": 1,
+    "epsilon": 1e-8,
+    "m0": 0,
+    "v0": 0,
+    "update_with_correction": "m_t = β1·m_{t-1} + (1-β1)·g_t; v_t = β2·v_{t-1} + (1-β2)·g_t²; m̂ = m_t/(1-β1^t); v̂ = v_t/(1-β2^t); θ_t = θ_{t-1} - α·m̂/(√v̂ + ε)",
+    "update_without_correction": "same as above but m̂ = m_t and v̂ = v_t (RMSProp with momentum, as in section 6.4)"
+  },
+  "params": [
+    {
+      "name": "bias_correction",
+      "label": "bias correction",
+      "kind": "toggle",
+      "default": true,
+      "source": {
+        "section": "3",
+        "quote": "In algorithm 1 we therefore divide by this term to correct the initialization bias."
+      }
+    },
+    {
+      "name": "beta2",
+      "label": "decay rate β2",
+      "kind": "range",
+      "min": 0.9,
+      "max": 0.9999,
+      "step": 0.0001,
+      "default": 0.999,
+      "scale": "linear",
+      "unit": "",
+      "source": {
+        "section": "2",
+        "quote": "the hyper-parameters β1, β2 ∈ [0, 1) control the exponential decay rates of these moving averages"
+      }
+    },
+    {
+      "name": "beta1",
+      "label": "decay rate β1",
+      "kind": "range",
+      "min": 0,
+      "max": 0.99,
+      "step": 0.01,
+      "default": 0.9,
+      "scale": "linear",
+      "unit": "",
+      "source": {
+        "section": "Algorithm 1",
+        "quote": "Good default settings for the tested machine learning problems are α = 0.001, β1 = 0.9, β2 = 0.999"
+      }
+    },
+    {
+      "name": "alpha",
+      "label": "stepsize α",
+      "kind": "range",
+      "min": 0.0001,
+      "max": 0.01,
+      "step": 0.0001,
+      "default": 0.001,
+      "scale": "log",
+      "unit": "",
+      "source": {
+        "section": "2.1",
+        "quote": "Since α sets (an upper bound of) the magnitude of steps in parameter space"
+      }
+    }
+  ],
+  "metrics": [
+    {
+      "name": "max_step_ratio",
+      "label": "largest step / α",
+      "unit": "",
+      "meaning": "maximum over t = 1..steps of |θ_t − θ_{t-1}| divided by α"
+    },
+    {
+      "name": "distance_moved",
+      "label": "distance moved",
+      "unit": "",
+      "meaning": "|θ_steps − θ0| after the run"
+    }
+  ],
+  "steps": 50,
+  "reproduce": {
+    "claim": "With bias correction, every step has magnitude at most about α, even with β2 = 0.999.",
+    "source": {
+      "section": "2.1",
+      "quote": "The effective magnitude of the steps taken in parameter space at each timestep are approximately bounded by the stepsize setting α"
+    },
+    "params": {
+      "bias_correction": true,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "alpha": 0.001
+    },
+    "expect": [
+      {
+        "metric": "max_step_ratio",
+        "op": "<=",
+        "value": 1.05
+      },
+      {
+        "metric": "max_step_ratio",
+        "op": ">=",
+        "value": 0.8
+      }
+    ]
+  },
+  "contrast": {
+    "claim": "Without bias correction and with β2 close to 1, the early steps are several times larger than α.",
+    "source": {
+      "section": "5",
+      "quote": "not correcting the bias leads to very large stepsizes and often divergence"
+    },
+    "params": {
+      "bias_correction": false,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "alpha": 0.001
+    },
+    "expect": [
+      {
+        "metric": "max_step_ratio",
+        "op": ">",
+        "ref": "reproduce",
+        "factor": 4
+      },
+      {
+        "metric": "distance_moved",
+        "op": ">",
+        "ref": "reproduce",
+        "factor": 3
+      }
+    ]
+  },
+  "fallback": null
+}

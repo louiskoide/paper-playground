@@ -1,0 +1,142 @@
+{
+  "schema": 1,
+  "title": "Attention Is All You Need",
+  "playable": true,
+  "unplayable_reason": null,
+  "experiment": "Raising d_k with the 1/√d_k scaling switched off makes each attention row go from spread out to nearly one-hot, and the softmax gradients collapse. This is the effect §3.2.1 gives as the reason for scaling.",
+  "archetype": "pipeline",
+  "archetype_reason": "scaled dot-product attention is a fixed chain of stages on a toy input (QKᵀ, then scale, then optional mask, then softmax, then ×V), and the intermediate logits and weights are the point",
+  "fixed": {
+    "seq_len": 8,
+    "d_v": 4,
+    "qkv_init": "Q (seq_len×d_k), K (seq_len×d_k), V (seq_len×d_v) entries i.i.d. N(0, 1), drawn from a fixed-seed PRNG and redrawn when d_k changes",
+    "softmax_input": "logits = QKᵀ, divided by √d_k when scaled is on; with causal mask, entries with key index > query index are set to -∞ before the softmax",
+    "statistics_over": "all seq_len query rows; logit_std uses only the unmasked logits"
+  },
+  "params": [
+    {
+      "name": "d_k",
+      "label": "key dim d_k",
+      "kind": "range",
+      "min": 4,
+      "max": 512,
+      "step": 4,
+      "default": 64,
+      "scale": "log",
+      "unit": "",
+      "source": {
+        "section": "3.2.1",
+        "quote": "for large values of $d_{k}$ , the dot products grow large in magnitude"
+      }
+    },
+    {
+      "name": "scaled",
+      "label": "÷ √d_k",
+      "kind": "toggle",
+      "default": true,
+      "source": {
+        "section": "3.2.1",
+        "quote": "To counteract this effect, we scale the dot products by"
+      }
+    },
+    {
+      "name": "mask",
+      "label": "mask",
+      "kind": "select",
+      "default": "none",
+      "options": [
+        {
+          "value": "none",
+          "label": "none"
+        },
+        {
+          "value": "causal",
+          "label": "causal"
+        }
+      ],
+      "source": {
+        "section": "3.2.3",
+        "quote": "masking out (setting to $-\\infty$ ) all values in the input of the softmax which correspond to illegal connections"
+      }
+    }
+  ],
+  "metrics": [
+    {
+      "name": "max_weight",
+      "label": "max weight",
+      "unit": "",
+      "meaning": "mean over the seq_len query rows of the largest softmax weight in that row"
+    },
+    {
+      "name": "logit_std",
+      "label": "logit std",
+      "unit": "",
+      "meaning": "population standard deviation of all unmasked softmax-input entries (QKᵀ, divided by √d_k when scaled is on)"
+    },
+    {
+      "name": "softmax_grad",
+      "label": "softmax gradient",
+      "unit": "",
+      "meaning": "mean over all unmasked entries (i, j) of p_ij·(1 − p_ij), the diagonal of the softmax Jacobian, where p_ij is the attention weight of query i on key j"
+    }
+  ],
+  "steps": 1,
+  "reproduce": {
+    "claim": "With the 1/√d_k scaling, logits keep unit variance and attention stays spread out even at d_k = 512.",
+    "source": {
+      "section": "3.2.1",
+      "quote": "To counteract this effect, we scale the dot products by"
+    },
+    "params": {
+      "d_k": 512,
+      "scaled": true
+    },
+    "expect": [
+      {
+        "metric": "max_weight",
+        "op": "<",
+        "value": 0.7
+      },
+      {
+        "metric": "logit_std",
+        "op": "between",
+        "value": [
+          0.6,
+          1.5
+        ]
+      }
+    ]
+  },
+  "contrast": {
+    "claim": "Without scaling, the same d_k = 512 gives dot products with standard deviation near √d_k, so the softmax saturates toward one-hot and its gradients nearly vanish.",
+    "source": {
+      "section": "3.2.1",
+      "quote": "pushing the softmax function into regions where it has extremely small gradients"
+    },
+    "params": {
+      "d_k": 512,
+      "scaled": false
+    },
+    "expect": [
+      {
+        "metric": "max_weight",
+        "op": ">",
+        "ref": "reproduce",
+        "by": 0.3
+      },
+      {
+        "metric": "logit_std",
+        "op": ">",
+        "ref": "reproduce",
+        "factor": 10
+      },
+      {
+        "metric": "softmax_grad",
+        "op": "<",
+        "ref": "reproduce",
+        "factor": 0.3
+      }
+    ]
+  },
+  "fallback": null
+}

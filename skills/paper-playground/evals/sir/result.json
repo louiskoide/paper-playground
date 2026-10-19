@@ -1,0 +1,53 @@
+{
+  "case": "sir",
+  "expect": {
+    "archetype": "dynamical"
+  },
+  "skill": "bd6acedf59b9",
+  "models": {
+    "extract": "claude-opus-5-5",
+    "generate": "claude-opus-5-5"
+  },
+  "date": "2026-10-19T22:45:34.380Z",
+  "extraction": {
+    "archetype": "dynamical",
+    "experiment": "Raising the threshold γ = β/α by doubling β or by halving α gives the same epidemic peak I*/N ≈ 0.30, but the peak arrives about twice as late when α is cut, which is the paper's scaling result t*(2) = t*(1)/λ (Eq. 23).",
+    "reproduce": "Doubling β (α unchanged) doubles γ, so the peak drops to I*/N ≈ 0.30 and arrives near day 41 (Table 1).",
+    "contrast": "Halving α instead (β unchanged) gives the same γ, the same peak height and the same final size, but the peak comes about twice as late.",
+    "fallback": true
+  },
+  "outcome": "pass",
+  "attempts": [
+    {
+      "kind": "generate",
+      "ok": true,
+      "failures": [],
+      "observed": {
+        "reproduce": {
+          "peak_frac": 0.300445,
+          "t_peak": 41,
+          "final_frac": 0.94048
+        },
+        "contrast": {
+          "peak_frac": 0.300445,
+          "t_peak": 82,
+          "final_frac": 0.94048
+        }
+      }
+    }
+  ],
+  "calls": [
+    {
+      "step": "extract-1",
+      "cost": 0.34117600000000003,
+      "ms": 36778
+    },
+    {
+      "step": "generate",
+      "cost": 0.133884,
+      "ms": 26363
+    }
+  ],
+  "cost_usd": 0.475,
+  "seconds": 65
+}

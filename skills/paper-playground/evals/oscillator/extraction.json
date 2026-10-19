@@ -1,0 +1,168 @@
+{
+  "schema": 1,
+  "title": "Forced Oscillations",
+  "playable": true,
+  "unplayable_reason": null,
+  "experiment": "Sweeping the driving frequency ω traces the amplitude curve of Eq. 15.29, which peaks at the natural frequency ω_0. Raising the damping b lowers that peak and widens it, which is the behaviour shown in Figure 15.31.",
+  "archetype": "sweep",
+  "archetype_reason": "the steady-state amplitude A(ω) is a closed-form formula (Eq. 15.29), and its shape depends on m, k, b and F_0",
+  "fixed": {
+    "amplitude_formula": "A(ω) = F_0 / sqrt(m^2 (ω^2 - ω_0^2)^2 + b^2 ω^2), with ω_0 = sqrt(k/m)",
+    "omega_grid": "ω sampled uniformly on [0.001, 3] rad/s with 3000 points, used for the peak and width metrics",
+    "width_definition": "half-maximum amplitude width, following Figure 15.32; clipped to the grid ends if a crossing lies outside the grid"
+  },
+  "params": [
+    {
+      "name": "m",
+      "label": "mass m",
+      "kind": "range",
+      "min": 0.5,
+      "max": 5,
+      "step": 0.1,
+      "default": 1,
+      "scale": "linear",
+      "unit": "kg",
+      "source": {
+        "section": "15.6",
+        "quote": "Attach a mass m to a spring in a viscous fluid"
+      }
+    },
+    {
+      "name": "k",
+      "label": "spring constant k",
+      "kind": "range",
+      "min": 0.5,
+      "max": 5,
+      "step": 0.1,
+      "default": 1,
+      "scale": "linear",
+      "unit": "N/m",
+      "source": {
+        "section": "Eq. 15.29",
+        "quote": "where ω_0=√((k)/(m)) is the natural frequency of the mass/spring system"
+      }
+    },
+    {
+      "name": "b",
+      "label": "damping b",
+      "kind": "range",
+      "min": 0.05,
+      "max": 2,
+      "step": 0.05,
+      "default": 0.1,
+      "scale": "log",
+      "unit": "kg/s",
+      "source": {
+        "section": "15.6",
+        "quote": "taking this to the limit where there is no damping (b=0) , the amplitude becomes infinite"
+      }
+    },
+    {
+      "name": "F0",
+      "label": "driving force F_0",
+      "kind": "range",
+      "min": 0.1,
+      "max": 5,
+      "step": 0.1,
+      "default": 1,
+      "scale": "linear",
+      "unit": "N",
+      "source": {
+        "section": "15.6",
+        "quote": "The rotating disk provides energy to the system by the work done by the driving force (F_d=F_0sin(ωt))"
+      }
+    },
+    {
+      "name": "omega",
+      "label": "driving frequency ω",
+      "kind": "range",
+      "min": 0.1,
+      "max": 3,
+      "step": 0.01,
+      "default": 1,
+      "scale": "linear",
+      "unit": "rad/s",
+      "source": {
+        "section": "15.6",
+        "quote": "The motor turns with an angular driving frequency of ω"
+      }
+    }
+  ],
+  "metrics": [
+    {
+      "name": "amplitude",
+      "label": "amplitude at ω",
+      "unit": "m",
+      "meaning": "A from Eq. 15.29 evaluated at the current params, including the slider value of ω"
+    },
+    {
+      "name": "peak_amplitude",
+      "label": "peak amplitude",
+      "unit": "m",
+      "meaning": "maximum of A(ω) from Eq. 15.29 over the fixed ω grid [0.001, 3] (3000 points), with the other params at their current values"
+    },
+    {
+      "name": "width",
+      "label": "half-max width Δω",
+      "unit": "rad/s",
+      "meaning": "on the fixed ω grid, the largest ω where A ≥ peak_amplitude/2 minus the smallest ω where A ≥ peak_amplitude/2"
+    }
+  ],
+  "steps": 0,
+  "reproduce": {
+    "claim": "Driving at the natural frequency gives the maximum amplitude A_max = F_0/(bω). With m = k = F_0 = 1 and b = 0.1, this is about 10 at ω = ω_0 = 1.",
+    "source": {
+      "section": "15.6",
+      "quote": "The maximum amplitude results when the frequency of the driving force equals the natural frequency of the system"
+    },
+    "params": {
+      "b": 0.1,
+      "omega": 1
+    },
+    "steps": 0,
+    "expect": [
+      {
+        "metric": "amplitude",
+        "op": "between",
+        "value": [
+          9.5,
+          10.5
+        ]
+      },
+      {
+        "metric": "peak_amplitude",
+        "op": "between",
+        "value": [
+          9.5,
+          10.5
+        ]
+      }
+    ]
+  },
+  "contrast": {
+    "claim": "With four times the damping, the same oscillator has a much lower and much wider resonance peak.",
+    "source": {
+      "section": "15.6",
+      "quote": "the widths of the resonance curves shown in Figure 15.31 depend on damping: the less the damping, the narrower the resonance"
+    },
+    "params": {
+      "b": 0.4,
+      "omega": 1
+    },
+    "expect": [
+      {
+        "metric": "peak_amplitude",
+        "op": "<",
+        "ref": "reproduce",
+        "factor": 0.5
+      },
+      {
+        "metric": "width",
+        "op": ">",
+        "ref": "reproduce",
+        "factor": 2
+      }
+    ]
+  },
+  "fallback": null
+}

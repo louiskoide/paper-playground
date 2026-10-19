@@ -28,7 +28,6 @@ paper-playground/
     kernel.js                # inlined by build.mjs; the model never sees or emits it
     kernel.d.ts              # the API the model reads
     template.html            # plate shell, CSP meta, slots
-    schema/extraction.schema.json
     archetypes/              # each: header comment with signatures + one complete, runnable example
       dynamical.js    dynamical.json      # .json = the example's extraction spec
       iterative.js    iterative.json
@@ -38,14 +37,20 @@ paper-playground/
       grid.js         grid.json
       diagram.js      diagram.json
     scripts/
-      build.mjs              # extraction.json + playground.js → playground.html (imported by the web app)
-      selftest.mjs           # Playwright: load, __selftest(), drive controls, screenshot light+dark
-      run-eval.mjs           # API path per case: extract → generate → build → selftest → repair
+      build.mjs              # extraction.json + playground.js → playground.html; validateExtraction(); --check
+      selftest.mjs           # Playwright: load, __selftest(), drive controls, screenshot light+dark, phone width
+      examples.mjs           # build + self-test the seven archetype examples (kernel test suite)
+      run-eval.mjs           # web-app path per case: ingest → extract → generate → build → selftest → repair → fallback
     evals/
-      RESULTS.md             # one row per case per SKILL.md revision
-      attention/  { source.txt, extraction.json, playground.js, playground.html, selftest.json, light.png, dark.png }
+      RESULTS.md             # one row per case, regenerated each run
+      attention/  { case.json, source.json, extraction.json, playground.js, playground.html, selftest.json, result.json, light.png, dark.png }
       adam/ sir/ oscillator/ bitter-lesson/
-  app/ lib/ ...              # Phase 1+
+  lib/                       # shared by the eval runner and (Phase 1) the Next.js routes
+    ingest.mjs               # arXiv HTML → ar5iv → PDF (unpdf); generic pages; MathML → text; pasted text
+    prompts.mjs              # extraction / generation / repair prompt assembly, reply parsing, skill hash
+    llm.mjs                  # transport: `claude -p` (keyless) or the Messages API
+    quotes.mjs               # verbatim-quote check against the ingested text
+  app/ ...                   # Phase 1+
 ```
 
 Each archetype example has to pass its own self-test, so those seven examples also serve as the kernel's test suite.
@@ -224,10 +229,12 @@ The server checks every `quote` against the ingested text with a fuzzy match. An
 | case | source | expected | likely reproduce / contrast |
 |---|---|---|---|
 | attention | arXiv 1706.03762 (ar5iv) | 5 pipeline | §3.2.1: scaling keeps softmax spread / unscaled d_k=512 saturates |
-| adam | arXiv 1412.6980 (ar5iv) | 2 iterative | §2.1: effective step ≲ α / §6.4: no bias correction with β2→1 is unstable early |
-| sir | Kermack & McKendrick 1927, direct PDF URL (exercises PDF ingest) | 1 dynamical | threshold theorem: epidemic iff S0 > γ/β / below threshold it dies out. If the PDF has no usable text layer, swap in an arXiv SIR paper |
+| adam | arXiv 1412.6980 (both HTML conversions are empty, so this exercises the PDF fallback) | 2 iterative | §2.1: effective step ≲ α / §6.4: no bias correction with β2→1 is unstable early |
+| sir | Cadoni & Gaeta, *Size and timescale of epidemics in the SIR framework* (arXiv 2004.13024, given as a PDF link) | 1 dynamical | how β, γ and containment change epidemic size and timescale. (Kermack & McKendrick 1927 was the first choice; its publisher returns 403 to scripts.) |
 | oscillator | OpenStax *University Physics Vol. 1* §15.6 Forced Oscillations (CC BY), pasted | 1 or 3 | resonance peak near ω0 at low damping / heavy damping flattens it |
 | bitter-lesson | Sutton, *The Bitter Lesson*, pasted | `playable:false` or honest 7 | **pass** = declines, or a diagram whose output is a real derived quantity. **fail** = any invented curve |
+
+Document text isn't committed for copyrighted sources, because the repo is public. `case.json` records the source, and the ingested text is cached in a gitignored `.cache/`. `source.json` records the title, section ids and a hash of the text, so a change in ingest shows up in diffs. The OpenStax section is CC BY 4.0 and is committed with attribution.
 
 ## Main risks
 

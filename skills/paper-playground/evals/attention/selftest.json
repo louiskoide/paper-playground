@@ -1,0 +1,172 @@
+{
+  "file": "playground.html",
+  "ok": true,
+  "selftest": {
+    "type": "pp:selftest",
+    "ok": true,
+    "kernel": "0.1.0",
+    "ms": 23,
+    "checks": [
+      {
+        "id": "default",
+        "ok": true,
+        "msg": "ok in 2 ms",
+        "ms": 2
+      },
+      {
+        "id": "metrics",
+        "ok": true,
+        "msg": "missing or non-numeric: "
+      },
+      {
+        "id": "determinism",
+        "ok": true,
+        "msg": "same seed and params gave different output (Math.random, Date, or state leaking between runs?)"
+      },
+      {
+        "id": "sweep:d_k=64",
+        "ok": true,
+        "msg": "ok in 2 ms",
+        "ms": 2
+      },
+      {
+        "id": "sweep:d_k=4",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:d_k=512",
+        "ok": true,
+        "msg": "ok in 1 ms",
+        "ms": 1
+      },
+      {
+        "id": "decorative:d_k",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
+        "id": "sweep:scaled=true",
+        "ok": true,
+        "msg": "ok in 2 ms",
+        "ms": 2
+      },
+      {
+        "id": "sweep:scaled=false",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "decorative:scaled",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
+        "id": "sweep:mask=none",
+        "ok": true,
+        "msg": "ok in 2 ms",
+        "ms": 2
+      },
+      {
+        "id": "sweep:mask=causal",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "decorative:mask",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
+        "id": "reproduce",
+        "ok": true,
+        "msg": " (§3.2.1)",
+        "observed": {
+          "max_weight": 0.378314,
+          "logit_std": 1.03571,
+          "softmax_grad": 0.0949665
+        },
+        "status": "ok",
+        "section": "3.2.1"
+      },
+      {
+        "id": "contrast",
+        "ok": true,
+        "msg": " (§3.2.1)",
+        "observed": {
+          "max_weight": 0.965096,
+          "logit_std": 23.4355,
+          "softmax_grad": 0.0074431
+        },
+        "status": "ok",
+        "section": "3.2.1"
+      },
+      {
+        "id": "varies:max_weight",
+        "ok": true,
+        "msg": "max_weight is identical in every run (hard-coded?)"
+      },
+      {
+        "id": "varies:logit_std",
+        "ok": true,
+        "msg": "logit_std is identical in every run (hard-coded?)"
+      },
+      {
+        "id": "varies:softmax_grad",
+        "ok": true,
+        "msg": "softmax_grad is identical in every run (hard-coded?)"
+      }
+    ],
+    "failures": []
+  },
+  "drive": {
+    "ok": true,
+    "controls": [
+      {
+        "name": "key dim d_k",
+        "kind": "range",
+        "tried": [
+          "max"
+        ],
+        "readoutChanged": true,
+        "canvasChanged": true,
+        "ok": true
+      },
+      {
+        "name": "÷ √d_k",
+        "kind": "checkbox",
+        "tried": [
+          "toggle"
+        ],
+        "readoutChanged": true,
+        "canvasChanged": true,
+        "ok": true
+      },
+      {
+        "name": "mask",
+        "kind": "select",
+        "tried": [
+          "next option"
+        ],
+        "readoutChanged": true,
+        "canvasChanged": true,
+        "ok": true
+      }
+    ],
+    "transport": {
+      "reset": "stage 1/6 · q, k, v",
+      "step": "stage 2/6 · qkᵀ",
+      "playing": "stage 3/6 · scale",
+      "ok": true
+    }
+  },
+  "consoleErrors": [],
+  "shots": {
+    "dark": "dark.png",
+    "light": "light.png",
+    "phoneOverflow": false
+  }
+}

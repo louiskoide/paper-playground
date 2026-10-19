@@ -1,0 +1,53 @@
+{
+  "case": "attention",
+  "expect": {
+    "archetype": "pipeline"
+  },
+  "skill": "bd6acedf59b9",
+  "models": {
+    "extract": "claude-opus-5-5",
+    "generate": "claude-opus-5-5"
+  },
+  "date": "2026-10-19T22:44:38.680Z",
+  "extraction": {
+    "archetype": "pipeline",
+    "experiment": "Raising d_k with the 1/√d_k scaling switched off makes each attention row go from spread out to nearly one-hot, and the softmax gradients collapse. This is the effect §3.2.1 gives as the reason for scaling.",
+    "reproduce": "With the 1/√d_k scaling, logits keep unit variance and attention stays spread out even at d_k = 512.",
+    "contrast": "Without scaling, the same d_k = 512 gives dot products with standard deviation near √d_k, so the softmax saturates toward one-hot and its gradients nearly vanish.",
+    "fallback": false
+  },
+  "outcome": "pass",
+  "attempts": [
+    {
+      "kind": "generate",
+      "ok": true,
+      "failures": [],
+      "observed": {
+        "reproduce": {
+          "max_weight": 0.378314,
+          "logit_std": 1.03571,
+          "softmax_grad": 0.0949665
+        },
+        "contrast": {
+          "max_weight": 0.965096,
+          "logit_std": 23.4355,
+          "softmax_grad": 0.0074431
+        }
+      }
+    }
+  ],
+  "calls": [
+    {
+      "step": "extract-1",
+      "cost": 0.184712,
+      "ms": 27041
+    },
+    {
+      "step": "generate",
+      "cost": 0.25196,
+      "ms": 32698
+    }
+  ],
+  "cost_usd": 0.437,
+  "seconds": 62
+}

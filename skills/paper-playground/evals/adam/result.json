@@ -1,0 +1,51 @@
+{
+  "case": "adam",
+  "expect": {
+    "archetype": "iterative"
+  },
+  "skill": "bd6acedf59b9",
+  "models": {
+    "extract": "claude-opus-5-5",
+    "generate": "claude-opus-5-5"
+  },
+  "date": "2026-10-19T22:44:38.648Z",
+  "extraction": {
+    "archetype": "iterative",
+    "experiment": "Turning off Adam's bias correction with β2 close to 1 makes the early steps several times larger than α, while with correction each step stays at about α. This is the initialization-bias mechanism of §3 and §5, and the trust-region bound of §2.1.",
+    "reproduce": "With bias correction, every step has magnitude at most about α, even with β2 = 0.999.",
+    "contrast": "Without bias correction and with β2 close to 1, the early steps are several times larger than α.",
+    "fallback": false
+  },
+  "outcome": "pass",
+  "attempts": [
+    {
+      "kind": "generate",
+      "ok": true,
+      "failures": [],
+      "observed": {
+        "reproduce": {
+          "max_step_ratio": 1,
+          "distance_moved": 0.0496943
+        },
+        "contrast": {
+          "max_step_ratio": 6.51952,
+          "distance_moved": 0.267503
+        }
+      }
+    }
+  ],
+  "calls": [
+    {
+      "step": "extract-1",
+      "cost": 0.204564,
+      "ms": 30532
+    },
+    {
+      "step": "generate",
+      "cost": 0.237276,
+      "ms": 25014
+    }
+  ],
+  "cost_usd": 0.442,
+  "seconds": 59
+}

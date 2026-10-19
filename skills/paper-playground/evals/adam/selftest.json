@@ -1,0 +1,204 @@
+{
+  "file": "playground.html",
+  "ok": true,
+  "selftest": {
+    "type": "pp:selftest",
+    "ok": true,
+    "kernel": "0.1.0",
+    "ms": 38,
+    "checks": [
+      {
+        "id": "default",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "metrics",
+        "ok": true,
+        "msg": "missing or non-numeric: "
+      },
+      {
+        "id": "determinism",
+        "ok": true,
+        "msg": "same seed and params gave different output (Math.random, Date, or state leaking between runs?)"
+      },
+      {
+        "id": "sweep:bias_correction=true",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:bias_correction=false",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "decorative:bias_correction",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
+        "id": "sweep:beta2=0.999",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:beta2=0.9",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:beta2=1",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "decorative:beta2",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
+        "id": "sweep:beta1=0.9",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:beta1=0",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:beta1=0.99",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "decorative:beta1",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
+        "id": "sweep:alpha=0.001",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:alpha=1e-4",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "sweep:alpha=0.01",
+        "ok": true,
+        "msg": "ok in 0 ms",
+        "ms": 0
+      },
+      {
+        "id": "decorative:alpha",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
+        "id": "reproduce",
+        "ok": true,
+        "msg": " (§2.1)",
+        "observed": {
+          "max_step_ratio": 1,
+          "distance_moved": 0.0496943
+        },
+        "status": "ok",
+        "section": "2.1"
+      },
+      {
+        "id": "contrast",
+        "ok": true,
+        "msg": " (§5)",
+        "observed": {
+          "max_step_ratio": 6.51952,
+          "distance_moved": 0.267503
+        },
+        "status": "ok",
+        "section": "5"
+      },
+      {
+        "id": "varies:max_step_ratio",
+        "ok": true,
+        "msg": "max_step_ratio is identical in every run (hard-coded?)"
+      },
+      {
+        "id": "varies:distance_moved",
+        "ok": true,
+        "msg": "distance_moved is identical in every run (hard-coded?)"
+      }
+    ],
+    "failures": []
+  },
+  "drive": {
+    "ok": true,
+    "controls": [
+      {
+        "name": "bias correction",
+        "kind": "checkbox",
+        "tried": [
+          "toggle"
+        ],
+        "readoutChanged": true,
+        "canvasChanged": true,
+        "ok": true
+      },
+      {
+        "name": "decay rate β2",
+        "kind": "range",
+        "tried": [
+          "max"
+        ],
+        "readoutChanged": true,
+        "canvasChanged": true,
+        "ok": true
+      },
+      {
+        "name": "decay rate β1",
+        "kind": "range",
+        "tried": [
+          "max"
+        ],
+        "readoutChanged": true,
+        "canvasChanged": true,
+        "ok": true
+      },
+      {
+        "name": "stepsize α",
+        "kind": "range",
+        "tried": [
+          "max"
+        ],
+        "readoutChanged": true,
+        "canvasChanged": true,
+        "ok": true
+      }
+    ],
+    "transport": {
+      "reset": "step 0 · distance moved 0",
+      "step": "step 1 · largest step / α 1 · distance moved 1e-3",
+      "playing": "step 7 · largest step / α 1 · distance moved 0.007",
+      "ok": true
+    }
+  },
+  "consoleErrors": [],
+  "shots": {
+    "dark": "dark.png",
+    "light": "light.png",
+    "phoneOverflow": false
+  }
+}

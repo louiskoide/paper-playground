@@ -1,0 +1,151 @@
+{
+  "file": "playground.html",
+  "ok": true,
+  "selftest": {
+    "type": "pp:selftest",
+    "ok": true,
+    "kernel": "0.1.0",
+    "ms": 28,
+    "checks": [
+      {
+        "id": "default",
+        "ok": true,
+        "msg": "ok in 3 ms",
+        "ms": 3
+      },
+      {
+        "id": "metrics",
+        "ok": true,
+        "msg": "missing or non-numeric: "
+      },
+      {
+        "id": "determinism",
+        "ok": true,
+        "msg": "same seed and params gave different output (Math.random, Date, or state leaking between runs?)"
+      },
+      {
+        "id": "sweep:alpha_factor=1",
+        "ok": true,
+        "msg": "ok in 3 ms",
+        "ms": 3
+      },
+      {
+        "id": "sweep:alpha_factor=0.25",
+        "ok": true,
+        "msg": "ok in 2 ms",
+        "ms": 2
+      },
+      {
+        "id": "sweep:alpha_factor=4",
+        "ok": true,
+        "msg": "ok in 1 ms",
+        "ms": 1
+      },
+      {
+        "id": "decorative:alpha_factor",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
+        "id": "sweep:beta_factor=1",
+        "ok": true,
+        "msg": "ok in 3 ms",
+        "ms": 3
+      },
+      {
+        "id": "sweep:beta_factor=0.25",
+        "ok": true,
+        "msg": "ok in 1 ms",
+        "ms": 1
+      },
+      {
+        "id": "sweep:beta_factor=4",
+        "ok": true,
+        "msg": "ok in 1 ms",
+        "ms": 1
+      },
+      {
+        "id": "decorative:beta_factor",
+        "ok": true,
+        "msg": "render and metrics identical at every swept value"
+      },
+      {
+        "id": "reproduce",
+        "ok": true,
+        "msg": " (§Epidemic management in the SIR framework)",
+        "observed": {
+          "peak_frac": 0.300445,
+          "t_peak": 41,
+          "final_frac": 0.94048
+        },
+        "status": "ok",
+        "section": "Epidemic management in the SIR framework"
+      },
+      {
+        "id": "contrast",
+        "ok": true,
+        "msg": " (§Scaling properties of the SIR equations)",
+        "observed": {
+          "peak_frac": 0.300445,
+          "t_peak": 82,
+          "final_frac": 0.94048
+        },
+        "status": "ok",
+        "section": "Scaling properties of the SIR equations"
+      },
+      {
+        "id": "varies:peak_frac",
+        "ok": true,
+        "msg": "peak_frac is identical in every run (hard-coded?)"
+      },
+      {
+        "id": "varies:t_peak",
+        "ok": true,
+        "msg": "t_peak is identical in every run (hard-coded?)"
+      },
+      {
+        "id": "varies:final_frac",
+        "ok": true,
+        "msg": "final_frac is identical in every run (hard-coded?)"
+      }
+    ],
+    "failures": []
+  },
+  "drive": {
+    "ok": true,
+    "controls": [
+      {
+        "name": "contact rate α / α₀",
+        "kind": "range",
+        "tried": [
+          "max"
+        ],
+        "readoutChanged": true,
+        "canvasChanged": true,
+        "ok": true
+      },
+      {
+        "name": "removal rate β / β₀",
+        "kind": "range",
+        "tried": [
+          "max"
+        ],
+        "readoutChanged": true,
+        "canvasChanged": true,
+        "ok": true
+      }
+    ],
+    "transport": {
+      "reset": "step 0 · S₀/γ 6 · peak I*/N 1.67e-7 · peak day 0 · ever infected 0",
+      "step": "step 1 · S₀/γ 6 · peak I*/N 2.75e-7 · peak day 1 · ever infected 2.16e-8",
+      "playing": "step 31 · S₀/γ 6 · peak I*/N 0.382 · peak day 31 · ever infected 0.114",
+      "ok": true
+    }
+  },
+  "consoleErrors": [],
+  "shots": {
+    "dark": "dark.png",
+    "light": "light.png",
+    "phoneOverflow": false
+  }
+}
