@@ -1,0 +1,1 @@
+{ "name": "oscillator", "input": { "paste_file": "input.txt" }, "expect": { "archetype": "dynamical|sweep" }, "notes": "Pasted textbook section: OpenStax University Physics Vol. 1, 15.6 Forced Oscillations (CC BY 4.0)." }

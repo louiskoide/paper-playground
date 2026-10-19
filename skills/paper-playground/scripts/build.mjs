@@ -77,11 +77,12 @@ export function build({ spec, code, kernel = read('kernel.js'), template = read(
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  const [specPath, codePath, out] = process.argv.slice(2);
-  if (!specPath || !codePath) { console.error('usage: node build.mjs <extraction.json> <playground.js> [out.html]'); process.exit(2); }
+  const argv = process.argv.slice(2), check = argv[0] === '--check', [specPath, codePath, out] = check ? argv.slice(1) : argv;
+  if (!specPath || (!codePath && !check)) { console.error('usage: node build.mjs <extraction.json> <playground.js> [out.html]\n       node build.mjs --check <extraction.json>'); process.exit(2); }
   const spec = JSON.parse(readFileSync(specPath, 'utf8'));
-  const problems = validateExtraction(spec);
+  const problems = [...validateExtraction(spec), ...(spec.fallback ? validateExtraction(spec.fallback).map(p => `fallback: ${p}`) : [])];
   if (problems.length) { console.error(`extraction problems:\n- ${problems.join('\n- ')}`); process.exit(1); }
+  if (check) { console.error('extraction ok'); process.exit(0); }
   const html = build({ spec, code: readFileSync(codePath, 'utf8') });
   if (out) writeFileSync(out, html); else process.stdout.write(html);
 }

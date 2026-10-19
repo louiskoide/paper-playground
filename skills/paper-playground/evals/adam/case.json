@@ -1,0 +1,1 @@
+{ "name": "adam", "input": { "url": "1412.6980" }, "expect": { "archetype": "iterative" }, "notes": "Adam. Both HTML conversions are empty, so this exercises the PDF fallback." }

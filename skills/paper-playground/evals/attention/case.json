@@ -1,0 +1,1 @@
+{ "name": "attention", "input": { "url": "1706.03762" }, "expect": { "archetype": "pipeline" }, "notes": "Attention Is All You Need. arXiv HTML path." }

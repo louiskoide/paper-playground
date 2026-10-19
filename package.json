@@ -8,5 +8,9 @@
   },
   "devDependencies": {
     "playwright": "^1.64.1"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "unpdf": "^1.9.1"
   }
 }

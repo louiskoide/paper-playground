@@ -1,0 +1,55 @@
+Source: OpenStax, University Physics Volume 1, section 15.6 "Forced Oscillations", https://openstax.org/books/university-physics-volume-1/pages/15-6-forced-oscillations. Licensed CC BY 4.0. Text copied from the page as a reader would paste it.
+
+# 15.6 Forced Oscillations
+
+By the end of this section, you will be able to:
+
+- Define forced oscillations
+
+- List the equations of motion associated with forced oscillations
+
+- Explain the concept of resonance and its impact on the amplitude of an oscillator
+
+- List the characteristics of a system oscillating in resonance
+
+Sit in front of a piano sometime and sing a loud brief note at it with the dampers off its strings (Figure 15.28). It will sing the same note back at you—the strings, having the same frequencies as your voice, are resonating in response to the forces from the sound waves that you sent to them. This is a good example of the fact that objects—in this case, piano strings—can be forced to oscillate, and oscillate most easily at their natural frequency. In this section, we briefly explore applying a periodic driving force acting on a simple harmonic oscillator. The driving force puts energy into the system at a certain frequency, not necessarily the same as the natural frequency of the system. Recall that the natural frequency is the frequency at which a system would oscillate if there were no driving and no damping force.
+
+Figure 15.28 You can cause the strings in a piano to vibrate simply by producing sound waves from your voice. (credit: Matt Billings)
+
+Most of us have played with toys involving an object supported on an elastic band, something like the paddle ball suspended from a finger in Figure 15.29. Imagine the finger in the figure is your finger. At first, you hold your finger steady, and the ball bounces up and down with a small amount of damping. If you move your finger up and down slowly, the ball follows along without bouncing much on its own. As you increase the frequency at which you move your finger up and down, the ball responds by oscillating with increasing amplitude. When you drive the ball at its natural frequency, the ball’s oscillations increase in amplitude with each oscillation for as long as you drive it. The phenomenon of driving a system with a frequency equal to its natural frequency is called resonance. A system being driven at its natural frequency is said to resonate. As the driving frequency gets progressively higher than the resonant or natural frequency, the amplitude of the oscillations becomes smaller until the oscillations nearly disappear, and your finger simply moves up and down with little effect on the ball.
+
+Figure 15.29 The paddle ball on its rubber band moves in response to the finger supporting it. If the finger moves with the natural frequency f_0 of the ball on the rubber band, then a resonance is achieved, and the amplitude of the ball’s oscillations increases dramatically. At higher and lower driving frequencies, energy is transferred to the ball less efficiently, and it responds with lower-amplitude oscillations.
+
+Consider a simple experiment. Attach a mass m to a spring in a viscous fluid, similar to the apparatus discussed in the damped harmonic oscillator. This time, instead of fixing the free end of the spring, attach the free end to a disk that is driven by a variable-speed motor. The motor turns with an angular driving frequency of ω . The rotating disk provides energy to the system by the work done by the driving force (F_d=F_0sin(ωt)) . The experimental apparatus is shown in Figure 15.30.
+
+Figure 15.30 Forced, damped harmonic motion produced by driving a spring and mass with a disk driven by a variable-speed motor.
+
+Using Newton’s second law (F→_{net}=ma→), we can analyze the motion of the mass. The resulting equation is similar to the force equation for the damped harmonic oscillator, with the addition of the driving force:
+
+−kx−b(dx)/(dt)+F_0sin(ωt)=m(d^2x)/(dt^2). (15.27)
+
+When an oscillator is forced with a periodic driving force, the motion may seem chaotic. The motions of the oscillator is known as transients. After the transients die out, the oscillator reaches a steady state, where the motion is periodic. After some time, the steady state solution to this differential equation is
+
+x(t)=Acos(ωt+ϕ). (15.28)
+
+Once again, it is left as an exercise to prove that this equation is a solution. Taking the first and second time derivative of x(t) and substituting them into the force equation shows that x(t)=Asin(ωt+ϕ) is a solution as long as the amplitude is equal to
+
+A=(F_0)/(√(m^2(ω^2−ω_0^2)^2+b^2ω^2)) (15.29)
+
+where ω_0=√((k)/(m)) is the natural frequency of the mass/spring system. Recall that the angular frequency, and therefore the frequency, of the motor can be adjusted. Looking at the denominator of the equation for the amplitude, when the driving frequency is much smaller, or much larger, than the natural frequency, the square of the difference of the two angular frequencies (ω^2−ω_0^2)^2 is positive and large, making the denominator large, and the result is a small amplitude for the oscillations of the mass. As the frequency of the driving force approaches the natural frequency of the system, the denominator becomes small and the amplitude of the oscillations becomes large. The maximum amplitude results when the frequency of the driving force equals the natural frequency of the system (A_{max}=(F_0)/(bω)) .
+
+Figure 15.31 shows a graph of the amplitude of a damped harmonic oscillator as a function of the frequency of the periodic force driving it. Each of the three curves on the graph represents a different amount of damping. All three curves peak at the point where the frequency of the driving force equals the natural frequency of the harmonic oscillator. The highest peak, or greatest response, is for the least amount of damping, because less energy is removed by the damping force. Note that since the amplitude grows as the damping decreases, taking this to the limit where there is no damping (b=0) , the amplitude becomes infinite.
+
+Note that a small-amplitude driving force can produce a large-amplitude response. This phenomenon is known as resonance. A common example of resonance is a parent pushing a small child on a swing. When the child wants to go higher, the parent does not move back and then, getting a running start, slam into the child, applying a great force in a short interval. Instead, the parent applies small pushes to the child at just the right frequency, and the amplitude of the child’s swings increases.
+
+Figure 15.31 Amplitude of a harmonic oscillator as a function of the frequency of the driving force. The curves represent the same oscillator with the same natural frequency but with different amounts of damping. Resonance occurs when the driving frequency equals the natural frequency, and the greatest response is for the least amount of damping. The narrowest response is also for the least damping.
+
+It is interesting to note that the widths of the resonance curves shown in Figure 15.31 depend on damping: the less the damping, the narrower the resonance. The consequence is that if you want a driven oscillator to resonate at a very specific frequency, you need as little damping as possible. For instance, a radio has a circuit that is used to choose a particular radio station. In this case, the forced damped oscillator consists of a resistor, capacitor, and inductor, which will be discussed later in this course. The circuit is “tuned” to pick a particular radio station. Here it is desirable to have the resonance curve be very narrow, to pick out the exact frequency of the radio station chosen. The narrowness of the graph, and the ability to pick out a certain frequency, is known as the quality of the system. The quality, Q, is defined as the spread of the angular frequency, or equivalently, as inverse of the fractional bandwidth, i.e., the natural frequency divided by the spread in the frequency at half the maximum amplitude (Q=(ω_0)/(Δω)) as shown in Figure 15.32. For a small damping, the quality is approximately equal to Q=(mω_0)/(b) .
+
+Figure 15.32 The quality of a system is defined as the spread in the frequencies at half the amplitude divided by the natural frequency.
+
+These features of driven harmonic oscillators apply to a huge variety of systems. For instance, magnetic resonance imaging (MRI) is a widely used medical diagnostic tool in which atomic nuclei (mostly hydrogen nuclei or protons) are made to resonate by incoming radio waves (on the order of 100 MHz). In all of these cases, the efficiency of energy transfer from the driving force into the oscillator is best at resonance. Figure 15.33 shows the London Millennium Footbridge that allows pedestrians to cross the River Thames in London. This bridge was nicknamed “Wobbly Bridge” when pedestrians experienced swaying motion while crossing it. The bridge was closed for roughly two years to get rid of this motion.
+
+Figure 15.33 Initially when people crossed the London Millennium Footbridge, they experienced a swaying motion. People continuing to cross reinforced the oscillation’s amplitude, thereby increasing the problematic swaying. (credit: Adrian Pingstone/Wikimedia Commons)
+
+A famous magic trick involves a performer singing a note toward a crystal glass until the glass shatters. Explain why the trick works in terms of resonance and natural frequency.

@@ -7,3 +7,4 @@ node_modules/
 test-results/
 playwright-report/
 skills/paper-playground/archetypes/.build/
+skills/paper-playground/evals/*/.cache/

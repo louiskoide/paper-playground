@@ -1,0 +1,1 @@
+{ "name": "sir", "input": { "url": "https://arxiv.org/pdf/2004.13024v2" }, "expect": { "archetype": "dynamical" }, "notes": "Cadoni & Gaeta, Size and timescale of epidemics in the SIR framework. Given as a PDF link; arXiv links resolve to HTML first." }
