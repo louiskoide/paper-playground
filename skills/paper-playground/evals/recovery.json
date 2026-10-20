@@ -1,0 +1,210 @@
+{
+  "break": [
+    {
+      "case": "adam",
+      "break": "beta2-ignored",
+      "kind": "decorative param: step() hard-codes β2, only the reference line reads it",
+      "caught": true,
+      "seeded": [
+        "contrast: first_step_ratio 3.16, expected in [9.5, 10.5] (§5)"
+      ],
+      "calls": [
+        {
+          "step": "repair",
+          "cost": 0.246256,
+          "ms": 16948
+        }
+      ],
+      "repaired": true,
+      "failures": [],
+      "restored": true,
+      "observed": {
+        "reproduce": {
+          "first_step_ratio": 1,
+          "max_step_ratio": 1
+        },
+        "contrast": {
+          "first_step_ratio": 9.99999,
+          "max_step_ratio": 20.2413
+        }
+      },
+      "cost_usd": 0.246
+    },
+    {
+      "case": "adam",
+      "break": "vhat-uncorrected",
+      "kind": "wrong mechanism: second moment left biased",
+      "caught": true,
+      "seeded": [
+        "reproduce: first_step_ratio 100, expected in [0.95, 1.05]; max_step_ratio 100, expected in [0.95, 1.05] (§2.1)",
+        "contrast: max_step_ratio 20.2, expected > 500 (reproduce 100 × 5) (§5)"
+      ],
+      "calls": [
+        {
+          "step": "repair",
+          "cost": 0.252016,
+          "ms": 20132
+        }
+      ],
+      "repaired": true,
+      "failures": [],
+      "restored": true,
+      "observed": {
+        "reproduce": {
+          "first_step_ratio": 1,
+          "max_step_ratio": 1
+        },
+        "contrast": {
+          "first_step_ratio": 9.99999,
+          "max_step_ratio": 20.2413
+        }
+      },
+      "cost_usd": 0.252
+    },
+    {
+      "case": "attention",
+      "break": "scale-by-dk",
+      "kind": "wrong mechanism: ÷ d_k instead of ÷ √d_k",
+      "caught": true,
+      "seeded": [
+        "reproduce: logit_std 0.0441, expected in [0.85, 1.15] (§3.2.1)"
+      ],
+      "calls": [
+        {
+          "step": "repair",
+          "cost": 0.254656,
+          "ms": 21787
+        }
+      ],
+      "repaired": true,
+      "failures": [],
+      "restored": true,
+      "observed": {
+        "reproduce": {
+          "max_weight": 0.35564,
+          "logit_std": 0.998803
+        },
+        "contrast": {
+          "max_weight": 0.962557,
+          "logit_std": 22.6003
+        }
+      },
+      "cost_usd": 0.255
+    },
+    {
+      "case": "oscillator",
+      "break": "damping-unsquared",
+      "kind": "wrong formula: b·ω² instead of b²·ω² in Eq. 15.29",
+      "caught": true,
+      "seeded": [
+        "reproduce: amplitude 3.16, expected in [9.5, 10.5] (§15.6)",
+        "contrast: amplitude 1.83, expected < 1.58 (reproduce 3.16 × 0.5); metric width missing (§15.6)"
+      ],
+      "calls": [
+        {
+          "step": "repair",
+          "cost": 0.156444,
+          "ms": 18582
+        }
+      ],
+      "repaired": true,
+      "failures": [],
+      "restored": true,
+      "observed": {
+        "reproduce": {
+          "amplitude": 10,
+          "width": 0.174091,
+          "quality": 5.74412
+        },
+        "contrast": {
+          "amplitude": 3.33333,
+          "width": 0.547638,
+          "quality": 1.82602
+        }
+      },
+      "cost_usd": 0.156
+    },
+    {
+      "case": "sir",
+      "break": "helper-typo",
+      "kind": "runtime error: calls a kernel helper that doesn't exist",
+      "caught": true,
+      "seeded": [
+        "default: error: argMax is not defined",
+        "sweep:alpha_factor=1: error: argMax is not defined",
+        "sweep:alpha_factor=0.1: error: argMax is not defined",
+        "sweep:alpha_factor=4: error: argMax is not defined",
+        "decorative:alpha_factor: render and metrics identical at every swept value",
+        "sweep:beta_factor=1: error: argMax is not defined",
+        "sweep:beta_factor=0.25: error: argMax is not defined",
+        "sweep:beta_factor=4: error: argMax is not defined",
+        "decorative:beta_factor: render and metrics identical at every swept value",
+        "reproduce: error: argMax is not defined; error: argMax is not defined (§III)",
+        "contrast: error: argMax is not defined; error: argMax is not defined; error: argMax is not defined (§II.3)",
+        "varies:peak_frac: peak_frac is identical in every run (hard-coded?)",
+        "varies:peak_day: peak_day is identical in every run (hard-coded?)",
+        "varies:t_safe: t_safe is identical in every run (hard-coded?)",
+        "drive: control \"contact rate α / α₀\" changed neither the canvas nor the readout",
+        "drive: control \"removal rate β / β₀\" changed neither the canvas nor the readout",
+        "drive: play/step did not advance the readout"
+      ],
+      "calls": [
+        {
+          "step": "repair",
+          "cost": 0.25180400000000003,
+          "ms": 17706
+        }
+      ],
+      "repaired": true,
+      "failures": [],
+      "restored": true,
+      "observed": {
+        "reproduce": {
+          "peak_frac": 0.300453,
+          "peak_day": 81.8,
+          "t_safe": 188.8
+        },
+        "contrast": {
+          "peak_frac": 0.300445,
+          "peak_day": 41,
+          "t_safe": 94.4
+        }
+      },
+      "cost_usd": 0.252
+    }
+  ],
+  "fallback": [
+    {
+      "case": "adam",
+      "archetype": "diagram",
+      "ok": true,
+      "failures": [],
+      "observed": {
+        "reproduce": {
+          "uncorrected_first_step": 1
+        },
+        "contrast": {
+          "uncorrected_first_step": 100
+        }
+      },
+      "cost_usd": 0.214
+    },
+    {
+      "case": "sir",
+      "archetype": "diagram",
+      "ok": true,
+      "failures": [],
+      "observed": {
+        "reproduce": {
+          "peak_frac": 0.300463,
+          "rho0": 3
+        },
+        "contrast": {
+          "peak_frac": 0,
+          "rho0": 0.9
+        }
+      },
+      "cost_usd": 0.132
+    }
+  ]
+}

@@ -14,14 +14,14 @@ import { checkQuotes } from '../../../lib/quotes.mjs';
 import { build, validateExtraction } from './build.mjs';
 import { verify } from './selftest.mjs';
 
-const EVALS = join(dirname(fileURLToPath(import.meta.url)), '..', 'evals');
+export const EVALS = join(dirname(fileURLToPath(import.meta.url)), '..', 'evals');
 const args = process.argv.slice(2), flag = f => args.includes(f);
 const ci = args.indexOf('--concurrency'), concurrency = ci >= 0 ? +args[ci + 1] : 2;
 const only = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--concurrency');
 const cases = readdirSync(EVALS).filter(d => existsSync(join(EVALS, d, 'case.json')) && (!only.length || only.includes(d)));
-const log = (c, m) => console.log(`[${c}] ${m}`);
+export const log = (c, m) => console.log(`[${c}] ${m}`);
 
-async function loadDoc(dir, spec) {
+export async function loadDoc(dir, spec) {
   const cache = join(dir, '.cache', 'doc.json');
   if (existsSync(cache)) return JSON.parse(readFileSync(cache, 'utf8'));
   const { input } = spec;
@@ -59,23 +59,30 @@ async function extract(name, dir, doc, calls) {
   return x;
 }
 
-async function attempt(name, dir, kind, x, doc, browser, calls, prev) {
-  const prompt = prev ? repairPrompt(x, doc, prev.code, prev.failures) : generationPrompt(x, doc);
-  const r = await complete({ ...prompt, model: MODELS.generate }); calls.push({ step: kind, cost: r.cost, ms: r.ms });
-  writeFileSync(join(dir, '.cache', `${kind}.md`), r.text);
-  const reply = parseReply(r.text);
-  if (reply.kind === 'refuse') { log(name, `${kind}: refused: ${reply.reason}`); return { kind, ok: false, refused: reply.reason, failures: [`refused: ${reply.reason}`] }; }
-  if (reply.kind !== 'code') return { kind, ok: false, failures: [`reply had no code block (${reply.kind})`] };
-  const out = join(dir, '.cache', kind); mkdirSync(out, { recursive: true });
-  writeFileSync(join(out, 'playground.js'), reply.code + '\n');
-  writeFileSync(join(out, 'playground.html'), build({ spec: x, code: reply.code }));
+/** Build and verify one playground into `out`; `failures` are what a repair prompt gets. */
+export async function check(code, x, out, browser) {
+  mkdirSync(out, { recursive: true });
+  writeFileSync(join(out, 'playground.js'), code + '\n');
+  writeFileSync(join(out, 'playground.html'), build({ spec: x, code }));
   const v = await verify(join(out, 'playground.html'), { browser, outDir: out });
   writeFileSync(join(out, 'selftest.json'), JSON.stringify(v, null, 2));
   const failures = [...(v.selftest.failures || []), ...v.drive.controls.filter(c => !c.ok).map(c => `drive: control "${c.name}" changed neither the canvas nor the readout`),
     ...(v.drive.transport && !v.drive.transport.ok ? ['drive: play/step did not advance the readout'] : []), ...(v.drive.msg ? [`drive: ${v.drive.msg}`] : []),
     ...v.consoleErrors.map(e => `console error: ${e}`), ...(v.shots.phoneOverflow ? ['layout: horizontal overflow at 390px width'] : [])];
-  log(name, `${kind}: ${v.ok ? 'pass' : `${failures.length} failure(s)`}`);
-  return { kind, ok: v.ok, failures, code: reply.code, out, observed: Object.fromEntries((v.selftest.checks || []).filter(c => c.observed).map(c => [c.id, c.observed])) };
+  return { ok: v.ok, failures, code, out, observed: Object.fromEntries((v.selftest.checks || []).filter(c => c.observed).map(c => [c.id, c.observed])) };
+}
+
+/** One model call (generate, repair when `prev` is given, or fallback) plus its check; files go under `work`. */
+export async function attempt(name, work, kind, x, doc, browser, calls, prev) {
+  const prompt = prev ? repairPrompt(x, doc, prev.code, prev.failures) : generationPrompt(x, doc);
+  const r = await complete({ ...prompt, model: MODELS.generate }); calls.push({ step: kind, cost: r.cost, ms: r.ms });
+  writeFileSync(join(work, `${kind}.md`), r.text);
+  const reply = parseReply(r.text);
+  if (reply.kind === 'refuse') { log(name, `${kind}: refused: ${reply.reason}`); return { kind, ok: false, refused: reply.reason, failures: [`refused: ${reply.reason}`] }; }
+  if (reply.kind !== 'code') return { kind, ok: false, failures: [`reply had no code block (${reply.kind})`] };
+  const c = await check(reply.code, x, join(work, kind), browser);
+  log(name, `${kind}: ${c.ok ? 'pass' : `${c.failures.length} failure(s)`}`);
+  return { kind, ...c };
 }
 
 async function runCase(name, browser) {
@@ -93,9 +100,9 @@ async function runCase(name, browser) {
       : { archetype: x.archetype, experiment: x.experiment, reproduce: x.reproduce.claim, contrast: x.contrast.claim, fallback: !!x.fallback };
     const attempts = [];
     if (x.playable !== false) {
-      let a = await attempt(name, dir, 'generate', x, doc, browser, calls); attempts.push(a);
-      if (!a.ok && a.code) { a = await attempt(name, dir, 'repair', x, doc, browser, calls, a); attempts.push(a); }
-      if (!a.ok && x.fallback) { a = await attempt(name, dir, 'fallback', x.fallback, doc, browser, calls); attempts.push(a); }
+      let a = await attempt(name, join(dir, '.cache'), 'generate', x, doc, browser, calls); attempts.push(a);
+      if (!a.ok && a.code) { a = await attempt(name, join(dir, '.cache'), 'repair', x, doc, browser, calls, a); attempts.push(a); }
+      if (!a.ok && x.fallback) { a = await attempt(name, join(dir, '.cache'), 'fallback', x.fallback, doc, browser, calls); attempts.push(a); }
     }
     const final = attempts.find(a => a.ok) || attempts.at(-1);
     result.outcome = x.playable === false ? 'unplayable' : final?.ok ? (final.kind === 'fallback' ? 'fallback-pass' : 'pass') : final?.refused ? 'refused' : 'fail';
@@ -121,8 +128,10 @@ function writeResults() {
   writeFileSync(join(EVALS, 'RESULTS.md'), lines.join('\n') + '\n');
 }
 
-const browser = await chromium.launch();
-const queue = [...cases];
-await Promise.all(Array.from({ length: Math.min(concurrency, queue.length) }, async () => { while (queue.length) await runCase(queue.shift(), browser); }));
-await browser.close();
-writeResults();
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  const browser = await chromium.launch();
+  const queue = [...cases];
+  await Promise.all(Array.from({ length: Math.min(concurrency, queue.length) }, async () => { while (queue.length) await runCase(queue.shift(), browser); }));
+  await browser.close();
+  writeResults();
+}

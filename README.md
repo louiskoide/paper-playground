@@ -9,7 +9,7 @@ The playground generator is a Claude skill (`skills/paper-playground/`). The web
 
 ## Status
 
-Phase 0, the skill alone, is done. All 5 eval cases pass in two consecutive runs: [evals/RESULTS.md](skills/paper-playground/evals/RESULTS.md).
+Phase 0, the skill alone, is done. All 5 eval cases pass in two consecutive runs: [evals/RESULTS.md](skills/paper-playground/evals/RESULTS.md). Because those all pass first time, repair and fallback are tested separately by planting bugs in passing playgrounds: 5/5 caught and repaired, 2/2 fallbacks pass ([evals/RECOVERY.md](skills/paper-playground/evals/RECOVERY.md)).
 
 ## Layout
 
@@ -29,6 +29,7 @@ npm install && npx playwright install chromium-headless-shell
 npm run test:examples                                   # build + self-test the seven archetype examples
 node skills/paper-playground/scripts/run-eval.mjs       # all eval cases through the web-app path
 node skills/paper-playground/scripts/run-eval.mjs adam  # one case
+node skills/paper-playground/scripts/test-recovery.mjs  # plant the bugs in evals/breaks.json, then repair; run each fallback
 ```
 
 Evals call the model through `claude -p` (tool-less, settings-free) on your Claude login, so no API key is needed. Set `PP_TRANSPORT=api` with `ANTHROPIC_API_KEY` to use the Messages API instead. `PP_EXTRACT_MODEL` and `PP_GENERATE_MODEL` override the models, which default to `claude-opus-5-5`.
