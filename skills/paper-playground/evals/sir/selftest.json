@@ -5,13 +5,13 @@
     "type": "pp:selftest",
     "ok": true,
     "kernel": "0.1.0",
-    "ms": 50,
+    "ms": 43,
     "checks": [
       {
         "id": "default",
         "ok": true,
-        "msg": "ok in 11 ms",
-        "ms": 11
+        "msg": "ok in 6 ms",
+        "ms": 6
       },
       {
         "id": "metrics",
@@ -26,8 +26,8 @@
       {
         "id": "sweep:alpha_factor=1",
         "ok": true,
-        "msg": "ok in 11 ms",
-        "ms": 11
+        "msg": "ok in 6 ms",
+        "ms": 6
       },
       {
         "id": "sweep:alpha_factor=0.1",
@@ -44,13 +44,13 @@
       {
         "id": "decorative:alpha_factor",
         "ok": true,
-        "msg": "render and metrics identical at every swept value"
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
       },
       {
         "id": "sweep:beta_factor=1",
         "ok": true,
-        "msg": "ok in 11 ms",
-        "ms": 11
+        "msg": "ok in 6 ms",
+        "ms": 6
       },
       {
         "id": "sweep:beta_factor=0.25",
@@ -67,7 +67,7 @@
       {
         "id": "decorative:beta_factor",
         "ok": true,
-        "msg": "render and metrics identical at every swept value"
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
       },
       {
         "id": "reproduce",
@@ -138,7 +138,7 @@
     "transport": {
       "reset": "step 0 · peak 1.67e-7 N · day 0 · safe day – · N/γ 6",
       "step": "step 1 · peak 1.84e-7 N · day 0.2 · safe day – · N/γ 6",
-      "playing": "step 152 · peak 0.334 N · day 30.4 · safe day – · N/γ 6",
+      "playing": "step 151 · peak 0.318 N · day 30.2 · safe day – · N/γ 6",
       "ok": true
     }
   },

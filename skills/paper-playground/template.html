@@ -31,6 +31,20 @@ canvas{display:block;width:100%;touch-action:none;border-radius:6px}
 button{font:inherit;font-size:12px;color:var(--text);background:none;border:1px solid var(--dim);border-radius:8px;padding:4px 9px;min-width:34px;cursor:pointer}
 button:hover{border-color:var(--line);color:var(--live)}
 button[aria-pressed=true],.stages button.on{border-color:var(--live);color:var(--live)}
+.guide{display:flex;flex-direction:column;gap:10px;margin:12px 0 4px}
+.guide p{margin:0}
+.lead{color:var(--live);max-width:80ch}
+.claims{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.claims[hidden]{display:none}
+@media (max-width:760px){.claims{grid-template-columns:minmax(0,1fr)}}
+.claim{display:flex;flex-direction:column;gap:6px;min-width:0;border:1px solid var(--dim);border-radius:10px;padding:10px 12px}
+.claim.on{border-color:var(--live)}
+.claim button{align-self:flex-start}
+.ctext{color:var(--live)}
+.quote,.settings{font-size:11.5px;color:var(--line);overflow-wrap:anywhere}
+.result{font-variant-numeric:tabular-nums;color:var(--live)}
+.result span{display:block}
+.result .bad{color:var(--neg)}
 .params{display:flex;flex-direction:column;gap:12px}
 .param{display:flex;flex-direction:column;gap:4px}
 .phead{display:flex;align-items:baseline;gap:8px}

@@ -5,13 +5,13 @@
     "type": "pp:selftest",
     "ok": true,
     "kernel": "0.1.0",
-    "ms": 34,
+    "ms": 38,
     "checks": [
       {
         "id": "default",
         "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
+        "msg": "ok in 0 ms",
+        "ms": 0
       },
       {
         "id": "metrics",
@@ -26,8 +26,8 @@
       {
         "id": "sweep:alpha=0.001",
         "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
+        "msg": "ok in 0 ms",
+        "ms": 0
       },
       {
         "id": "sweep:alpha=1e-5",
@@ -44,13 +44,13 @@
       {
         "id": "decorative:alpha",
         "ok": true,
-        "msg": "render and metrics identical at every swept value"
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
       },
       {
         "id": "sweep:beta1=0.9",
         "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
+        "msg": "ok in 0 ms",
+        "ms": 0
       },
       {
         "id": "sweep:beta1=0",
@@ -61,13 +61,13 @@
       {
         "id": "decorative:beta1",
         "ok": true,
-        "msg": "render and metrics identical at every swept value"
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
       },
       {
         "id": "sweep:beta2=0.999",
         "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
+        "msg": "ok in 0 ms",
+        "ms": 0
       },
       {
         "id": "sweep:beta2=0.99",
@@ -84,13 +84,13 @@
       {
         "id": "decorative:beta2",
         "ok": true,
-        "msg": "render and metrics identical at every swept value"
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
       },
       {
         "id": "sweep:bias_correction=true",
         "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
+        "msg": "ok in 0 ms",
+        "ms": 0
       },
       {
         "id": "sweep:bias_correction=false",
@@ -101,7 +101,7 @@
       {
         "id": "decorative:bias_correction",
         "ok": true,
-        "msg": "render and metrics identical at every swept value"
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
       },
       {
         "id": "reproduce",

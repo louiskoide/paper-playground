@@ -467,7 +467,7 @@ function sweepValues(q) {
 }
 function evalExpect(e, r, ref) {
   const v = r.m?.[e.metric];
-  if (e.op === 'diverges') { const ok = r.status === 'diverged' || (e.bound != null && Math.abs(v) > e.bound); return { ok, desc: ok ? '' : `expected to diverge${e.bound != null ? ` (|${e.metric}| > ${e.bound})` : ''}, ${describe(r)}${typeof v === 'number' ? `, ${e.metric} ${fmt(v)}` : ''}` }; }
+  if (e.op === 'diverges') { const ok = r.status === 'diverged' || (e.bound != null && Math.abs(v) > e.bound); return { ok, want: `diverges${e.bound != null ? ` (|${label(e.metric)}| > ${e.bound})` : ''}`, desc: ok ? '' : `expected to diverge${e.bound != null ? ` (|${e.metric}| > ${e.bound})` : ''}, ${describe(r)}${typeof v === 'number' ? `, ${e.metric} ${fmt(v)}` : ''}` }; }
   if (r.status !== 'ok') return { ok: false, desc: describe(r) };
   if (e.op === 'finite') return { ok: true, desc: '' };
   if (typeof v !== 'number') return { ok: false, desc: `metric ${e.metric} missing` };
@@ -482,7 +482,8 @@ function evalExpect(e, r, ref) {
   const ok = e.op === '<' ? v < thr : e.op === '<=' ? v <= thr : e.op === '>' ? v > thr : e.op === '>=' ? v >= thr
     : e.op === 'between' ? v >= thr[0] && v <= thr[1] : false;
   const want = e.op === 'between' ? `in [${fmt(thr[0])}, ${fmt(thr[1])}]` : `${e.op} ${fmt(thr)}`;
-  return { ok, desc: ok ? '' : `${e.metric} ${fmt(v)}, expected ${want}${how}` };
+  const say = e.op === 'between' ? `${fmt(thr[0])}–${fmt(thr[1])}` : `${e.op} ${fmt(thr)}${e.ref ? ` (${e.factor != null ? `${e.factor} × claim 1` : `claim 1${e.by ? ` + ${e.by}` : ''}`})` : ''}`;
+  return { ok, want: say, desc: ok ? '' : `${e.metric} ${fmt(v)}, expected ${want}${how}` };
 }
 async function selftest() {
   const t0 = performance.now(), checks = [], add = (id, ok, extra = {}) => checks.push({ id, ok, ...extra });
@@ -565,9 +566,12 @@ function mount(def) {
   const bot = el('div', 'cap bot'), readout = el('span', 'readout'), live = el('span', 'sr');
   live.setAttribute('aria-live', 'polite');
   bot.append(caps('instr', def.caption || ''), readout, live);
-  plate.append(top, body, bot);
+  const guide = el('div', 'guide'), claimsEl = el('div', 'claims');
+  if (SPEC.experiment) guide.append(el('p', 'lead', SPEC.experiment));
+  guide.append(claimsEl);
+  plate.append(top, guide, body, bot);
   document.body.append(plate);
-  ui = { P: defaults(), sim: null, view: null, target: 0, playing: false, dirty: true, last: 0, settled: false, hits: [], drag: null, controls: {}, canvas, readout, live };
+  ui = { P: defaults(), claim: null, sim: null, view: null, target: 0, playing: false, dirty: true, last: 0, settled: false, hits: [], drag: null, controls: {}, canvas, readout, live };
   if (MOUNT_ERR) { readout.textContent = `error · ${MOUNT_ERR.message}`; return; }
 
   const rebuild = () => { ui.sim = newSim(ui.P); simInit(ui.sim); ui.view = null; ui.settled = false; ui.dirty = true; };
@@ -578,6 +582,7 @@ function mount(def) {
       if (q.kind !== 'toggle' && q.kind !== 'select') { v = clamp(+v, q.min, q.max); if (q.step) v = +(q.min + Math.round((v - q.min) / q.step) * q.step).toPrecision(12); }
       ui.P[name] = v; ui.controls[name]?.sync(v);
     }
+    if (ui.claim && !matches(SPEC[ui.claim])) ui.claim = null;
     rebuild();
   };
 
@@ -634,6 +639,48 @@ function mount(def) {
     params.append(row);
     ui.controls[q.name] = { sync: show }; show(ui.P[q.name]);
   }
+
+  // guide: the two claims the self-test checks, each a button that loads its settings and runs them
+  const claimP = c => ({ ...defaults(), ...c.params });
+  const same = (a, b) => a === b || (typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) <= 1e-9 * Math.max(Math.abs(a), Math.abs(b)));
+  function matches(c) { return Object.entries(claimP(c)).every(([k, v]) => same(ui.P[k], v)); }
+  const pval = (q, v) => q.kind === 'toggle' ? (v ? 'on' : 'off')
+    : q.kind === 'select' ? String((q.options || []).map(o => o && typeof o === 'object' ? o : { value: o, label: String(o) }).find(o => o.value === v)?.label ?? v)
+    : fmt(v) + (q.unit ? ` ${q.unit}` : '');
+  const claimSteps = c => c.steps ?? SPEC.steps ?? HORIZON;
+  let repRun = null;
+  const runOf = key => key === 'reproduce' ? (repRun ||= headless(claimP(SPEC.reproduce), claimSteps(SPEC.reproduce))) : headless(claimP(SPEC[key]), claimSteps(SPEC[key]));
+  const claims = ['reproduce', 'contrast'].filter(key => SPEC[key]?.params).map((key, i) => {
+    const c = SPEC[key], box = el('div', 'claim'), b = el('button', null, `${i + 1} · ${key === 'reproduce' ? "the paper's claim" : 'the contrast'}`), result = el('p', 'result');
+    b.type = 'button'; result.hidden = true;
+    const settings = Object.entries(c.params).map(([k, v]) => { const q = PARAMS.find(q => q.name === k); return q && `${q.label || k} ${pval(q, v)}`; }).filter(Boolean).join(' · ');
+    box.append(b, el('p', 'ctext', c.claim || ''));
+    if (c.source?.quote) box.append(el('p', 'quote', `“${c.source.quote}”${c.source.section ? ` §${c.source.section}` : ''}`));
+    if (settings) box.append(el('p', 'settings', `sets ${settings}`));
+    box.append(result); claimsEl.append(box);
+    b.addEventListener('click', () => {
+      ui.playing = false; ui.claim = key; setParams(claimP(c));
+      if (reduced || TIMELESS) ui.target = HORIZON; else { ui.target = 0; ui.playing = true; }
+    });
+    return { key, c, box, b, result, lines: null };
+  });
+  if (!claims.length) claimsEl.hidden = true;
+  const resultLines = cl => cl.lines ||= (() => {
+    const r = runOf(cl.key), rep = SPEC.reproduce?.params ? runOf('reproduce') : null;
+    return (cl.c.expect || []).map(e => {
+      const x = evalExpect(e, r, rep), v = r.m?.[e.metric];
+      const got = r.status === 'diverged' ? `diverged at step ${r.divergedAt}` : r.status !== 'ok' ? describe(r) : typeof v === 'number' ? fmt(v) : '–';
+      return { ok: x.ok, text: `${x.ok ? '✓' : '✗'} ${e.metric ? label(e.metric) : 'run'}: paper says ${x.want ?? e.op}, this run ${got}` };
+    });
+  })();
+  const syncGuide = () => {
+    for (const cl of claims) {
+      const on = ui.claim === cl.key, done = on && (TIMELESS || ui.sim.status !== 'ok' || ui.sim.t >= Math.min(claimSteps(cl.c), HORIZON));
+      cl.box.classList.toggle('on', on); cl.b.setAttribute('aria-pressed', String(on));
+      if (done && cl.result.hidden) cl.result.replaceChildren(...resultLines(cl).map(l => el('span', l.ok ? null : 'bad', l.text)));
+      cl.result.hidden = !done;
+    }
+  };
 
   // pipeline stage chips
   const chipEls = ARCH === 'pipeline' ? def.stages.map((st, k) => {
@@ -704,6 +751,7 @@ function mount(def) {
     const text = readoutText(); readout.textContent = text;
     const now = performance.now(); if (!ui.playing && now - lastLive > 800) { live.textContent = text; lastLive = now; }
     play.textContent = ui.playing ? '❚❚' : '▶'; play.setAttribute('aria-label', ui.playing ? 'pause' : 'play'); play.setAttribute('aria-pressed', String(ui.playing));
+    syncGuide();
     chipEls.forEach((b, k) => { b.textContent = `${k + 1} ${stageName(k, ui.P)}`; b.classList.toggle('on', k === (ui.sim.s?.view ?? -1)); b.classList.toggle('pending', k >= (ui.sim.s?.outs?.length ?? 0)); });
   };
   const frame = now => {
@@ -724,7 +772,7 @@ function mount(def) {
     play: () => { if (!ui.playing) play.click(); }, pause: () => { ui.playing = false; }, step: () => transport.children[1].click(),
     end: () => transport.children[2].click(), reset: () => transport.children[3].click(),
     get t() { return ui.sim.t; }, get status() { return ui.sim.status; }, get state() { return ui.sim.s; }, get metrics() { return { ...ui.sim.m }; },
-    readout: () => readout.textContent,
+    readout: () => readout.textContent, claim: key => claims.find(c => c.key === key)?.b.click(),
   };
   requestAnimationFrame(frame);
   post({ type: 'pp:ready', kernel: KERNEL });

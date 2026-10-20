@@ -31,6 +31,20 @@ canvas{display:block;width:100%;touch-action:none;border-radius:6px}
 button{font:inherit;font-size:12px;color:var(--text);background:none;border:1px solid var(--dim);border-radius:8px;padding:4px 9px;min-width:34px;cursor:pointer}
 button:hover{border-color:var(--line);color:var(--live)}
 button[aria-pressed=true],.stages button.on{border-color:var(--live);color:var(--live)}
+.guide{display:flex;flex-direction:column;gap:10px;margin:12px 0 4px}
+.guide p{margin:0}
+.lead{color:var(--live);max-width:80ch}
+.claims{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.claims[hidden]{display:none}
+@media (max-width:760px){.claims{grid-template-columns:minmax(0,1fr)}}
+.claim{display:flex;flex-direction:column;gap:6px;min-width:0;border:1px solid var(--dim);border-radius:10px;padding:10px 12px}
+.claim.on{border-color:var(--live)}
+.claim button{align-self:flex-start}
+.ctext{color:var(--live)}
+.quote,.settings{font-size:11.5px;color:var(--line);overflow-wrap:anywhere}
+.result{font-variant-numeric:tabular-nums;color:var(--live)}
+.result span{display:block}
+.result .bad{color:var(--neg)}
 .params{display:flex;flex-direction:column;gap:12px}
 .param{display:flex;flex-direction:column;gap:4px}
 .phead{display:flex;align-items:baseline;gap:8px}
@@ -138,6 +152,9 @@ function hasher() {
   };
   return { add, get value() { return (h >>> 0).toString(16); } };
 }
+// Marks that plot computed values. Titles, axes, text and reference rules aren't data: a param that
+// moves only those (say, a guide line drawn from the param itself) is still decorative.
+const DATA_MARKS = new Set(['line', 'scatter', 'bars', 'hist', 'heatmap', 'field', 'graph', 'marker']);
 
 /* ---------- drawing ---------- */
 const hex = c => { c = (c || '#888').replace('#', ''); if (c.length === 3) c = [...c].map(x => x + x).join(''); const n = parseInt(c, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
@@ -182,7 +199,7 @@ class G {
     this.xd = x; this.yd = y;
     this.sx = scale(x, P.x, P.x + P.w, xlog); this.sy = scale(y, P.y + P.h, P.y, ylog);
   }
-  rec(...a) { for (const v of a) this.H.add(v); }
+  rec(...a) { for (const v of a) this.H.add(v); if (this.H.data && DATA_MARKS.has(a[0])) for (const v of a) this.H.data.add(v); }
   font(px = 10.5) { return `${px}px ${this.T.mono}`; }
   clip(fn) { const c = this.ctx, P = this.plot; c.save(); c.beginPath(); c.rect(P.x - 2, P.y - 2, P.w + 4, P.h + 4); c.clip(); try { fn(c); } finally { c.restore(); } }
   stroke(series, width) { const [col, dash] = SERIES[series % 4]; const c = this.ctx; c.strokeStyle = this.T[col]; c.setLineDash(dash); c.lineWidth = width ?? (series % 4 === 0 ? 1.75 : 1.25); return this.T[col]; }
@@ -496,10 +513,10 @@ function headless(P, steps) {
   simInit(sim);
   const n = TIMELESS ? 0 : ARCH === 'pipeline' ? HORIZON : steps;
   while (sim.status === 'ok' && sim.t < n) { simStep(sim); if (performance.now() - t0 > RUN_MS) { sim.status = 'slow'; break; } }
-  const H = hasher();
+  const H = hasher(); H.data = hasher();
   if (sim.status === 'ok') { try { withRng(sim.rng, () => drawSim(new G(null, { x: 0, y: 0, w: 640, h: 400 }, H, null, []), sim, true)); } catch (e) { sim.status = 'error'; sim.err = e; } }
   H.add(sim.status); H.add(sim.divergedAt ?? -1);
-  return { status: sim.status, err: sim.err, m: sim.m, hash: H.value, ms: Math.round(performance.now() - t0), t: sim.t, divergedAt: sim.divergedAt, bad: sim.bad };
+  return { status: sim.status, err: sim.err, m: sim.m, hash: H.value, dataHash: H.data.value, ms: Math.round(performance.now() - t0), t: sim.t, divergedAt: sim.divergedAt, bad: sim.bad };
 }
 const describe = r => r.status === 'ok' ? `ok in ${r.ms} ms` : r.status === 'diverged' ? `diverged at step ${r.divergedAt} (${r.bad} non-finite)`
   : r.status === 'slow' ? `exceeded ${RUN_MS} ms at step ${r.t}` : `error: ${r.err?.message || r.err}`;
@@ -512,7 +529,7 @@ function sweepValues(q) {
 }
 function evalExpect(e, r, ref) {
   const v = r.m?.[e.metric];
-  if (e.op === 'diverges') { const ok = r.status === 'diverged' || (e.bound != null && Math.abs(v) > e.bound); return { ok, desc: ok ? '' : `expected to diverge${e.bound != null ? ` (|${e.metric}| > ${e.bound})` : ''}, ${describe(r)}${typeof v === 'number' ? `, ${e.metric} ${fmt(v)}` : ''}` }; }
+  if (e.op === 'diverges') { const ok = r.status === 'diverged' || (e.bound != null && Math.abs(v) > e.bound); return { ok, want: `diverges${e.bound != null ? ` (|${label(e.metric)}| > ${e.bound})` : ''}`, desc: ok ? '' : `expected to diverge${e.bound != null ? ` (|${e.metric}| > ${e.bound})` : ''}, ${describe(r)}${typeof v === 'number' ? `, ${e.metric} ${fmt(v)}` : ''}` }; }
   if (r.status !== 'ok') return { ok: false, desc: describe(r) };
   if (e.op === 'finite') return { ok: true, desc: '' };
   if (typeof v !== 'number') return { ok: false, desc: `metric ${e.metric} missing` };
@@ -527,7 +544,8 @@ function evalExpect(e, r, ref) {
   const ok = e.op === '<' ? v < thr : e.op === '<=' ? v <= thr : e.op === '>' ? v > thr : e.op === '>=' ? v >= thr
     : e.op === 'between' ? v >= thr[0] && v <= thr[1] : false;
   const want = e.op === 'between' ? `in [${fmt(thr[0])}, ${fmt(thr[1])}]` : `${e.op} ${fmt(thr)}`;
-  return { ok, desc: ok ? '' : `${e.metric} ${fmt(v)}, expected ${want}${how}` };
+  const say = e.op === 'between' ? `${fmt(thr[0])}–${fmt(thr[1])}` : `${e.op} ${fmt(thr)}${e.ref ? ` (${e.factor != null ? `${e.factor} × claim 1` : `claim 1${e.by ? ` + ${e.by}` : ''}`})` : ''}`;
+  return { ok, want: say, desc: ok ? '' : `${e.metric} ${fmt(v)}, expected ${want}${how}` };
 }
 async function selftest() {
   const t0 = performance.now(), checks = [], add = (id, ok, extra = {}) => checks.push({ id, ok, ...extra });
@@ -548,16 +566,16 @@ async function selftest() {
   await tick();
   add('determinism', sig(headless(defaults(), steps)) === sig(base), { msg: 'same seed and params gave different output (Math.random, Date, or state leaking between runs?)' });
   for (const q of PARAMS) {
-    const seen = new Set();
+    const seen = new Set();   // metrics or data marks; a param that moves only titles, axes or guide lines doesn't count
     for (const v of sweepValues(q)) {
       if (over()) break;
       await tick();
       const r = v === q.default ? base : headless({ ...defaults(), [q.name]: v }, steps);
       if (r !== base) runs.push(r);
-      seen.add(sig(r));
+      seen.add(`${r.dataHash}|${r.status}|${JSON.stringify(round6(r.m))}`);
       add(`sweep:${q.name}=${fmt(v)}`, r.status === 'ok' || r.status === 'diverged', { msg: describe(r), ms: r.ms });
     }
-    add(`decorative:${q.name}`, seen.size > 1, { msg: 'render and metrics identical at every swept value' });
+    add(`decorative:${q.name}`, seen.size > 1, { msg: 'no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)' });
   }
   let rep = null;
   for (const key of ['reproduce', 'contrast']) {
@@ -592,6 +610,7 @@ let ui = null, THEME = null;
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const post = msg => { if (window.parent !== window) window.parent.postMessage(msg, '*'); };
 const label = k => METRICS.find(m => m.name === k)?.label || k;
+const stageName = (k, P) => { const n = DEF.stages[k].name; try { return String(typeof n === 'function' ? n(P) : n); } catch { return `stage ${k + 1}`; } };
 const caps = (cls, text) => { const e = el('span', cls); String(text).split(GREEK).forEach((part, i) => { if (part) e.append(i % 2 ? el('span', 'keep', part) : part); }); return e; };
 
 function mount(def) {
@@ -609,9 +628,12 @@ function mount(def) {
   const bot = el('div', 'cap bot'), readout = el('span', 'readout'), live = el('span', 'sr');
   live.setAttribute('aria-live', 'polite');
   bot.append(caps('instr', def.caption || ''), readout, live);
-  plate.append(top, body, bot);
+  const guide = el('div', 'guide'), claimsEl = el('div', 'claims');
+  if (SPEC.experiment) guide.append(el('p', 'lead', SPEC.experiment));
+  guide.append(claimsEl);
+  plate.append(top, guide, body, bot);
   document.body.append(plate);
-  ui = { P: defaults(), sim: null, view: null, target: 0, playing: false, dirty: true, last: 0, settled: false, hits: [], drag: null, controls: {}, canvas, readout, live };
+  ui = { P: defaults(), claim: null, sim: null, view: null, target: 0, playing: false, dirty: true, last: 0, settled: false, hits: [], drag: null, controls: {}, canvas, readout, live };
   if (MOUNT_ERR) { readout.textContent = `error · ${MOUNT_ERR.message}`; return; }
 
   const rebuild = () => { ui.sim = newSim(ui.P); simInit(ui.sim); ui.view = null; ui.settled = false; ui.dirty = true; };
@@ -622,6 +644,7 @@ function mount(def) {
       if (q.kind !== 'toggle' && q.kind !== 'select') { v = clamp(+v, q.min, q.max); if (q.step) v = +(q.min + Math.round((v - q.min) / q.step) * q.step).toPrecision(12); }
       ui.P[name] = v; ui.controls[name]?.sync(v);
     }
+    if (ui.claim && !matches(SPEC[ui.claim])) ui.claim = null;
     rebuild();
   };
 
@@ -679,9 +702,51 @@ function mount(def) {
     ui.controls[q.name] = { sync: show }; show(ui.P[q.name]);
   }
 
+  // guide: the two claims the self-test checks, each a button that loads its settings and runs them
+  const claimP = c => ({ ...defaults(), ...c.params });
+  const same = (a, b) => a === b || (typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) <= 1e-9 * Math.max(Math.abs(a), Math.abs(b)));
+  function matches(c) { return Object.entries(claimP(c)).every(([k, v]) => same(ui.P[k], v)); }
+  const pval = (q, v) => q.kind === 'toggle' ? (v ? 'on' : 'off')
+    : q.kind === 'select' ? String((q.options || []).map(o => o && typeof o === 'object' ? o : { value: o, label: String(o) }).find(o => o.value === v)?.label ?? v)
+    : fmt(v) + (q.unit ? ` ${q.unit}` : '');
+  const claimSteps = c => c.steps ?? SPEC.steps ?? HORIZON;
+  let repRun = null;
+  const runOf = key => key === 'reproduce' ? (repRun ||= headless(claimP(SPEC.reproduce), claimSteps(SPEC.reproduce))) : headless(claimP(SPEC[key]), claimSteps(SPEC[key]));
+  const claims = ['reproduce', 'contrast'].filter(key => SPEC[key]?.params).map((key, i) => {
+    const c = SPEC[key], box = el('div', 'claim'), b = el('button', null, `${i + 1} · ${key === 'reproduce' ? "the paper's claim" : 'the contrast'}`), result = el('p', 'result');
+    b.type = 'button'; result.hidden = true;
+    const settings = Object.entries(c.params).map(([k, v]) => { const q = PARAMS.find(q => q.name === k); return q && `${q.label || k} ${pval(q, v)}`; }).filter(Boolean).join(' · ');
+    box.append(b, el('p', 'ctext', c.claim || ''));
+    if (c.source?.quote) box.append(el('p', 'quote', `“${c.source.quote}”${c.source.section ? ` §${c.source.section}` : ''}`));
+    if (settings) box.append(el('p', 'settings', `sets ${settings}`));
+    box.append(result); claimsEl.append(box);
+    b.addEventListener('click', () => {
+      ui.playing = false; ui.claim = key; setParams(claimP(c));
+      if (reduced || TIMELESS) ui.target = HORIZON; else { ui.target = 0; ui.playing = true; }
+    });
+    return { key, c, box, b, result, lines: null };
+  });
+  if (!claims.length) claimsEl.hidden = true;
+  const resultLines = cl => cl.lines ||= (() => {
+    const r = runOf(cl.key), rep = SPEC.reproduce?.params ? runOf('reproduce') : null;
+    return (cl.c.expect || []).map(e => {
+      const x = evalExpect(e, r, rep), v = r.m?.[e.metric];
+      const got = r.status === 'diverged' ? `diverged at step ${r.divergedAt}` : r.status !== 'ok' ? describe(r) : typeof v === 'number' ? fmt(v) : '–';
+      return { ok: x.ok, text: `${x.ok ? '✓' : '✗'} ${e.metric ? label(e.metric) : 'run'}: paper says ${x.want ?? e.op}, this run ${got}` };
+    });
+  })();
+  const syncGuide = () => {
+    for (const cl of claims) {
+      const on = ui.claim === cl.key, done = on && (TIMELESS || ui.sim.status !== 'ok' || ui.sim.t >= Math.min(claimSteps(cl.c), HORIZON));
+      cl.box.classList.toggle('on', on); cl.b.setAttribute('aria-pressed', String(on));
+      if (done && cl.result.hidden) cl.result.replaceChildren(...resultLines(cl).map(l => el('span', l.ok ? null : 'bad', l.text)));
+      cl.result.hidden = !done;
+    }
+  };
+
   // pipeline stage chips
   const chipEls = ARCH === 'pipeline' ? def.stages.map((st, k) => {
-    const b = el('button', null, `${k + 1} ${st.name}`); b.type = 'button';
+    const b = el('button', null, `${k + 1} ${stageName(k, ui.P)}`); b.type = 'button';
     b.addEventListener('click', () => { ui.playing = false; if (k < ui.sim.s.outs.length) { ui.sim.s.view = k; ui.dirty = true; } else ui.target = k; });
     chips.append(b); return b;
   }) : [];
@@ -722,7 +787,7 @@ function mount(def) {
   const readoutText = () => {
     const sim = ui.sim, v = ui.view || sim;
     if (sim.status === 'error') return `error · ${sim.err?.message || sim.err}`;
-    const head = ARCH === 'pipeline' ? `stage ${(v.s?.view ?? 0) + 1}/${def.stages.length} · ${def.stages[v.s?.view ?? 0].name}` : TIMELESS ? '' : `step ${sim.t}`;
+    const head = ARCH === 'pipeline' ? `stage ${(v.s?.view ?? 0) + 1}/${def.stages.length} · ${stageName(v.s?.view ?? 0, v.P)}` : TIMELESS ? '' : `step ${sim.t}`;
     if (sim.status === 'diverged') return `diverged at step ${sim.divergedAt} · ${label(sim.bad)} ${fmt(sim.m[sim.bad])} · reset`;
     let tail;
     if (def.readout) { try { tail = def.readout(v.s, v.P, v.m); } catch (e) { tail = `readout error · ${e.message}`; } }
@@ -748,7 +813,8 @@ function mount(def) {
     const text = readoutText(); readout.textContent = text;
     const now = performance.now(); if (!ui.playing && now - lastLive > 800) { live.textContent = text; lastLive = now; }
     play.textContent = ui.playing ? '❚❚' : '▶'; play.setAttribute('aria-label', ui.playing ? 'pause' : 'play'); play.setAttribute('aria-pressed', String(ui.playing));
-    chipEls.forEach((b, k) => { b.classList.toggle('on', k === (ui.sim.s?.view ?? -1)); b.classList.toggle('pending', k >= (ui.sim.s?.outs?.length ?? 0)); });
+    syncGuide();
+    chipEls.forEach((b, k) => { b.textContent = `${k + 1} ${stageName(k, ui.P)}`; b.classList.toggle('on', k === (ui.sim.s?.view ?? -1)); b.classList.toggle('pending', k >= (ui.sim.s?.outs?.length ?? 0)); });
   };
   const frame = now => {
     const dt = Math.min(0.1, (now - (ui.last || now)) / 1000); ui.last = now;
@@ -768,7 +834,7 @@ function mount(def) {
     play: () => { if (!ui.playing) play.click(); }, pause: () => { ui.playing = false; }, step: () => transport.children[1].click(),
     end: () => transport.children[2].click(), reset: () => transport.children[3].click(),
     get t() { return ui.sim.t; }, get status() { return ui.sim.status; }, get state() { return ui.sim.s; }, get metrics() { return { ...ui.sim.m }; },
-    readout: () => readout.textContent,
+    readout: () => readout.textContent, claim: key => claims.find(c => c.key === key)?.b.click(),
   };
   requestAnimationFrame(frame);
   post({ type: 'pp:ready', kernel: KERNEL });
