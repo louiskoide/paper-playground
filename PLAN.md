@@ -1,6 +1,6 @@
 # Paper → Playground: plan
 
-Status: **approved 2026-10-19.** Phase 0 in progress.
+Status: **approved 2026-10-19.** Phase 0 done; Phase 2 (concept map) done as `lib/` + viewer; Phase 1 (web app) not started.
 
 ## Changes from the brief, and why
 
@@ -218,6 +218,14 @@ The server checks every `quote` against the ingested text with a fuzzy match. An
 - **Hang protection.** The kernel enforces a time budget between steps, and the parent runs a watchdog. A single `step()` that never returns can still freeze the tab if the browser keeps the sandboxed frame in-process. A Phase 1 spike will test running the self-test in a Worker spawned inside the iframe (the core is DOM-free) and calling `terminate()` on timeout.
 - **Cache.** The key is sha256(normalized text) + a hash of the skill files, so editing SKILL.md invalidates old results.
 - **Concept map.** Chunks are 150–300 tokens, split on section and paragraph boundaries. Embeddings default to a local model via transformers.js (bge-small, no key, no per-call cost); Voyage is an optional provider behind the same interface. druid.js handles t-SNE, UMAP and PCA with a fixed seed, server-side so the result is deterministic and cacheable. Perplexity is `clamp((N−1)/3, 5, 30)`. Below 30 chunks the map uses PCA and shows a warning. Clusters are labeled by Haiku from the chunks nearest each centroid. Rendering uses r3f + drei, with a 2D/3D toggle and the one-line note that inter-cluster distances aren't meaningful.
+
+### Concept map as built (Phase 2)
+
+- **Chunks** never cross a section, except a stub section (under ~75 tokens: a one-line section, a license note) which joins the next one. Stub paragraphs and captions join a neighbour. Long PDF paragraphs split on sentences.
+- **k is capped at N/4** (and 3 minimum, so fewer than 6 chunks get one cluster). Silhouette rises with k at small N because near-singleton clusters score well; at N = 12 it picked k = 6 without the cap.
+- **Labels** come back keyed by cluster number. Asked for a list, Haiku returned 5 labels for 4 clusters on two of five papers. A failed or malformed reply falls back to each cluster's commonest section title.
+- **Viewer** is a dependency-free canvas page, not r3f, so it runs under the same CSP as the playground and can be tested in Playwright like it. Clusters use the 8-slot categorical palette plus a distinct marker shape each and a direct label, since a scatter can't keep more than 3 hues apart for colour-blind readers on hue alone. The app can swap in r3f against the same map JSON.
+- **Committed** `evals/<case>/map.json` keeps a 100-character snippet per passage, not the full text; the full map is in `.cache/`.
 
 ## Keys
 

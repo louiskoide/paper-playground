@@ -1,0 +1,768 @@
+{
+  "schema": 1,
+  "version": 1,
+  "key": "1511e48ae817b2eb",
+  "title": "Adam: A Method for Stochastic Optimization",
+  "n": 41,
+  "method": "tsne",
+  "perplexity": 13.33,
+  "warning": null,
+  "embed_model": "Xenova/bge-small-en-v1.5",
+  "label_model": "claude-haiku-5-5",
+  "label_error": null,
+  "k": 4,
+  "silhouette": 0.1526,
+  "tried": [
+    {
+      "k": 3,
+      "silhouette": 0.1151
+    },
+    {
+      "k": 4,
+      "silhouette": 0.1526
+    },
+    {
+      "k": 5,
+      "silhouette": 0.1506
+    },
+    {
+      "k": 6,
+      "silhouette": 0.1133
+    },
+    {
+      "k": 7,
+      "silhouette": 0.1493
+    },
+    {
+      "k": 8,
+      "silhouette": 0.1436
+    }
+  ],
+  "clusters": [
+    {
+      "id": 0,
+      "label": "bias-corrected moment estimates",
+      "size": 7
+    },
+    {
+      "id": 1,
+      "label": "adam combines adagrad rmsprop",
+      "size": 22
+    },
+    {
+      "id": 2,
+      "label": "stepsize invariance and snr",
+      "size": 2
+    },
+    {
+      "id": 3,
+      "label": "convergence regret bounds",
+      "size": 10
+    }
+  ],
+  "chunks": [
+    {
+      "id": 0,
+      "section": "abstract",
+      "title": "Abstract",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.2476,
+        -0.2717
+      ],
+      "xyz": [
+        0.3207,
+        0.2707,
+        0.0634
+      ],
+      "snippet": "Published as a conference paper at ICLR 2015 ADAM: A METHOD FOR STOCHASTIC OPTIMIZATION Diederik P. …"
+    },
+    {
+      "id": 1,
+      "section": "1",
+      "title": "INTRODUCTION",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        0.2711,
+        -0.4282
+      ],
+      "xyz": [
+        0.4376,
+        -0.2978,
+        0.1664
+      ],
+      "snippet": "Stochastic gradient-based optimization is of core practical importance in many fields of science and…"
+    },
+    {
+      "id": 2,
+      "section": "1",
+      "title": "INTRODUCTION",
+      "part": 1,
+      "cluster": 1,
+      "xy": [
+        -0.0221,
+        -0.3103
+      ],
+      "xyz": [
+        0.3203,
+        -0.0024,
+        0.2057
+      ],
+      "snippet": "SGD proved itself as an efficient and effective optimization method that was central in many machine…"
+    },
+    {
+      "id": 3,
+      "section": "1",
+      "title": "INTRODUCTION",
+      "part": 2,
+      "cluster": 1,
+      "xy": [
+        -0.2256,
+        -0.1082
+      ],
+      "xyz": [
+        0.0987,
+        0.2353,
+        0.004
+      ],
+      "snippet": "The method computes individual adaptive learning rates for different parameters from estimates of fi…"
+    },
+    {
+      "id": 4,
+      "section": "1",
+      "title": "INTRODUCTION",
+      "part": 3,
+      "cluster": 3,
+      "xy": [
+        0.0661,
+        -0.6847
+      ],
+      "xyz": [
+        0.3693,
+        -0.0726,
+        0.511
+      ],
+      "snippet": "Author ordering determined by coin flip over a Google Hangout. 1arXiv:1412.6980v9 [cs.LG] 30 Jan 201…"
+    },
+    {
+      "id": 5,
+      "section": "1",
+      "title": "INTRODUCTION",
+      "part": 4,
+      "cluster": 0,
+      "xy": [
+        0.775,
+        0.1179
+      ],
+      "xyz": [
+        -0.0773,
+        -0.7971,
+        -0.1887
+      ],
+      "snippet": "Require: α: Stepsize Require: β1, β2 ∈ [0, 1): Exponential decay rates for the moment estimates Requ…"
+    },
+    {
+      "id": 6,
+      "section": "1",
+      "title": "INTRODUCTION",
+      "part": 5,
+      "cluster": 1,
+      "xy": [
+        -0.3236,
+        0.0578
+      ],
+      "xyz": [
+        0.281,
+        0.3707,
+        -0.2225
+      ],
+      "snippet": "Section 3 explains our initialization bias correction technique, and section 4 provides a theoretica…"
+    },
+    {
+      "id": 7,
+      "section": "2",
+      "title": "ALGORITHM",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        0.2445,
+        -0.2995
+      ],
+      "xyz": [
+        0.2455,
+        -0.2887,
+        0.1535
+      ],
+      "snippet": "See algorithm 1 for pseudo-code of our proposed algorithm Adam. Let f (θ) be a noisy objective funct…"
+    },
+    {
+      "id": 8,
+      "section": "2",
+      "title": "ALGORITHM",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        0.9666,
+        0.353
+      ],
+      "xyz": [
+        -0.2533,
+        -0.9169,
+        0.1369
+      ],
+      "snippet": "The moving averages themselves are estimates of the 1st moment (the mean) and the 2nd raw moment (th…"
+    },
+    {
+      "id": 9,
+      "section": "2.1",
+      "title": "ADAM’S UPDATE RULE",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        0.2418,
+        0.373
+      ],
+      "xyz": [
+        -0.2735,
+        -0.21,
+        -0.4183
+      ],
+      "snippet": "An important property of Adam’s update rule is its careful choice of stepsizes. Assuming \u000f = 0, the …"
+    },
+    {
+      "id": 10,
+      "section": "2.1",
+      "title": "ADAM’S UPDATE RULE",
+      "part": 1,
+      "cluster": 2,
+      "xy": [
+        1,
+        -0.1959
+      ],
+      "xyz": [
+        -0.2973,
+        -0.6939,
+        -0.6018
+      ],
+      "snippet": "This can be understood as establishing a trust region around the current parameter value, beyond whi…"
+    },
+    {
+      "id": 11,
+      "section": "2.1",
+      "title": "ADAM’S UPDATE RULE",
+      "part": 2,
+      "cluster": 2,
+      "xy": [
+        0.9488,
+        -0.245
+      ],
+      "xyz": [
+        -0.2969,
+        -0.5477,
+        -0.6248
+      ],
+      "snippet": "This is a desirable property, since a smaller SNR means that there is greater uncertainty about whet…"
+    },
+    {
+      "id": 12,
+      "section": "3",
+      "title": "INITIALIZATION BIAS CORRECTION",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        0.9899,
+        0.2164
+      ],
+      "xyz": [
+        -0.1515,
+        -1,
+        -0.0275
+      ],
+      "snippet": "As explained in section 2, Adam utilizes initialization bias correction terms. We will here derive t…"
+    },
+    {
+      "id": 13,
+      "section": "3",
+      "title": "INITIALIZATION BIAS CORRECTION",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        0.7876,
+        0.4627
+      ],
+      "xyz": [
+        -0.4514,
+        -0.8728,
+        -0.0812
+      ],
+      "snippet": "First note that the update at timestep t of the exponential moving average vt = β2 · vt−1 + (1 − β2)…"
+    },
+    {
+      "id": 14,
+      "section": "3",
+      "title": "INITIALIZATION BIAS CORRECTION",
+      "part": 2,
+      "cluster": 0,
+      "xy": [
+        0.8347,
+        0.3107
+      ],
+      "xyz": [
+        -0.2753,
+        -0.7958,
+        0.0007
+      ],
+      "snippet": "(1): E[vt] = E [ (1 − β2) t∑ i=1 βt−i 2 · g2 i ] (2) = E[g2 t ] · (1 − β2) t∑ i=1 βt−i 2 + ζ (3) = E…"
+    },
+    {
+      "id": 15,
+      "section": "4",
+      "title": "CONVERGENCE ANALYSIS",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        -0.0984,
+        0.1239
+      ],
+      "xyz": [
+        0.1374,
+        0.125,
+        -0.327
+      ],
+      "snippet": "We analyze the convergence of Adam using the online learning framework proposed in (Zinkevich, 2003)…"
+    },
+    {
+      "id": 16,
+      "section": "4",
+      "title": "CONVERGENCE ANALYSIS",
+      "part": 1,
+      "cluster": 3,
+      "xy": [
+        0.3715,
+        0.076
+      ],
+      "xyz": [
+        -0.0876,
+        -0.3468,
+        -0.1195
+      ],
+      "snippet": "We also use some definitions simplify our notation, where gt , ∇ft(θt) and gt,i as the ith element. …"
+    },
+    {
+      "id": 17,
+      "section": "4",
+      "title": "CONVERGENCE ANALYSIS",
+      "part": 2,
+      "cluster": 3,
+      "xy": [
+        0.1222,
+        0.0056
+      ],
+      "xyz": [
+        -0.0201,
+        -0.0576,
+        -0.0845
+      ],
+      "snippet": "R(T ) ≤ D2 2α(1 − β1) d∑ i=1 √T̂ vT,i+ α(1 + β1)G∞ (1 − β1)√1 − β2(1 − γ)2 d∑ i=1 ‖g1:T,i‖2+ d∑ i=1 …"
+    },
+    {
+      "id": 18,
+      "section": "4",
+      "title": "CONVERGENCE ANALYSIS",
+      "part": 3,
+      "cluster": 3,
+      "xy": [
+        -0.0242,
+        0.194
+      ],
+      "xyz": [
+        0.0425,
+        0.0222,
+        -0.4001
+      ],
+      "snippet": "(Sutskever et al., 2013) suggests reducing the momentum coefficient in the end of training can impro…"
+    },
+    {
+      "id": 19,
+      "section": "5",
+      "title": "RELATED WORK",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.0159,
+        -0.4847
+      ],
+      "xyz": [
+        0.1117,
+        0.0585,
+        0.3774
+      ],
+      "snippet": "Optimization methods bearing a direct relation to Adam are RMSProp (Tieleman & Hinton, 2012; Graves,…"
+    },
+    {
+      "id": 20,
+      "section": "5",
+      "title": "RELATED WORK",
+      "part": 1,
+      "cluster": 1,
+      "xy": [
+        -0.1023,
+        0.7855
+      ],
+      "xyz": [
+        -0.2844,
+        0.1376,
+        0.3004
+      ],
+      "snippet": "Like natural gradient descent (NGD) (Amari, 1998), Adam employs a preconditioner that adapts to the …"
+    },
+    {
+      "id": 21,
+      "section": "5",
+      "title": "RELATED WORK",
+      "part": 2,
+      "cluster": 1,
+      "xy": [
+        -0.1752,
+        0.6091
+      ],
+      "xyz": [
+        -0.5086,
+        0.0476,
+        0.1085
+      ],
+      "snippet": "RMSProp also lacks a bias-correction term; this matters most in case of a value of β2 close to 1 (re…"
+    },
+    {
+      "id": 22,
+      "section": "6",
+      "title": "EXPERIMENTS",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.3714,
+        -0.4985
+      ],
+      "xyz": [
+        0.4942,
+        0.4399,
+        -0.0382
+      ],
+      "snippet": "To empirically evaluate the proposed method, we investigated different popular machine learning mode…"
+    },
+    {
+      "id": 23,
+      "section": "6.1",
+      "title": "EXPERIMENT: LOGISTIC REGRESSION",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.6574,
+        -0.3884
+      ],
+      "xyz": [
+        0.2298,
+        0.6581,
+        0.0624
+      ],
+      "snippet": "We evaluate our proposed method on L2-regularized multi-class logistic regression using the MNIST da…"
+    },
+    {
+      "id": 24,
+      "section": "6.1",
+      "title": "EXPERIMENT: LOGISTIC REGRESSION",
+      "part": 1,
+      "cluster": 1,
+      "xy": [
+        -0.9613,
+        -0.4364
+      ],
+      "xyz": [
+        -0.0386,
+        0.9284,
+        0.1539
+      ],
+      "snippet": "As discussed in (Duchi et al., 2011), Adagrad can efficiently deal with sparse features and gradient…"
+    },
+    {
+      "id": 25,
+      "section": "6.1",
+      "title": "EXPERIMENT: LOGISTIC REGRESSION",
+      "part": 2,
+      "cluster": 1,
+      "xy": [
+        -0.916,
+        -0.3392
+      ],
+      "xyz": [
+        0.0585,
+        0.8455,
+        0.2576
+      ],
+      "snippet": "As suggested in (Wang & Manning, 2013), 50% dropout noise can be applied to the BoW features during …"
+    },
+    {
+      "id": 26,
+      "section": "6.2",
+      "title": "EXPERIMENT: MULTI-LAYER NEURAL NETWORKS",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.4239,
+        -0.3509
+      ],
+      "xyz": [
+        0.4377,
+        0.4067,
+        0.2343
+      ],
+      "snippet": "Multi-layer neural network are powerful models with non-convex objective functions. Although our con…"
+    },
+    {
+      "id": 27,
+      "section": "6.2",
+      "title": "EXPERIMENT: MULTI-LAYER NEURAL NETWORKS",
+      "part": 1,
+      "cluster": 1,
+      "xy": [
+        -0.4106,
+        -0.186
+      ],
+      "xyz": [
+        0.19,
+        0.3434,
+        0.2701
+      ],
+      "snippet": "We used their implementation and compared with Adam to train such models. Figure 2 shows that Adam m…"
+    },
+    {
+      "id": 28,
+      "section": "6.3",
+      "title": "EXPERIMENT: CONVOLUTIONAL NEURAL NETWORKS",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.4368,
+        -0.6257
+      ],
+      "xyz": [
+        0.672,
+        0.4648,
+        0.0567
+      ],
+      "snippet": "Convolutional neural networks (CNNs) with several layers of convolution, pooling and non-linear unit…"
+    },
+    {
+      "id": 29,
+      "section": "6.3",
+      "title": "EXPERIMENT: CONVOLUTIONAL NEURAL NETWORKS",
+      "part": 1,
+      "cluster": 1,
+      "xy": [
+        -0.9635,
+        -0.0873
+      ],
+      "xyz": [
+        0.2776,
+        0.7478,
+        0.4865
+      ],
+      "snippet": "The input image are pre-processed by whitening, and 6 Published as a conference paper at ICLR 20150 …"
+    },
+    {
+      "id": 30,
+      "section": "6.3",
+      "title": "EXPERIMENT: CONVOLUTIONAL NEURAL NETWORKS",
+      "part": 2,
+      "cluster": 1,
+      "xy": [
+        -0.8147,
+        -0.1
+      ],
+      "xyz": [
+        0.093,
+        0.6473,
+        0.4649
+      ],
+      "snippet": "We compare with the sum-of-functions (SFO) optimizer (Sohl-Dickstein et al., 2014)0.0 0.5 1.0 1.5 2.…"
+    },
+    {
+      "id": 31,
+      "section": "6.3",
+      "title": "EXPERIMENT: CONVOLUTIONAL NEURAL NETWORKS",
+      "part": 3,
+      "cluster": 1,
+      "xy": [
+        -0.5475,
+        -0.0517
+      ],
+      "xyz": [
+        -0.0297,
+        0.4246,
+        0.062
+      ],
+      "snippet": "Interestingly, although both Adam and Adagrad make rapid progress lowering the cost in the initial s…"
+    },
+    {
+      "id": 32,
+      "section": "6.3",
+      "title": "EXPERIMENT: CONVOLUTIONAL NEURAL NETWORKS",
+      "part": 4,
+      "cluster": 1,
+      "xy": [
+        -0.5441,
+        0.5731
+      ],
+      "xyz": [
+        -0.4473,
+        0.4612,
+        -0.0681
+      ],
+      "snippet": "Though Adam shows marginal improvement over SGD with momentum, it adapts learning rate scale for dif…"
+    },
+    {
+      "id": 33,
+      "section": "6.4",
+      "title": "EXPERIMENT: BIAS-CORRECTION TERM",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.4067,
+        0.5861
+      ],
+      "xyz": [
+        -0.5807,
+        0.3222,
+        -0.0237
+      ],
+      "snippet": "We also empirically evaluate the effect of the bias correction terms explained in sections 2 and 3. …"
+    },
+    {
+      "id": 34,
+      "section": "6.4",
+      "title": "EXPERIMENT: BIAS-CORRECTION TERM",
+      "part": 1,
+      "cluster": 1,
+      "xy": [
+        -0.2668,
+        0.5959
+      ],
+      "xyz": [
+        -0.4819,
+        0.1864,
+        0.0529
+      ],
+      "snippet": "In Figure 4, values β2 close to 1 indeed lead to instabilities in training when no bias correction t…"
+    },
+    {
+      "id": 35,
+      "section": "7.1",
+      "title": "ADAMAX",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        0.2034,
+        0.4484
+      ],
+      "xyz": [
+        -0.3495,
+        -0.0907,
+        -0.4668
+      ],
+      "snippet": "In Adam, the update rule for individual weights is to scale their gradients inversely proportional t…"
+    },
+    {
+      "id": 36,
+      "section": "7.1",
+      "title": "ADAMAX",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        0.7111,
+        0.1554
+      ],
+      "xyz": [
+        -0.1554,
+        -0.6764,
+        -0.1625
+      ],
+      "snippet": "With βt 1 we denote β1 to the power t. Here, (α/(1 − βt 1)) is the learning rate with the bias-corre…"
+    },
+    {
+      "id": 37,
+      "section": "7.1",
+      "title": "ADAMAX",
+      "part": 2,
+      "cluster": 0,
+      "xy": [
+        0.4737,
+        0.284
+      ],
+      "xyz": [
+        -0.3594,
+        -0.4125,
+        -0.1451
+      ],
+      "snippet": "Now let p → ∞, and define ut = limp→∞(vt)1/p, then: ut = lim p→∞(vt)1/p = lim p→∞ ( (1 − βp 2 ) t∑ i…"
+    },
+    {
+      "id": 38,
+      "section": "7.2",
+      "title": "TEMPORAL AVERAGING",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        0.5479,
+        -0.1668
+      ],
+      "xyz": [
+        -0.0452,
+        -0.6056,
+        0.2592
+      ],
+      "snippet": "Since the last iterate is noisy due to stochastic approximation, better generalization performance i…"
+    },
+    {
+      "id": 39,
+      "section": "8",
+      "title": "CONCLUSION",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.1561,
+        -0.2784
+      ],
+      "xyz": [
+        0.2738,
+        0.123,
+        0.0793
+      ],
+      "snippet": "We have introduced a simple and computationally efficient algorithm for gradient-based optimization …"
+    },
+    {
+      "id": 40,
+      "section": "9",
+      "title": "ACKNOWLEDGMENTS",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.4443,
+        0.2091
+      ],
+      "xyz": [
+        0.3736,
+        0.4186,
+        -0.4671
+      ],
+      "snippet": "This paper would probably not have existed without the support of Google Deepmind. We would like to …"
+    }
+  ],
+  "ms": {
+    "embed": 1227,
+    "total": 4164,
+    "label": 2814
+  },
+  "cost": 0.00014877
+}
