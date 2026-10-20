@@ -41,7 +41,7 @@ Knowing this will save you a repair round.
 - **metrics**: every declared metric is a number at the end of the default run.
 - **determinism**: the same params twice give identical output. Use only `rand()` and `randn()`, which are seeded. No `Math.random`, `Date` or `performance.now`, and no module-level mutable state that persists between runs. Top-level constants and lookup tables are fine.
 - **sweep**: each param at min, default and max (toggles both ways, selects every option) runs without exceptions in under 1.5 s. Divergence is allowed there if the physics says so.
-- **decorative**: changing each param changes the drawing or a metric. A param your code ignores fails.
+- **decorative**: changing each param changes a metric or plotted data (`line`, `scatter`, `bars`, `hist`, `heatmap`, `field`, `graph`, `marker`). Titles, axes, `text` and `hline`/`vline` guides don't count, so a param your simulation ignores fails even when a guide line reads it.
 - **varies**: each metric used in a predicate takes more than one value across the runs.
 - **reproduce / contrast**: the claims' predicates, evaluated on your metrics.
 

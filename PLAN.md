@@ -190,7 +190,7 @@ The server checks every `quote` against the ingested text with a fuzzy match. An
    - every metric is finite, or the run is flagged as diverged (allowed);
    - each run finishes in under 1.5s;
    - the display-list hash is recorded for the decorative check.
-2. **Decorative check.** A param fails if neither the render nor the metrics change across its values.
+2. **Decorative check.** A param fails if neither the metrics nor the data marks (lines, points, bars, heatmaps, markers) change across its values. Titles, axes, text and hline/vline guides don't count, so a param that only moves a reference line drawn from itself fails. (Requiring a metric change instead would be wrong: Adam's corrected step is ≈ α whatever α, β1 and β2 are, and that invariance is the claim.)
 3. **Constant-metric check.** A metric fails if it is identical across the whole sweep, which catches hard-coded values.
 4. **Reproduce and contrast.** The test runs both settings and evaluates their predicates.
 5. **Budget.** The whole self-test must finish in under 8s.

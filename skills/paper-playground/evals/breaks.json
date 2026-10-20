@@ -1,0 +1,20 @@
+{
+  "attention": [
+    { "name": "scale-by-dk", "kind": "wrong mechanism: ÷ d_k instead of ÷ √d_k",
+      "find": "const c = p.scaled ? 1 / Math.sqrt(s.outs[0].dk) : 1;", "replace": "const c = p.scaled ? 1 / s.outs[0].dk : 1;" }
+  ],
+  "adam": [
+    { "name": "vhat-uncorrected", "kind": "wrong mechanism: second moment left biased",
+      "find": "const vhat = s.v / (1 - Math.pow(b2, s.t));", "replace": "const vhat = s.v;" },
+    { "name": "beta2-ignored", "kind": "decorative param: step() hard-codes β2, only the reference line reads it",
+      "find": "const b1 = Number(p.beta1), b2 = Number(p.beta2), a = Number(p.alpha);", "replace": "const b1 = Number(p.beta1), b2 = 0.999, a = Number(p.alpha);" }
+  ],
+  "sir": [
+    { "name": "helper-typo", "kind": "runtime error: calls a kernel helper that doesn't exist",
+      "find": "const k = argmax(I);", "replace": "const k = argMax(I);" }
+  ],
+  "oscillator": [
+    { "name": "damping-unsquared", "kind": "wrong formula: b·ω² instead of b²·ω² in Eq. 15.29",
+      "find": "p.b * p.b * w * w", "replace": "p.b * w * w" }
+  ]
+}
