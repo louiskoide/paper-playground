@@ -55,8 +55,8 @@
       {
         "id": "sweep:beta1=0",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 2 ms",
+        "ms": 2
       },
       {
         "id": "decorative:beta1",
@@ -186,7 +186,7 @@
     "transport": {
       "reset": "step 0",
       "step": "step 1 · first step / α 1 · largest step / α 1",
-      "playing": "step 12 · first step / α 1 · largest step / α 1",
+      "playing": "step 11 · first step / α 1 · largest step / α 1",
       "ok": true
     }
   },

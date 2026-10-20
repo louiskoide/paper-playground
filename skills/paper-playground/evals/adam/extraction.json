@@ -4,12 +4,18 @@
   "playable": true,
   "unplayable_reason": null,
   "experiment": "Switching off bias correction with β2 near 1 makes Adam's steps jump to many times the stepsize α. With correction on, every step stays within about α. This is the §3/§5 claim that the uncorrected method takes very large stepsizes.",
+  "plain": {
+    "idea": "Training a machine-learning model means nudging its numbers again and again to make its error smaller. Adam is a popular recipe for choosing how big each nudge is: it keeps running averages of recent slopes and uses them to size the next step. Because those averages start at zero, they are too small at first, and the paper adds a correction so the early steps aren't thrown off.",
+    "look": "Run the paper's case and note that every step stays about one stepsize long. Then switch the correction off and watch the first steps jump to about ten times that.",
+    "summary": "The paper introduces Adam, a recipe for training models that gives every number its own step size, based on how big and how steady its recent slopes have been. The paper shows it needs little memory, copes with noisy data, and usually needs little tuning.",
+    "conclusion": "Keep the bias correction on, and start from the paper's defaults: stepsize 0.001, 0.9 for the first average and 0.999 for the second. Without the correction, settings that remember far back (like 0.9999) make the first steps about ten times too big."
+  },
   "archetype": "iterative",
   "archetype_reason": "Adam is one repeated update rule (Algorithm 1), and the claim concerns the size of each iteration's parameter step",
   "fixed": {
     "objective": "f(θ) = θ²/2, deterministic, gradient g_t = θ_{t-1}",
     "theta0": 1,
-    "epsilon": 1e-8,
+    "epsilon": 1e-08,
     "m0_v0": "m_0 = 0, v_0 = 0",
     "uncorrected_update": "θ_t = θ_{t-1} − α · m_t / (√v_t + ε), using raw m_t and v_t",
     "corrected_update": "Algorithm 1 exactly: m̂_t = m_t/(1−β1^t), v̂_t = v_t/(1−β2^t), θ_t = θ_{t-1} − α · m̂_t/(√v̂_t + ε)"
@@ -19,16 +25,17 @@
       "name": "alpha",
       "label": "stepsize α",
       "kind": "range",
-      "min": 0.00001,
+      "min": 1e-05,
       "max": 0.1,
-      "step": 0.00001,
+      "step": 1e-05,
       "default": 0.001,
       "scale": "log",
       "unit": "",
       "source": {
         "section": "1",
         "quote": "Good default settings for the tested machine learning problems are α = 0.001,"
-      }
+      },
+      "plain": "the stepsize: the longest a single nudge is meant to be"
     },
     {
       "name": "beta1",
@@ -43,7 +50,8 @@
       "source": {
         "section": "2",
         "quote": "the hyper-parameters β1, β2 ∈ [0, 1) control the exponential decay rates of these moving averages"
-      }
+      },
+      "plain": "how much the average of recent slopes leans on the past; higher means slower to react"
     },
     {
       "name": "beta2",
@@ -67,7 +75,8 @@
       "source": {
         "section": "6.4",
         "quote": "Values of β2 close to 1, required for robustness to sparse gradients, results in larger initialization bias"
-      }
+      },
+      "plain": "how long the average of recent slope sizes remembers; closer to 1 means it starts off further from the truth"
     },
     {
       "name": "bias_correction",
@@ -77,7 +86,8 @@
       "source": {
         "section": "3",
         "quote": "In algorithm 1 we therefore divide by this term to correct the initialization bias."
-      }
+      },
+      "plain": "fix the averages for starting at zero, so early steps come out the right size"
     }
   ],
   "metrics": [
@@ -85,18 +95,21 @@
       "name": "first_step_ratio",
       "label": "first step / α",
       "unit": "",
-      "meaning": "|θ_1 − θ_0| / α, the size of the very first parameter update in units of the stepsize"
+      "meaning": "|θ_1 − θ_0| / α, the size of the very first parameter update in units of the stepsize",
+      "plain": "how long the very first step is, counted in stepsizes; 1 is what Adam intends"
     },
     {
       "name": "max_step_ratio",
       "label": "largest step / α",
       "unit": "",
-      "meaning": "max over t = 1..steps of |θ_t − θ_{t-1}| / α"
+      "meaning": "max over t = 1..steps of |θ_t − θ_{t-1}| / α",
+      "plain": "the longest step in the whole run, counted in stepsizes; much more than 1 means Adam overshoots"
     }
   ],
   "steps": 100,
   "reproduce": {
     "claim": "With bias correction, every step Adam takes stays at or below the stepsize α, even with β2 = 0.9999.",
+    "plain": "With the correction on, every step is about one stepsize long, even when the averages remember a very long way back.",
     "source": {
       "section": "2.1",
       "quote": "The effective magnitude of the steps taken in parameter space at each timestep are approximately bounded by the stepsize setting α"
@@ -128,6 +141,7 @@
   },
   "contrast": {
     "claim": "Without bias correction and with β2 = 0.9999, the first step is (1−β1)/√(1−β2) = 10 times α, and later steps grow even larger.",
+    "plain": "With the correction off, the first step is about ten stepsizes long and later ones get even bigger, so Adam lurches instead of walking.",
     "source": {
       "section": "5",
       "quote": "since in that case not correcting the bias leads to very large stepsizes and often divergence"

@@ -124,16 +124,27 @@ function ticks(a, b, n, log) {
   return out;
 }
 const GREEK = /([\u0370-\u03FF\u1F00-\u1FFF]+)/, GREEK_RUNS_NOT = /[^\u0370-\u03FF\u1F00-\u1FFF]+/g; // uppercase captions must not turn σ into Σ
+// wrap by an estimated monospace width (0.6 em), so layout is the same with or without a canvas
+const wrapText = (s, w, px, max = 3) => {
+  const per = Math.max(8, Math.floor(w / (px * 0.6))), out = [];
+  let cur = '';
+  for (const word of String(s).split(/\s+/).filter(Boolean)) {
+    if (cur && (cur + ' ' + word).length > per) { out.push(cur); cur = word; } else cur = cur ? `${cur} ${word}` : word;
+  }
+  if (cur) out.push(cur);
+  if (out.length > max) { out.length = max; out[max - 1] = out[max - 1].replace(/\s*\S*$/, '') + '…'; }
+  return out;
+};
 const SERIES = [['live', []], ['line', []], ['line', [5, 4]], ['line', [1.5, 3]]];
 
 class G {
   constructor(ctx, rect, H, T, hits) {
-    Object.assign(this, { ctx, rect, H, T, hits, legend: [], subs: [], top: 0, hasAxes: false });
+    Object.assign(this, { ctx, rect, H, T, hits, legend: [], subs: [], top: 0, bottom: 0, hasAxes: false });
     this.frame([0, 1], [0, 1]);
   }
   frame(x, y, xlog = false, ylog = false, pad = { l: 8, r: 8, t: 8, b: 8 }) {
     const R = this.rect;
-    const P = this.plot = { x: R.x + pad.l, y: R.y + this.top + pad.t, w: Math.max(10, R.w - pad.l - pad.r), h: Math.max(10, R.h - this.top - pad.t - pad.b) };
+    const P = this.plot = { x: R.x + pad.l, y: R.y + this.top + pad.t, w: Math.max(10, R.w - pad.l - pad.r), h: Math.max(10, R.h - this.top - this.bottom - pad.t - pad.b) };
     this.xd = x; this.yd = y;
     this.sx = scale(x, P.x, P.x + P.w, xlog); this.sy = scale(y, P.y + P.h, P.y, ylog);
   }
@@ -147,19 +158,28 @@ class G {
     for (let i = 0; i < r; i++) for (let j = 0; j < c; j++) out.push(new G(this.ctx, { x: R.x + j * (cw + gap), y: R.y + i * (rh + gap), w: cw, h: rh }, this.H, this.T, this.hits));
     this.rec('split', r, c); this.subs.push(...out); return out;
   }
-  title(s) {
-    this.rec('title', String(s)); this.top = 18; this.frame(this.xd, this.yd);
+  title(s, { explain = '', takeaway = '' } = {}) {
+    const R = this.rect, lh = 14, ex = explain ? wrapText(explain, R.w - 4, 11) : [], tk = takeaway ? wrapText(`→ ${takeaway}`, R.w - 4, 11, 2) : [];
+    this.rec('title', String(s), ex.join(' '), tk.join(' '));
+    // fixed space (3 lines explain, 2 lines takeaway) so side-by-side panels align and the plot doesn't jump as the takeaway changes
+    this.top = 18 + (explain ? 3 * lh + 4 : 0); this.bottom = takeaway ? 2 * lh + 10 : 0;
+    this.frame(this.xd, this.yd);
     if (!this.ctx) return this;
     const c = this.ctx; c.font = this.font(10.5); c.fillStyle = this.T.text; c.textAlign = 'left'; c.textBaseline = 'top';
     if ('letterSpacing' in c) c.letterSpacing = '1.5px';
-    c.fillText(String(s).replace(GREEK_RUNS_NOT, m => m.toUpperCase()), this.rect.x + 2, this.rect.y + 2);
+    c.fillText(String(s).replace(GREEK_RUNS_NOT, m => m.toUpperCase()), R.x + 2, R.y + 2);
     if ('letterSpacing' in c) c.letterSpacing = '0px';
+    c.font = this.font(11);
+    ex.forEach((l, i) => c.fillText(l, R.x + 2, R.y + 19 + i * lh));
+    c.fillStyle = this.T.live;
+    tk.forEach((l, i) => c.fillText(l, R.x + 2, R.y + R.h - this.bottom + 8 + i * lh));
     return this;
   }
-  axes({ x = [0, 1], y = [0, 1], xlabel = '', ylabel = '', xlog = false, ylog = false, xticks = true, yticks = true } = {}) {
+  axes({ x = [0, 1], y = [0, 1], xlabel = '', ylabel = '', xexplain = '', yexplain = '', xlog = false, ylog = false, xticks = true, yticks = true } = {}) {
     x = dom(x, xlog); y = dom(y, ylog);
-    this.rec('axes', x, y, xlabel, ylabel, xlog, ylog); this.hasAxes = true;
-    this.frame(x, y, xlog, ylog, { l: yticks ? 50 : 12, r: 12, t: ylabel ? 20 : 8, b: xlabel ? 36 : 24 });
+    this.rec('axes', x, y, xlabel, ylabel, xlog, ylog, xexplain, yexplain); this.hasAxes = true;
+    const yx = ylabel && yexplain, xx = xlabel && xexplain;
+    this.frame(x, y, xlog, ylog, { l: yticks ? 50 : 12, r: 12, t: ylabel ? (yx ? 34 : 20) : 8, b: xlabel ? (xx ? 50 : 36) : 24 });
     if (!this.ctx) return this;
     const c = this.ctx, P = this.plot, T = this.T;
     c.setLineDash([]); c.strokeStyle = T.line; c.lineWidth = 1;
@@ -173,8 +193,12 @@ class G {
       c.textAlign = 'right'; c.textBaseline = 'middle';
       for (const v of ticks(y[0], y[1], P.h / 50, ylog)) { const Y = this.sy(v); c.beginPath(); c.moveTo(P.x - 4, Y); c.lineTo(P.x, Y); c.stroke(); c.fillText(fmt(v), P.x - 7, Y); }
     }
-    if (xlabel) { c.textAlign = 'right'; c.textBaseline = 'bottom'; c.fillText(xlabel, P.x + P.w, this.rect.y + this.rect.h); }
-    if (ylabel) { c.textAlign = 'left'; c.textBaseline = 'bottom'; c.fillText(ylabel, P.x + 6, P.y - 6); }
+    // axis labels in the live colour, each with an optional one-line plain explanation under it
+    const one = (s, w) => wrapText(s, w, 10.5, 1)[0];
+    const xb = this.rect.y + this.rect.h - this.bottom;
+    c.textBaseline = 'bottom';
+    if (xlabel) { c.textAlign = 'right'; c.fillStyle = T.live; c.fillText(xlabel, P.x + P.w, xx ? xb - 14 : xb); if (xx) { c.fillStyle = T.line; c.fillText(one(xexplain, P.w), P.x + P.w, xb); } }
+    if (ylabel) { c.textAlign = 'left'; c.fillStyle = T.live; c.fillText(ylabel, P.x + 6, yx ? P.y - 20 : P.y - 6); if (yx) { c.fillStyle = T.line; c.fillText(one(yexplain, P.w - 6), P.x + 6, P.y - 6); } }
     return this;
   }
   line(xs, ys, o = {}) {
@@ -567,9 +591,20 @@ function mount(def) {
   live.setAttribute('aria-live', 'polite');
   bot.append(caps('instr', def.caption || ''), readout, live);
   const guide = el('div', 'guide'), claimsEl = el('div', 'claims');
-  if (SPEC.experiment) guide.append(el('p', 'lead', SPEC.experiment));
+  // plain-language layer first, for readers new to the field; the paper's own terms follow as evidence
+  const plain = SPEC.plain || {};
+  if (plain.idea) guide.append(el('p', 'lead', plain.idea));
+  if (plain.look) guide.append(el('p', 'look', plain.look));
+  if (SPEC.experiment) guide.append(el('p', plain.idea ? 'tech' : 'lead', plain.idea ? `In the paper's terms: ${SPEC.experiment}` : SPEC.experiment));
+  const terms = METRICS.filter(m => m.plain);
+  if (terms.length) { const ul = el('ul', 'terms'); for (const m of terms) { const li = el('li'); li.append(el('b', null, m.label || m.name), ` — ${m.plain}`); ul.append(li); } guide.append(ul); }
   guide.append(claimsEl);
+  // closing summary: what the document is about, and the lesson to take away
+  const summary = el('div', 'summary');
+  if (plain.summary) summary.append(el('p', 'shead', 'what the paper is about'), el('p', null, plain.summary));
+  if (plain.conclusion) summary.append(el('p', 'shead', 'what to take away'), el('p', 'lead', plain.conclusion));
   plate.append(top, guide, body, bot);
+  if (summary.childNodes.length) plate.append(summary);
   document.body.append(plate);
   ui = { P: defaults(), claim: null, sim: null, view: null, target: 0, playing: false, dirty: true, last: 0, settled: false, hits: [], drag: null, controls: {}, canvas, readout, live };
   if (MOUNT_ERR) { readout.textContent = `error · ${MOUNT_ERR.message}`; return; }
@@ -636,6 +671,7 @@ function mount(def) {
       head.append(src);
     }
     if (q.kind === 'toggle') row.append(head);
+    if (q.plain) row.append(el('p', 'phint', q.plain));
     params.append(row);
     ui.controls[q.name] = { sync: show }; show(ui.P[q.name]);
   }
@@ -651,10 +687,11 @@ function mount(def) {
   let repRun = null;
   const runOf = key => key === 'reproduce' ? (repRun ||= headless(claimP(SPEC.reproduce), claimSteps(SPEC.reproduce))) : headless(claimP(SPEC[key]), claimSteps(SPEC[key]));
   const claims = ['reproduce', 'contrast'].filter(key => SPEC[key]?.params).map((key, i) => {
-    const c = SPEC[key], box = el('div', 'claim'), b = el('button', null, `${i + 1} · ${key === 'reproduce' ? "the paper's claim" : 'the contrast'}`), result = el('p', 'result');
+    const c = SPEC[key], box = el('div', 'claim'), b = el('button', null, `${i + 1} · ${key === 'reproduce' ? "try the paper's case" : 'try the comparison'}`), result = el('p', 'result');
     b.type = 'button'; result.hidden = true;
     const settings = Object.entries(c.params).map(([k, v]) => { const q = PARAMS.find(q => q.name === k); return q && `${q.label || k} ${pval(q, v)}`; }).filter(Boolean).join(' · ');
-    box.append(b, el('p', 'ctext', c.claim || ''));
+    box.append(b, el('p', 'ctext', c.plain || c.claim || ''));
+    if (c.plain && c.claim) box.append(el('p', 'tech', c.claim));
     if (c.source?.quote) box.append(el('p', 'quote', `“${c.source.quote}”${c.source.section ? ` §${c.source.section}` : ''}`));
     if (settings) box.append(el('p', 'settings', `sets ${settings}`));
     box.append(result); claimsEl.append(box);
