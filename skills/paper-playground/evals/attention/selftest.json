@@ -5,13 +5,13 @@
     "type": "pp:selftest",
     "ok": true,
     "kernel": "0.1.0",
-    "ms": 44,
+    "ms": 46,
     "checks": [
       {
         "id": "default",
         "ok": true,
-        "msg": "ok in 3 ms",
-        "ms": 3
+        "msg": "ok in 4 ms",
+        "ms": 4
       },
       {
         "id": "metrics",
@@ -26,8 +26,8 @@
       {
         "id": "sweep:d_k=64",
         "ok": true,
-        "msg": "ok in 3 ms",
-        "ms": 3
+        "msg": "ok in 4 ms",
+        "ms": 4
       },
       {
         "id": "sweep:d_k=4",
@@ -49,14 +49,14 @@
       {
         "id": "sweep:scaled=true",
         "ok": true,
-        "msg": "ok in 3 ms",
-        "ms": 3
+        "msg": "ok in 4 ms",
+        "ms": 4
       },
       {
         "id": "sweep:scaled=false",
         "ok": true,
-        "msg": "ok in 2 ms",
-        "ms": 2
+        "msg": "ok in 3 ms",
+        "ms": 3
       },
       {
         "id": "decorative:scaled",

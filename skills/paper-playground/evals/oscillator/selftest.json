@@ -5,13 +5,13 @@
     "type": "pp:selftest",
     "ok": true,
     "kernel": "0.1.0",
-    "ms": 47,
+    "ms": 49,
     "checks": [
       {
         "id": "default",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "metrics",
@@ -26,14 +26,14 @@
       {
         "id": "sweep:omega=1",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "sweep:omega=0.1",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "sweep:omega=3",
@@ -49,8 +49,8 @@
       {
         "id": "sweep:b=0.1",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "sweep:b=0.02",
@@ -61,8 +61,8 @@
       {
         "id": "sweep:b=1",
         "ok": true,
-        "msg": "ok in 1 ms",
-        "ms": 1
+        "msg": "ok in 0 ms",
+        "ms": 0
       },
       {
         "id": "decorative:b",
@@ -72,8 +72,8 @@
       {
         "id": "sweep:m=1",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "sweep:m=0.25",
@@ -84,8 +84,8 @@
       {
         "id": "sweep:m=4",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "decorative:m",
@@ -95,8 +95,8 @@
       {
         "id": "sweep:k=1",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "sweep:k=0.25",
@@ -107,8 +107,8 @@
       {
         "id": "sweep:k=4",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "decorative:k",
