@@ -6,13 +6,14 @@
       "kind": "decorative param: step() hard-codes β2, only the reference line reads it",
       "caught": true,
       "seeded": [
+        "decorative:beta2: no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)",
         "contrast: first_step_ratio 3.16, expected in [9.5, 10.5] (§5)"
       ],
       "calls": [
         {
           "step": "repair",
-          "cost": 0.246256,
-          "ms": 16948
+          "cost": 0.24908,
+          "ms": 20980
         }
       ],
       "repaired": true,
@@ -28,7 +29,7 @@
           "max_step_ratio": 20.2413
         }
       },
-      "cost_usd": 0.246
+      "cost_usd": 0.249
     },
     {
       "case": "adam",
@@ -42,8 +43,8 @@
       "calls": [
         {
           "step": "repair",
-          "cost": 0.252016,
-          "ms": 20132
+          "cost": 0.251272,
+          "ms": 22932
         }
       ],
       "repaired": true,
@@ -59,7 +60,7 @@
           "max_step_ratio": 20.2413
         }
       },
-      "cost_usd": 0.252
+      "cost_usd": 0.251
     },
     {
       "case": "attention",
@@ -72,8 +73,8 @@
       "calls": [
         {
           "step": "repair",
-          "cost": 0.254656,
-          "ms": 21787
+          "cost": 0.255044,
+          "ms": 20713
         }
       ],
       "repaired": true,
@@ -103,8 +104,8 @@
       "calls": [
         {
           "step": "repair",
-          "cost": 0.156444,
-          "ms": 18582
+          "cost": 0.156828,
+          "ms": 16107
         }
       ],
       "repaired": true,
@@ -122,7 +123,7 @@
           "quality": 1.82602
         }
       },
-      "cost_usd": 0.156
+      "cost_usd": 0.157
     },
     {
       "case": "sir",
@@ -134,11 +135,11 @@
         "sweep:alpha_factor=1: error: argMax is not defined",
         "sweep:alpha_factor=0.1: error: argMax is not defined",
         "sweep:alpha_factor=4: error: argMax is not defined",
-        "decorative:alpha_factor: render and metrics identical at every swept value",
+        "decorative:alpha_factor: no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)",
         "sweep:beta_factor=1: error: argMax is not defined",
         "sweep:beta_factor=0.25: error: argMax is not defined",
         "sweep:beta_factor=4: error: argMax is not defined",
-        "decorative:beta_factor: render and metrics identical at every swept value",
+        "decorative:beta_factor: no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)",
         "reproduce: error: argMax is not defined; error: argMax is not defined (§III)",
         "contrast: error: argMax is not defined; error: argMax is not defined; error: argMax is not defined (§II.3)",
         "varies:peak_frac: peak_frac is identical in every run (hard-coded?)",
@@ -151,8 +152,8 @@
       "calls": [
         {
           "step": "repair",
-          "cost": 0.25180400000000003,
-          "ms": 17706
+          "cost": 0.253492,
+          "ms": 18336
         }
       ],
       "repaired": true,
@@ -170,7 +171,7 @@
           "t_safe": 94.4
         }
       },
-      "cost_usd": 0.252
+      "cost_usd": 0.253
     }
   ],
   "fallback": [
@@ -187,7 +188,7 @@
           "uncorrected_first_step": 100
         }
       },
-      "cost_usd": 0.214
+      "cost_usd": 0.217
     },
     {
       "case": "sir",
@@ -204,7 +205,7 @@
           "rho0": 0.9
         }
       },
-      "cost_usd": 0.132
+      "cost_usd": 0.126
     }
   ]
 }

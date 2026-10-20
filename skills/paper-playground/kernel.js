@@ -90,6 +90,9 @@ function hasher() {
   };
   return { add, get value() { return (h >>> 0).toString(16); } };
 }
+// Marks that plot computed values. Titles, axes, text and reference rules aren't data: a param that
+// moves only those (say, a guide line drawn from the param itself) is still decorative.
+const DATA_MARKS = new Set(['line', 'scatter', 'bars', 'hist', 'heatmap', 'field', 'graph', 'marker']);
 
 /* ---------- drawing ---------- */
 const hex = c => { c = (c || '#888').replace('#', ''); if (c.length === 3) c = [...c].map(x => x + x).join(''); const n = parseInt(c, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
@@ -134,7 +137,7 @@ class G {
     this.xd = x; this.yd = y;
     this.sx = scale(x, P.x, P.x + P.w, xlog); this.sy = scale(y, P.y + P.h, P.y, ylog);
   }
-  rec(...a) { for (const v of a) this.H.add(v); }
+  rec(...a) { for (const v of a) this.H.add(v); if (this.H.data && DATA_MARKS.has(a[0])) for (const v of a) this.H.data.add(v); }
   font(px = 10.5) { return `${px}px ${this.T.mono}`; }
   clip(fn) { const c = this.ctx, P = this.plot; c.save(); c.beginPath(); c.rect(P.x - 2, P.y - 2, P.w + 4, P.h + 4); c.clip(); try { fn(c); } finally { c.restore(); } }
   stroke(series, width) { const [col, dash] = SERIES[series % 4]; const c = this.ctx; c.strokeStyle = this.T[col]; c.setLineDash(dash); c.lineWidth = width ?? (series % 4 === 0 ? 1.75 : 1.25); return this.T[col]; }
@@ -448,10 +451,10 @@ function headless(P, steps) {
   simInit(sim);
   const n = TIMELESS ? 0 : ARCH === 'pipeline' ? HORIZON : steps;
   while (sim.status === 'ok' && sim.t < n) { simStep(sim); if (performance.now() - t0 > RUN_MS) { sim.status = 'slow'; break; } }
-  const H = hasher();
+  const H = hasher(); H.data = hasher();
   if (sim.status === 'ok') { try { withRng(sim.rng, () => drawSim(new G(null, { x: 0, y: 0, w: 640, h: 400 }, H, null, []), sim, true)); } catch (e) { sim.status = 'error'; sim.err = e; } }
   H.add(sim.status); H.add(sim.divergedAt ?? -1);
-  return { status: sim.status, err: sim.err, m: sim.m, hash: H.value, ms: Math.round(performance.now() - t0), t: sim.t, divergedAt: sim.divergedAt, bad: sim.bad };
+  return { status: sim.status, err: sim.err, m: sim.m, hash: H.value, dataHash: H.data.value, ms: Math.round(performance.now() - t0), t: sim.t, divergedAt: sim.divergedAt, bad: sim.bad };
 }
 const describe = r => r.status === 'ok' ? `ok in ${r.ms} ms` : r.status === 'diverged' ? `diverged at step ${r.divergedAt} (${r.bad} non-finite)`
   : r.status === 'slow' ? `exceeded ${RUN_MS} ms at step ${r.t}` : `error: ${r.err?.message || r.err}`;
@@ -500,16 +503,16 @@ async function selftest() {
   await tick();
   add('determinism', sig(headless(defaults(), steps)) === sig(base), { msg: 'same seed and params gave different output (Math.random, Date, or state leaking between runs?)' });
   for (const q of PARAMS) {
-    const seen = new Set();
+    const seen = new Set();   // metrics or data marks; a param that moves only titles, axes or guide lines doesn't count
     for (const v of sweepValues(q)) {
       if (over()) break;
       await tick();
       const r = v === q.default ? base : headless({ ...defaults(), [q.name]: v }, steps);
       if (r !== base) runs.push(r);
-      seen.add(sig(r));
+      seen.add(`${r.dataHash}|${r.status}|${JSON.stringify(round6(r.m))}`);
       add(`sweep:${q.name}=${fmt(v)}`, r.status === 'ok' || r.status === 'diverged', { msg: describe(r), ms: r.ms });
     }
-    add(`decorative:${q.name}`, seen.size > 1, { msg: 'render and metrics identical at every swept value' });
+    add(`decorative:${q.name}`, seen.size > 1, { msg: 'no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)' });
   }
   let rep = null;
   for (const key of ['reproduce', 'contrast']) {
