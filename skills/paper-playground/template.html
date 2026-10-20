@@ -34,6 +34,16 @@ button[aria-pressed=true],.stages button.on{border-color:var(--live);color:var(-
 .guide{display:flex;flex-direction:column;gap:10px;margin:12px 0 4px}
 .guide p{margin:0}
 .lead{color:var(--live);max-width:80ch}
+.look{max-width:80ch}
+.summary{display:flex;flex-direction:column;gap:4px;margin-top:12px;padding-top:12px;border-top:1px solid var(--dim)}
+.summary p{margin:0;max-width:80ch}
+.summary .shead{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--line);margin-top:6px}
+.summary .shead:first-child{margin-top:0}
+.tech,.phint{font-size:11.5px;color:var(--line);overflow-wrap:anywhere}
+.tech{max-width:80ch}
+.phint{margin:0}
+.terms{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;font-size:12px;max-width:80ch}
+.terms b{font-weight:normal;color:var(--live)}
 .claims{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .claims[hidden]{display:none}
 @media (max-width:760px){.claims{grid-template-columns:minmax(0,1fr)}}

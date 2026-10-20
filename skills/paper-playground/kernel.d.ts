@@ -38,8 +38,10 @@ type Draw = (g: G, s: any, p: Params, m: Metrics, trace: Trace) => void;
  *  Coordinates are data coordinates of the last axes() call; without axes(), the unit square. */
 interface G {
   split(spec: '1x2' | '2x1' | '2x2' | number): G[];  // rows x cols panels
-  title(s: string): G;                     // small caption above the panel; call before axes()
-  axes(o: { x: [number, number]; y: [number, number]; xlabel?: string; ylabel?: string; xlog?: boolean; ylog?: boolean; xticks?: boolean; yticks?: boolean }): G;
+  title(s: string, o?: { explain?: string; takeaway?: string }): G; // call before axes(). s: short lowercase name of what the panel plots;
+                                           // explain: one plain sentence under it, what the panel shows (3 lines at most);
+                                           // takeaway: drawn under the panel, what the reader can conclude from what is on screen now (2 lines at most)
+  axes(o: { x: [number, number]; y: [number, number]; xlabel?: string; ylabel?: string; xexplain?: string; yexplain?: string; xlog?: boolean; ylog?: boolean; xticks?: boolean; yticks?: boolean }): G; // *explain: one plain line under that axis label
   line(xs: ArrayLike<number>, ys: ArrayLike<number>, o?: { series?: 0 | 1 | 2 | 3; label?: string; dash?: number[]; width?: number }): G; // non-finite points break the line
   line(ys: ArrayLike<number>, o?: object): G; // xs = indices
   scatter(xs: ArrayLike<number>, ys: ArrayLike<number>, o?: { series?: number; r?: number; label?: string; live?: number }): G;
