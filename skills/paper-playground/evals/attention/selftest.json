@@ -5,13 +5,13 @@
     "type": "pp:selftest",
     "ok": true,
     "kernel": "0.1.0",
-    "ms": 54,
+    "ms": 44,
     "checks": [
       {
         "id": "default",
         "ok": true,
-        "msg": "ok in 7 ms",
-        "ms": 7
+        "msg": "ok in 3 ms",
+        "ms": 3
       },
       {
         "id": "metrics",
@@ -26,8 +26,8 @@
       {
         "id": "sweep:d_k=64",
         "ok": true,
-        "msg": "ok in 7 ms",
-        "ms": 7
+        "msg": "ok in 3 ms",
+        "ms": 3
       },
       {
         "id": "sweep:d_k=4",
@@ -38,19 +38,19 @@
       {
         "id": "sweep:d_k=512",
         "ok": true,
-        "msg": "ok in 13 ms",
-        "ms": 13
+        "msg": "ok in 9 ms",
+        "ms": 9
       },
       {
         "id": "decorative:d_k",
         "ok": true,
-        "msg": "render and metrics identical at every swept value"
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
       },
       {
         "id": "sweep:scaled=true",
         "ok": true,
-        "msg": "ok in 7 ms",
-        "ms": 7
+        "msg": "ok in 3 ms",
+        "ms": 3
       },
       {
         "id": "sweep:scaled=false",
@@ -61,7 +61,7 @@
       {
         "id": "decorative:scaled",
         "ok": true,
-        "msg": "render and metrics identical at every swept value"
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
       },
       {
         "id": "reproduce",

@@ -1,6 +1,6 @@
 # Paper → Playground: plan
 
-Status: **approved 2026-10-19.** Phase 0 done; Phase 2 (concept map) done as `lib/` + viewer; Phase 1 (web app) not started.
+Status: **approved 2026-10-19.** Phase 0 done; Phase 1 (web app) not started. The concept map was dropped (see 10).
 
 ## Changes from the brief, and why
 
@@ -10,10 +10,10 @@ Status: **approved 2026-10-19.** Phase 0 done; Phase 2 (concept map) done as `li
 4. **"Reproduce" means the mechanism on a toy, never a headline number.** No iframe will reproduce BLEU 28.4. The reproducible claim in *Attention* is §3.2.1: without scaling, large d_k saturates the softmax. The result badge should say "reproduces the mechanism in §3.2.1 on a toy model", not "reproduces §4.2", because the second wording overclaims.
 5. **Archetype choice moves into extraction.** The generator gets only the chosen archetype file, which shortens the prompt and avoids blended archetypes. It also gets only the cited sections plus the extraction JSON, not the whole paper.
 6. **Archetype 1 takes `deriv(y, p, t)` and the kernel integrates with RK4.** With model-written Euler, Lotka–Volterra spirals outward and large-dt SIR goes negative. The "divergence is a real result" readout would then present an integrator artifact as the paper's finding. `step(s, p, dt, rand)` stays available for discrete maps and stochastic models.
-7. **"No playground" is a legitimate outcome.** If the main mechanism, a sub-mechanism and a diagram with a real derived quantity all fail, extraction returns `playable: false` with a reason. The result page then shows the concept map and that reason. An archetype-7 diagram that computes nothing is still a fake figure.
+7. **"No playground" is a legitimate outcome.** If the main mechanism, a sub-mechanism and a diagram with a real derived quantity all fail, extraction returns `playable: false` with a reason. The result page then shows that reason. An archetype-7 diagram that computes nothing is still a fake figure.
 8. **The fallback spec comes from the first extraction.** Falling back to archetype 7 needs different reproduce/contrast claims. Asking for them up front (the `fallback` field) saves an extraction round trip right when things are already failing.
 9. **Evals run the web-app path, not just Claude Code.** (Transport: `claude -p --tools "" --system-prompt-file …`, so a tool-less one-shot call on your Claude login, no API key; swappable for the SDK.) In Claude Code the generator is agentic: it runs the self-test and fixes its own mistakes. The web app gets one shot plus one repair, so pass rates measured only in Claude Code would overstate the product. `scripts/run-eval.mjs` calls the API with the exact prompts the app will use (extract → generate → self-test → repair). Claude Code stays the development loop.
-10. **Concept map: k-means + silhouette instead of HDBSCAN.** A 10-page paper gives ~40–60 chunks. At that N, HDBSCAN on 1024-d embeddings marks most points as noise, and the JS ports are immature. Cosine k-means with k chosen by silhouette (3–8) behaves predictably. Separately, 3D t-SNE on ~50 points is harder to read than 2D, so the map has a 2D/3D toggle (2D is a second seeded run of the same embedding, cached alongside the 3D one).
+10. **No concept map.** A t-SNE map of the document's chunks was built (Phase 2) and dropped on 2026-10-19: it showed which topics a paper covers but explained none of them, and at ~40 chunks it mostly rediscovered the section headings.
 11. **Models.** Extraction picks the claim, thresholds and params, which decides most of the quality. I'd start with Opus for both calls and let the evals show whether Sonnet is good enough for extraction. Both stay configurable.
 
 ## File tree
@@ -206,31 +206,22 @@ The server checks every `quote` against the ingested text with a fuzzy match. An
 // parent → iframe: { "type": "pp:run-selftest" }   other messages: pp:ready, pp:param-hover {name, section}
 ```
 
-`pp:param-hover` lets the concept map highlight the source chunk when someone hovers a control. It's free to wire up once both features exist.
+`pp:param-hover` lets the host page highlight the source passage when someone hovers a control.
 
 `selftest.mjs` (Playwright) runs the same self-test. It also sets real input values, presses play, step and reset, checks that the readout text changes, fails on any console error, and takes light and dark screenshots.
 
 ## Web app (Phase 1–3 summary)
 
-- **Client-orchestrated stages.** Verification runs in the browser, so the client drives the pipeline: `/api/ingest` → `/api/extract` (stream) → `/api/generate` (stream) → verify in the iframe → `/api/repair` → fallback. `/api/map` runs in parallel. Each route is its own function invocation, so each gets its own `maxDuration`. That keeps any single call well under Vercel's limits even when Opus generation takes 1–3 minutes.
+- **Client-orchestrated stages.** Verification runs in the browser, so the client drives the pipeline: `/api/ingest` → `/api/extract` (stream) → `/api/generate` (stream) → verify in the iframe → `/api/repair` → fallback. Each route is its own function invocation, so each gets its own `maxDuration`. That keeps any single call well under Vercel's limits even when Opus generation takes 1–3 minutes.
 - **Ingest.** For arXiv IDs, try `arxiv.org/html/<id>` first, then `ar5iv.labs.arxiv.org/html/<id>`, which covers both pre-2023 test papers. If neither exists, use the PDF via unpdf. From HTML, keep the section numbers and take the LaTeX from MathML `alttext` so equations survive. On the PDF path, sections come from a heading regex and equations will be degraded.
 - **Sandbox.** The playground loads as `<iframe sandbox="allow-scripts" srcdoc>`. `build` injects a CSP meta tag as the first child of `<head>`: `default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:`. The parent checks `event.source === iframe.contentWindow`, because the iframe's origin is `"null"`.
 - **Hang protection.** The kernel enforces a time budget between steps, and the parent runs a watchdog. A single `step()` that never returns can still freeze the tab if the browser keeps the sandboxed frame in-process. A Phase 1 spike will test running the self-test in a Worker spawned inside the iframe (the core is DOM-free) and calling `terminate()` on timeout.
 - **Cache.** The key is sha256(normalized text) + a hash of the skill files, so editing SKILL.md invalidates old results.
-- **Concept map.** Chunks are 150–300 tokens, split on section and paragraph boundaries. Embeddings default to a local model via transformers.js (bge-small, no key, no per-call cost); Voyage is an optional provider behind the same interface. druid.js handles t-SNE, UMAP and PCA with a fixed seed, server-side so the result is deterministic and cacheable. Perplexity is `clamp((N−1)/3, 5, 30)`. Below 30 chunks the map uses PCA and shows a warning. Clusters are labeled by Haiku from the chunks nearest each centroid. Rendering uses r3f + drei, with a 2D/3D toggle and the one-line note that inter-cluster distances aren't meaningful.
-
-### Concept map as built (Phase 2)
-
-- **Chunks** never cross a section, except a stub section (under ~75 tokens: a one-line section, a license note) which joins the next one. Stub paragraphs and captions join a neighbour. Long PDF paragraphs split on sentences.
-- **k is capped at N/4** (and 3 minimum, so fewer than 6 chunks get one cluster). Silhouette rises with k at small N because near-singleton clusters score well; at N = 12 it picked k = 6 without the cap.
-- **Labels** come back keyed by cluster number. Asked for a list, Haiku returned 5 labels for 4 clusters on two of five papers. A failed or malformed reply falls back to each cluster's commonest section title.
-- **Viewer** is a dependency-free canvas page, not r3f, so it runs under the same CSP as the playground and can be tested in Playwright like it. Clusters use the 8-slot categorical palette plus a distinct marker shape each and a direct label, since a scatter can't keep more than 3 hues apart for colour-blind readers on hue alone. The app can swap in r3f against the same map JSON.
-- **Committed** `evals/<case>/map.json` keeps a 100-character snippet per passage, not the full text; the full map is in `.cache/`.
 
 ## Keys
 
 - **Phase 0:** none. Evals call the model through `claude -p`, which uses your Claude login.
-- **Deployed app:** `ANTHROPIC_API_KEY` in Vercel env. A web server can't use a personal Claude login, so this one is unavoidable once strangers use the site. No embeddings key unless Voyage is switched on.
+- **Deployed app:** `ANTHROPIC_API_KEY` in Vercel env. A web server can't use a personal Claude login, so this one is unavoidable once strangers use the site.
 
 ## Test set
 
@@ -252,7 +243,6 @@ Document text isn't committed for copyrighted sources, because the repo is publi
 4. **Phase 0 looks better than the product will be.** Covered by `run-eval.mjs` using the web-app path.
 5. **PDF-only documents** have weaker section structure and garbled equations.
 6. **Prompt injection from paper text.** The model calls have no tools, and the output runs in an opaque-origin sandbox with no network. The worst case is a misleading playground, and the quote check and self-test still apply to it.
-7. **The concept map at small N** is noisy and mostly rediscovers the section structure. That's fine, as long as it isn't oversold.
 
 ## Phase 0 order
 

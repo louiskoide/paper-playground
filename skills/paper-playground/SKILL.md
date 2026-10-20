@@ -67,7 +67,7 @@ No prose outside the block. The block is plain JavaScript (no imports, no TypeSc
 
 ## Look
 
-The kernel owns the look: a plate with `Fig 1` and the document title on top, your caption and a live readout at the bottom, hairline monochrome drawing, one live colour, and light and dark themes. You choose only what to draw and which series carries the live colour. Don't add custom colours, fonts, DOM elements or CSS, because there's no API for them, deliberately.
+The kernel owns the look: a plate with `Fig 1` and the document title on top, then the experiment sentence and two buttons that load the reproduce and contrast settings, run them and show each expectation against the result; your caption and a live readout at the bottom, hairline monochrome drawing, one live colour, and light and dark themes. You choose only what to draw and which series carries the live colour. Don't add custom colours, fonts, DOM elements or CSS, because there's no API for them, deliberately.
 
 Readout: the default tail lists every metric as `label value unit`, and the kernel prefixes `step N`. Override `readout` only when a derived number explains more than the raw metrics (e.g. `peak 502 nm · wien b/T 500 nm`). Keep it lowercase, terse and dot-separated.
 

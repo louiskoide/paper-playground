@@ -5,7 +5,7 @@
     "type": "pp:selftest",
     "ok": true,
     "kernel": "0.1.0",
-    "ms": 44,
+    "ms": 47,
     "checks": [
       {
         "id": "default",
@@ -44,7 +44,7 @@
       {
         "id": "decorative:omega",
         "ok": true,
-        "msg": "render and metrics identical at every swept value"
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
       },
       {
         "id": "sweep:b=0.1",
@@ -55,19 +55,19 @@
       {
         "id": "sweep:b=0.02",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "sweep:b=1",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "decorative:b",
         "ok": true,
-        "msg": "render and metrics identical at every swept value"
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
       },
       {
         "id": "sweep:m=1",
@@ -90,7 +90,7 @@
       {
         "id": "decorative:m",
         "ok": true,
-        "msg": "render and metrics identical at every swept value"
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
       },
       {
         "id": "sweep:k=1",
@@ -101,8 +101,8 @@
       {
         "id": "sweep:k=0.25",
         "ok": true,
-        "msg": "ok in 0 ms",
-        "ms": 0
+        "msg": "ok in 1 ms",
+        "ms": 1
       },
       {
         "id": "sweep:k=4",
@@ -113,7 +113,7 @@
       {
         "id": "decorative:k",
         "ok": true,
-        "msg": "render and metrics identical at every swept value"
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
       },
       {
         "id": "reproduce",
