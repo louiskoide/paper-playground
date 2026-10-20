@@ -1,0 +1,216 @@
+{
+  "schema": 1,
+  "version": 1,
+  "key": "7f67a0e4710755d6",
+  "title": "Forced Oscillations",
+  "n": 10,
+  "method": "pca",
+  "perplexity": null,
+  "warning": "Only 10 chunks, too few for t-SNE: this is a PCA projection and the clusters are rough.",
+  "embed_model": "Xenova/bge-small-en-v1.5",
+  "label_model": "claude-haiku-5-5",
+  "label_error": null,
+  "k": 3,
+  "silhouette": 0.1201,
+  "tried": [
+    {
+      "k": 3,
+      "silhouette": 0.1201
+    }
+  ],
+  "clusters": [
+    {
+      "id": 0,
+      "label": "resonance examples and hazards",
+      "size": 1
+    },
+    {
+      "id": 1,
+      "label": "damping width and applications",
+      "size": 2
+    },
+    {
+      "id": 2,
+      "label": "driven oscillator resonance basics",
+      "size": 7
+    }
+  ],
+  "chunks": [
+    {
+      "id": 0,
+      "section": "15.6",
+      "title": "Forced Oscillations",
+      "part": 0,
+      "cluster": 2,
+      "xy": [
+        -0.2185,
+        0.1547
+      ],
+      "xyz": [
+        0.2186,
+        0.1546,
+        -0.3667
+      ],
+      "snippet": "Source: OpenStax, University Physics Volume 1, section 15.6 \"Forced Oscillations\", https://openstax.…"
+    },
+    {
+      "id": 1,
+      "section": "15.6",
+      "title": "Forced Oscillations",
+      "part": 1,
+      "cluster": 2,
+      "xy": [
+        -0.5692,
+        0.4701
+      ],
+      "xyz": [
+        0.5694,
+        0.47,
+        -0.286
+      ],
+      "snippet": "Figure 15.28 You can cause the strings in a piano to vibrate simply by producing sound waves from yo…"
+    },
+    {
+      "id": 2,
+      "section": "15.6",
+      "title": "Forced Oscillations",
+      "part": 2,
+      "cluster": 2,
+      "xy": [
+        -0.1824,
+        0.524
+      ],
+      "xyz": [
+        0.1825,
+        0.524,
+        -0.1391
+      ],
+      "snippet": "Figure 15.29 The paddle ball on its rubber band moves in response to the finger supporting it. If th…"
+    },
+    {
+      "id": 3,
+      "section": "15.6",
+      "title": "Forced Oscillations",
+      "part": 3,
+      "cluster": 2,
+      "xy": [
+        0.2628,
+        0.4365
+      ],
+      "xyz": [
+        -0.2627,
+        0.4367,
+        0.2191
+      ],
+      "snippet": "Figure 15.30 Forced, damped harmonic motion produced by driving a spring and mass with a disk driven…"
+    },
+    {
+      "id": 4,
+      "section": "15.6",
+      "title": "Forced Oscillations",
+      "part": 4,
+      "cluster": 2,
+      "xy": [
+        0.4969,
+        0.1605
+      ],
+      "xyz": [
+        -0.4969,
+        0.1607,
+        0.722
+      ],
+      "snippet": "x(t)=Acos(ωt+ϕ). (15.28) Once again, it is left as an exercise to prove that this equation is a solu…"
+    },
+    {
+      "id": 5,
+      "section": "15.6",
+      "title": "Forced Oscillations",
+      "part": 5,
+      "cluster": 2,
+      "xy": [
+        0.5016,
+        -0.109
+      ],
+      "xyz": [
+        -0.5017,
+        -0.1089,
+        0.0472
+      ],
+      "snippet": "Figure 15.31 shows a graph of the amplitude of a damped harmonic oscillator as a function of the fre…"
+    },
+    {
+      "id": 6,
+      "section": "15.6",
+      "title": "Forced Oscillations",
+      "part": 6,
+      "cluster": 2,
+      "xy": [
+        0.1912,
+        0.0603
+      ],
+      "xyz": [
+        -0.1912,
+        0.0604,
+        -0.1127
+      ],
+      "snippet": "Note that a small-amplitude driving force can produce a large-amplitude response. This phenomenon is…"
+    },
+    {
+      "id": 7,
+      "section": "15.6",
+      "title": "Forced Oscillations",
+      "part": 7,
+      "cluster": 1,
+      "xy": [
+        0.4245,
+        -0.5606
+      ],
+      "xyz": [
+        -0.4247,
+        -0.5606,
+        -0.4031
+      ],
+      "snippet": "It is interesting to note that the widths of the resonance curves shown in Figure 15.31 depend on da…"
+    },
+    {
+      "id": 8,
+      "section": "15.6",
+      "title": "Forced Oscillations",
+      "part": 8,
+      "cluster": 1,
+      "xy": [
+        0.093,
+        -0.5975
+      ],
+      "xyz": [
+        -0.0931,
+        -0.5976,
+        -0.1797
+      ],
+      "snippet": "Figure 15.32 The quality of a system is defined as the spread in the frequencies at half the amplitu…"
+    },
+    {
+      "id": 9,
+      "section": "15.6",
+      "title": "Forced Oscillations",
+      "part": 9,
+      "cluster": 0,
+      "xy": [
+        -1,
+        -0.539
+      ],
+      "xyz": [
+        1,
+        -0.5393,
+        0.4989
+      ],
+      "snippet": "Figure 15.33 Initially when people crossed the London Millennium Footbridge, they experienced a sway…"
+    }
+  ],
+  "ms": {
+    "embed": 317,
+    "total": 3991,
+    "label": 3616
+  },
+  "cost": 0.0006219000000000001
+}

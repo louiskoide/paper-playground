@@ -1,0 +1,1810 @@
+{
+  "schema": 1,
+  "version": 1,
+  "key": "b953930058fd0a60",
+  "title": "Size and timescale of epidemics in the SIR framework",
+  "n": 102,
+  "method": "tsne",
+  "perplexity": 30,
+  "warning": null,
+  "embed_model": "Xenova/bge-small-en-v1.5",
+  "label_model": "claude-haiku-5-5",
+  "label_error": null,
+  "k": 5,
+  "silhouette": 0.13,
+  "tried": [
+    {
+      "k": 3,
+      "silhouette": 0.1072
+    },
+    {
+      "k": 4,
+      "silhouette": 0.1169
+    },
+    {
+      "k": 5,
+      "silhouette": 0.13
+    },
+    {
+      "k": 6,
+      "silhouette": 0.1023
+    },
+    {
+      "k": 7,
+      "silhouette": 0.0862
+    },
+    {
+      "k": 8,
+      "silhouette": 0.0817
+    }
+  ],
+  "clusters": [
+    {
+      "id": 0,
+      "label": "asymptomatic peak timing",
+      "size": 35
+    },
+    {
+      "id": 1,
+      "label": "epidemic peak scaling",
+      "size": 11
+    },
+    {
+      "id": 2,
+      "label": "covid mortality and reporting",
+      "size": 7
+    },
+    {
+      "id": 3,
+      "label": "containment strategy implications",
+      "size": 20
+    },
+    {
+      "id": 4,
+      "label": "sir intervention simulations",
+      "size": 29
+    }
+  ],
+  "chunks": [
+    {
+      "id": 0,
+      "section": "abstract",
+      "title": "Abstract",
+      "part": 0,
+      "cluster": 4,
+      "xy": [
+        0.1181,
+        0.3444
+      ],
+      "xyz": [
+        0.1182,
+        0.6242,
+        0.1587
+      ],
+      "snippet": "The most important features to assess the severity of an epidemic are its size and its timescale. We…"
+    },
+    {
+      "id": 1,
+      "section": "I",
+      "title": "Introduction",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        0.4313,
+        0.0928
+      ],
+      "xyz": [
+        0.2955,
+        0.3324,
+        -0.5092
+      ],
+      "snippet": "In contrasting the COVID-19 epidemic, many countries and States resorted to strict social distancing…"
+    },
+    {
+      "id": 2,
+      "section": "I",
+      "title": "Introduction",
+      "part": 1,
+      "cluster": 4,
+      "xy": [
+        -0.0482,
+        0.3974
+      ],
+      "xyz": [
+        0.2994,
+        0.4357,
+        0.2945
+      ],
+      "snippet": "We will mainly work in the framework of the most venerable epidemic model, i.e. the classical (Kerma…"
+    },
+    {
+      "id": 3,
+      "section": "I",
+      "title": "Introduction",
+      "part": 2,
+      "cluster": 4,
+      "xy": [
+        0.0246,
+        0.3534
+      ],
+      "xyz": [
+        0.1844,
+        0.4454,
+        0.1972
+      ],
+      "snippet": "The ideas discussed in this work were formulated in recent works of ours [18, 19, 20]; the discussio…"
+    },
+    {
+      "id": 4,
+      "section": "I",
+      "title": "Introduction",
+      "part": 3,
+      "cluster": 4,
+      "xy": [
+        0.079,
+        0.4306
+      ],
+      "xyz": [
+        0.2518,
+        0.4541,
+        0.0503
+      ],
+      "snippet": "In the following Section V we will discuss epidemic management in the framework of the A-SIR model. …"
+    },
+    {
+      "id": 5,
+      "section": "II",
+      "title": "The SIR model",
+      "part": 0,
+      "cluster": 4,
+      "xy": [
+        -0.152,
+        0.1996
+      ],
+      "xyz": [
+        0.0011,
+        0.3836,
+        0.4296
+      ],
+      "snippet": "The classical SIR model [1, 2, 3, 4, 5] concerns averaged equations for a population of “equivalent”…"
+    },
+    {
+      "id": 6,
+      "section": "II",
+      "title": "The SIR model",
+      "part": 1,
+      "cluster": 1,
+      "xy": [
+        -0.6192,
+        -0.6582
+      ],
+      "xyz": [
+        -0.6628,
+        -0.5465,
+        0.364
+      ],
+      "snippet": "where $\\alpha$ and $\\beta$ are constant parameters, discussed in a moment. Note that the third equat…"
+    },
+    {
+      "id": 7,
+      "section": "II",
+      "title": "The SIR model",
+      "part": 2,
+      "cluster": 3,
+      "xy": [
+        0.7469,
+        0.4696
+      ],
+      "xyz": [
+        0.6354,
+        -0.2321,
+        0.3003
+      ],
+      "snippet": "Here the parameter $\\alpha$ corresponds to a contact rate (also called infection rate). More precise…"
+    },
+    {
+      "id": 8,
+      "section": "II",
+      "title": "The SIR model",
+      "part": 3,
+      "cluster": 0,
+      "xy": [
+        -0.3648,
+        0.0251
+      ],
+      "xyz": [
+        0.0687,
+        -0.4221,
+        -0.1541
+      ],
+      "snippet": "The parameter $\\beta$ is a removal rate; more precisely, it is the inverse of the typical removal ti…"
+    },
+    {
+      "id": 9,
+      "section": "II",
+      "title": "The SIR model",
+      "part": 4,
+      "cluster": 1,
+      "xy": [
+        -0.202,
+        -0.9759
+      ],
+      "xyz": [
+        -0.4085,
+        -0.0195,
+        0.4973
+      ],
+      "snippet": "$\\displaystyle S=S_{0}e^{-\\alpha\\tau},$ (2a) $\\displaystyle I=I_{0}+S_{0}-S_{0}e^{-\\alpha\\tau}-\\beta…"
+    },
+    {
+      "id": 10,
+      "section": "II",
+      "title": "The SIR model",
+      "part": 5,
+      "cluster": 4,
+      "xy": [
+        -0.0903,
+        0.2958
+      ],
+      "xyz": [
+        0.2044,
+        0.3268,
+        0.4049
+      ],
+      "snippet": "Remark 2. Most of the analysis holding for the standard SIR model can be extended to the case where …"
+    },
+    {
+      "id": 11,
+      "section": "II.1",
+      "title": "Epidemic peak and total number of infected",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        0.1779,
+        -0.3693
+      ],
+      "xyz": [
+        -0.3888,
+        0.0024,
+        -0.4736
+      ],
+      "snippet": "The most important quantities, which describe the size of an epidemic are the epidemic peak, i.e. th…"
+    },
+    {
+      "id": 12,
+      "section": "II.1",
+      "title": "Epidemic peak and total number of infected",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        0.238,
+        -0.2914
+      ],
+      "xyz": [
+        -0.2508,
+        0.04,
+        -0.569
+      ],
+      "snippet": "An equivalent way to describe the epidemic threshold is to introduce the reproduction number $\\rho(t…"
+    },
+    {
+      "id": 13,
+      "section": "II.1",
+      "title": "Epidemic peak and total number of infected",
+      "part": 2,
+      "cluster": 0,
+      "xy": [
+        0.3276,
+        -0.1406
+      ],
+      "xyz": [
+        -0.0187,
+        0.1444,
+        -0.5475
+      ],
+      "snippet": "Remark 3. A possible alternative containment strategy is to tune the parameters $\\alpha$ and $\\beta$…"
+    },
+    {
+      "id": 14,
+      "section": "II.1",
+      "title": "Epidemic peak and total number of infected",
+      "part": 3,
+      "cluster": 0,
+      "xy": [
+        0.0805,
+        -0.6729
+      ],
+      "xyz": [
+        -0.7398,
+        0.0609,
+        -0.1981
+      ],
+      "snippet": "By considering the first two equations in (1), we immediately obtain that $I\\ =\\ I_{0}\\ +\\ (S_{0}-S)…"
+    },
+    {
+      "id": 15,
+      "section": "II.1",
+      "title": "Epidemic peak and total number of infected",
+      "part": 4,
+      "cluster": 0,
+      "xy": [
+        0.0523,
+        -0.6089
+      ],
+      "xyz": [
+        -0.6389,
+        -0.0234,
+        -0.1272
+      ],
+      "snippet": "Needless to say, these expressions for $I_{*}$ apply if (and only if) $S_{0}>\\gamma$ and $N>\\gamma$ …"
+    },
+    {
+      "id": 16,
+      "section": "II.1",
+      "title": "Epidemic peak and total number of infected",
+      "part": 5,
+      "cluster": 1,
+      "xy": [
+        -0.5096,
+        -0.7229
+      ],
+      "xyz": [
+        -0.7284,
+        -0.6285,
+        0.1541
+      ],
+      "snippet": "$(S_{0}-S_{E})\\ =\\ \\gamma\\ \\log(S_{0}/S_{E})\\ .$ (9) This is a transcendental equation and again can…"
+    },
+    {
+      "id": 17,
+      "section": "II.2",
+      "title": "Timescale of the epidemic",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        0.0601,
+        -0.3069
+      ],
+      "xyz": [
+        -0.2781,
+        -0.1117,
+        -0.2937
+      ],
+      "snippet": "There are two main quantities characterizing the timescale of the epidemic: the time of occurrence $…"
+    },
+    {
+      "id": 18,
+      "section": "II.2",
+      "title": "Timescale of the epidemic",
+      "part": 1,
+      "cluster": 1,
+      "xy": [
+        -0.2959,
+        -0.8608
+      ],
+      "xyz": [
+        -0.9241,
+        -0.3161,
+        0.1999
+      ],
+      "snippet": "Let us first see how $t_{*}$ can be written in terms of $\\alpha$ and $\\beta$ . The time of occurrenc…"
+    },
+    {
+      "id": 19,
+      "section": "II.2",
+      "title": "Timescale of the epidemic",
+      "part": 2,
+      "cluster": 1,
+      "xy": [
+        -0.5861,
+        -0.7997
+      ],
+      "xyz": [
+        -0.829,
+        -0.6723,
+        0.2934
+      ],
+      "snippet": "An analytic expression for $t_{*}$ can be found using an approximate solution. In order to do this w…"
+    },
+    {
+      "id": 20,
+      "section": "II.2",
+      "title": "Timescale of the epidemic",
+      "part": 3,
+      "cluster": 1,
+      "xy": [
+        -0.5112,
+        -0.9025
+      ],
+      "xyz": [
+        -1,
+        -0.6285,
+        0.1979
+      ],
+      "snippet": "If – or until when – we have $(R-R_{0})\\ll\\gamma$ , we can expand the exponential in (12) in a Taylo…"
+    },
+    {
+      "id": 21,
+      "section": "II.2",
+      "title": "Timescale of the epidemic",
+      "part": 4,
+      "cluster": 1,
+      "xy": [
+        -0.0762,
+        -0.7975
+      ],
+      "xyz": [
+        -0.6978,
+        -0.13,
+        0.2828
+      ],
+      "snippet": "with constants $\\kappa$ and $\\phi$ given by $\\displaystyle\\kappa$ $\\displaystyle=$ $\\displaystyle\\sq…"
+    },
+    {
+      "id": 22,
+      "section": "II.2",
+      "title": "Timescale of the epidemic",
+      "part": 5,
+      "cluster": 0,
+      "xy": [
+        -0.1671,
+        -0.6624
+      ],
+      "xyz": [
+        -0.6842,
+        -0.228,
+        0.0271
+      ],
+      "snippet": "The solution for $R(t)$ is of course obtained by $R(t)\\ =\\ R_{0}\\ +\\ P(t)\\ ,$ see (13), which is pro…"
+    },
+    {
+      "id": 23,
+      "section": "II.2",
+      "title": "Timescale of the epidemic",
+      "part": 6,
+      "cluster": 0,
+      "xy": [
+        -0.1984,
+        -0.7075
+      ],
+      "xyz": [
+        -0.6815,
+        -0.2984,
+        0.15
+      ],
+      "snippet": "As usual this gets slightly simpler assuming $I_{0}\\simeq 0$ , which yields $t_{*}\\ =\\ \\frac{2}{\\bet…"
+    },
+    {
+      "id": 24,
+      "section": "II.2",
+      "title": "Timescale of the epidemic",
+      "part": 7,
+      "cluster": 0,
+      "xy": [
+        -0.2129,
+        -0.6184
+      ],
+      "xyz": [
+        -0.5368,
+        -0.2548,
+        0.0557
+      ],
+      "snippet": "$S_{0}-S_{0}e^{-\\alpha\\tau_{E}}-\\beta\\tau_{E}=0.$ (20) $t_{E}$ is now obtained by computing (numeric…"
+    },
+    {
+      "id": 25,
+      "section": "II.3",
+      "title": "Scaling properties of the SIR equations",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        0.006,
+        -0.596
+      ],
+      "xyz": [
+        -0.6835,
+        -0.1272,
+        -0.2095
+      ],
+      "snippet": "Our discussion led us to determine, in the approximation $(R-R_{0})\\ll\\gamma$ , the time at which th…"
+    },
+    {
+      "id": 26,
+      "section": "II.3",
+      "title": "Scaling properties of the SIR equations",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        -0.3947,
+        -0.6514
+      ],
+      "xyz": [
+        -0.7023,
+        -0.5673,
+        -0.0599
+      ],
+      "snippet": "This analysis was performed in a recent paper of ours [18], and we will give here the basic step and…"
+    },
+    {
+      "id": 27,
+      "section": "II.3",
+      "title": "Scaling properties of the SIR equations",
+      "part": 2,
+      "cluster": 0,
+      "xy": [
+        -0.0796,
+        -0.4322
+      ],
+      "xyz": [
+        -0.4931,
+        -0.2316,
+        -0.4959
+      ],
+      "snippet": "Above the epidemic threshold ( $S_{0}/\\gamma>1$ ), $dI_{P}/d\\gamma$ is always negative, whereas bein…"
+    },
+    {
+      "id": 28,
+      "section": "II.3",
+      "title": "Scaling properties of the SIR equations",
+      "part": 3,
+      "cluster": 0,
+      "xy": [
+        -0.1707,
+        -0.4173
+      ],
+      "xyz": [
+        -0.4624,
+        -0.3578,
+        -0.3711
+      ],
+      "snippet": "However, we have to pay a price. It is quite evident that reducing the reproduction number we slow d…"
+    },
+    {
+      "id": 29,
+      "section": "II.3",
+      "title": "Scaling properties of the SIR equations",
+      "part": 4,
+      "cluster": 0,
+      "xy": [
+        -0.1546,
+        -0.331
+      ],
+      "xyz": [
+        -0.3164,
+        -0.3969,
+        -0.2947
+      ],
+      "snippet": "In order to investigate in a systematic the scaling properties of epidemic parameters when we change…"
+    },
+    {
+      "id": 30,
+      "section": "II.3",
+      "title": "Scaling properties of the SIR equations",
+      "part": 5,
+      "cluster": 0,
+      "xy": [
+        0.0157,
+        -0.4054
+      ],
+      "xyz": [
+        -0.3613,
+        -0.1623,
+        -0.1218
+      ],
+      "snippet": "Using the notation $I^{(1)}_{P}=I_{P}(\\lambda^{-1}\\alpha)$ , $I^{(2)}_{P}=I_{P}(\\lambda\\beta)$ and s…"
+    },
+    {
+      "id": 31,
+      "section": "II.3",
+      "title": "Scaling properties of the SIR equations",
+      "part": 6,
+      "cluster": 0,
+      "xy": [
+        0.0325,
+        -0.2661
+      ],
+      "xyz": [
+        -0.2019,
+        -0.1973,
+        -0.3362
+      ],
+      "snippet": "We stress that our Eqs. (23) entail an important result: different containment measures, which have …"
+    },
+    {
+      "id": 32,
+      "section": "II.3",
+      "title": "Scaling properties of the SIR equations",
+      "part": 7,
+      "cluster": 0,
+      "xy": [
+        -0.299,
+        -0.0855
+      ],
+      "xyz": [
+        -0.0282,
+        -0.3219,
+        -0.2891
+      ],
+      "snippet": "Remark 4. The scaling of $V_{*}$ in Eq. (23) gives a simple intuitive explanation of what happens. A…"
+    },
+    {
+      "id": 33,
+      "section": "II.3",
+      "title": "Scaling properties of the SIR equations",
+      "part": 8,
+      "cluster": 3,
+      "xy": [
+        0.4147,
+        -0.0521
+      ],
+      "xyz": [
+        0.1545,
+        0.0413,
+        -0.5433
+      ],
+      "snippet": "Summarizing, containment measures that increase $\\beta$ , e.g. based on tracing and removal of infec…"
+    },
+    {
+      "id": 34,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 0,
+      "cluster": 4,
+      "xy": [
+        0.0343,
+        0.2402
+      ],
+      "xyz": [
+        0.0467,
+        0.3774,
+        0.0612
+      ],
+      "snippet": "We have so far supposed that our problem was to analyze the behavior of the SIR system for given con…"
+    },
+    {
+      "id": 35,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 1,
+      "cluster": 3,
+      "xy": [
+        0.4718,
+        0.0195
+      ],
+      "xyz": [
+        0.3223,
+        0.1305,
+        -0.4891
+      ],
+      "snippet": "From the discussion of the previous subsections it follows immediately that acting on $\\alpha$ and/o…"
+    },
+    {
+      "id": 36,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 2,
+      "cluster": 2,
+      "xy": [
+        0.3769,
+        0.9295
+      ],
+      "xyz": [
+        0.7366,
+        0.6457,
+        -0.4042
+      ],
+      "snippet": "While in several – mainly northern – countries physical exercise and sun exposure were recommended, …"
+    },
+    {
+      "id": 37,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 3,
+      "cluster": 2,
+      "xy": [
+        0.2373,
+        0.8918
+      ],
+      "xyz": [
+        0.7678,
+        0.6413,
+        -0.1912
+      ],
+      "snippet": "It is clear that even a moderate increase, say 10%, in these rates, could easily result in a death t…"
+    },
+    {
+      "id": 38,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 4,
+      "cluster": 4,
+      "xy": [
+        0.2602,
+        0.1357
+      ],
+      "xyz": [
+        0.3012,
+        0.1159,
+        -0.1747
+      ],
+      "snippet": "Thus, once the first epidemic wave has passed and the Hospital system has been reinforced, it is ess…"
+    },
+    {
+      "id": 39,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 5,
+      "cluster": 3,
+      "xy": [
+        0.408,
+        -0.0259
+      ],
+      "xyz": [
+        0.1825,
+        0.1548,
+        -0.5321
+      ],
+      "snippet": "Remark 6. The main result of the previous sections is that containment measures which increase $\\bet…"
+    },
+    {
+      "id": 40,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 6,
+      "cluster": 0,
+      "xy": [
+        0.0761,
+        -0.0632
+      ],
+      "xyz": [
+        -0.056,
+        0.0024,
+        -0.0978
+      ],
+      "snippet": "In the following we will thus compare the effects of varying the parameters $\\alpha$ and $\\beta$ in …"
+    },
+    {
+      "id": 41,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 7,
+      "cluster": 0,
+      "xy": [
+        -0.0569,
+        -0.1009
+      ],
+      "xyz": [
+        -0.2858,
+        0.0569,
+        0.1728
+      ],
+      "snippet": "Figure 1: Effect of varying parameters in the SIR model while keeping $\\gamma$ constant. We have con…"
+    },
+    {
+      "id": 42,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 8,
+      "cluster": 0,
+      "xy": [
+        0.4381,
+        -0.4071
+      ],
+      "xyz": [
+        -0.3974,
+        0.3462,
+        -0.2688
+      ],
+      "snippet": "Figure 2: Contrasting the epidemic through different strategies. We plot $I(t)/N$ for the same syste…"
+    },
+    {
+      "id": 43,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 9,
+      "cluster": 3,
+      "xy": [
+        0.3051,
+        -0.0448
+      ],
+      "xyz": [
+        0.0984,
+        0.2354,
+        -0.3834
+      ],
+      "snippet": "It is apparent from (the black curves in) Fig. 2 that the price to pay for a strategy based uniquely…"
+    },
+    {
+      "id": 44,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 10,
+      "cluster": 0,
+      "xy": [
+        0.4147,
+        -0.2182
+      ],
+      "xyz": [
+        -0.0906,
+        0.2979,
+        -0.3836
+      ],
+      "snippet": "In real situations, of course, one should act by combining both strategies; different mix of these w…"
+    },
+    {
+      "id": 45,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 11,
+      "cluster": 3,
+      "xy": [
+        0.4993,
+        0.208
+      ],
+      "xyz": [
+        0.5586,
+        0.1263,
+        -0.493
+      ],
+      "snippet": "For example, we can consider that strict measures should be in effect until the level of infectives …"
+    },
+    {
+      "id": 46,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 12,
+      "cluster": 0,
+      "xy": [
+        -0.1662,
+        -0.522
+      ],
+      "xyz": [
+        -0.6061,
+        -0.3082,
+        -0.1824
+      ],
+      "snippet": "In Table 1 we also give the value of $R_{E}/N$ ; this shows clearly that in these simulations we do …"
+    },
+    {
+      "id": 47,
+      "section": "III",
+      "title": "Epidemic management in the SIR framework",
+      "part": 13,
+      "cluster": 0,
+      "xy": [
+        0.1933,
+        -0.5496
+      ],
+      "xyz": [
+        -0.4894,
+        0.1024,
+        0.0252
+      ],
+      "snippet": "Table 1: SIR model. Height and timing of the epidemic peak $I_{*}=I(t_{*})$ and time for reaching th…"
+    },
+    {
+      "id": 48,
+      "section": "IV",
+      "title": "The A-SIR model",
+      "part": 0,
+      "cluster": 4,
+      "xy": [
+        -0.0678,
+        0.4585
+      ],
+      "xyz": [
+        0.315,
+        0.5652,
+        0.3627
+      ],
+      "snippet": "The SIR model – besides all the limitations due to its very nature of a “mean field” theory, and the…"
+    },
+    {
+      "id": 49,
+      "section": "IV.1",
+      "title": "The model",
+      "part": 0,
+      "cluster": 4,
+      "xy": [
+        -0.5154,
+        0.2987
+      ],
+      "xyz": [
+        0.3295,
+        -0.6129,
+        0.1048
+      ],
+      "snippet": "In order to take this into account, we have recently proposed a variant of the SIR model, called A-S…"
+    },
+    {
+      "id": 50,
+      "section": "IV.1",
+      "title": "The model",
+      "part": 1,
+      "cluster": 3,
+      "xy": [
+        -0.4866,
+        0.2351
+      ],
+      "xyz": [
+        0.2953,
+        -0.5631,
+        -0.0369
+      ],
+      "snippet": "The key point is that the mechanism of removal is different for the two classes, and hence so is the…"
+    },
+    {
+      "id": 51,
+      "section": "IV.1",
+      "title": "The model",
+      "part": 2,
+      "cluster": 3,
+      "xy": [
+        -0.4162,
+        0.4722
+      ],
+      "xyz": [
+        0.4665,
+        -0.354,
+        0.0678
+      ],
+      "snippet": "Within this description, $\\xi$ is a biological constant [footnote: We recall our description applies…"
+    },
+    {
+      "id": 52,
+      "section": "IV.1",
+      "title": "The model",
+      "part": 3,
+      "cluster": 4,
+      "xy": [
+        -0.5182,
+        0.3664
+      ],
+      "xyz": [
+        0.3597,
+        -0.5221,
+        0.2188
+      ],
+      "snippet": "It should be mentioned that a similar model could be considered, where the distinction is not betwee…"
+    },
+    {
+      "id": 53,
+      "section": "IV.1",
+      "title": "The model",
+      "part": 4,
+      "cluster": 4,
+      "xy": [
+        -0.1389,
+        0.3343
+      ],
+      "xyz": [
+        0.3062,
+        0.256,
+        0.2937
+      ],
+      "snippet": "Note that the last two equations amount to integrals, i.e. are solved by $R(t)=R_{0}+\\beta\\int_{0}^{…"
+    },
+    {
+      "id": 54,
+      "section": "IV.1",
+      "title": "The model",
+      "part": 5,
+      "cluster": 3,
+      "xy": [
+        -0.5497,
+        0.5205
+      ],
+      "xyz": [
+        0.5378,
+        -0.5388,
+        -0.0514
+      ],
+      "snippet": "Actually, it is not clear if the infectivity of asymptomatic should be considered lower or higher th…"
+    },
+    {
+      "id": 55,
+      "section": "IV.1",
+      "title": "The model",
+      "part": 6,
+      "cluster": 4,
+      "xy": [
+        -0.0164,
+        0.6267
+      ],
+      "xyz": [
+        0.6232,
+        0.4405,
+        0.1721
+      ],
+      "snippet": "The problem has been raised in a recent paper by Neves and Guerrero [34], where a modified model wit…"
+    },
+    {
+      "id": 56,
+      "section": "IV.1",
+      "title": "The model",
+      "part": 7,
+      "cluster": 2,
+      "xy": [
+        -0.0062,
+        0.7641
+      ],
+      "xyz": [
+        0.5266,
+        0.692,
+        0.2373
+      ],
+      "snippet": "Remark 9. A number of models of SIR type have been proposed in connection with COVID-19. In order to…"
+    },
+    {
+      "id": 57,
+      "section": "IV.1",
+      "title": "The model",
+      "part": 8,
+      "cluster": 2,
+      "xy": [
+        0.1048,
+        0.9128
+      ],
+      "xyz": [
+        0.783,
+        0.7746,
+        -0.0191
+      ],
+      "snippet": "Moreover, data about variations in the death rate compared with previous years are not only availabl…"
+    },
+    {
+      "id": 58,
+      "section": "IV.1",
+      "title": "The model",
+      "part": 9,
+      "cluster": 2,
+      "xy": [
+        0.1081,
+        0.8058
+      ],
+      "xyz": [
+        0.7266,
+        0.6087,
+        0.0127
+      ],
+      "snippet": "One should also consider that mortality is presumably evolving (in a positive sense) as hospitals ar…"
+    },
+    {
+      "id": 59,
+      "section": "IV.2",
+      "title": "The fraction of symptomatic infectives",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        -0.6371,
+        -0.3481
+      ],
+      "xyz": [
+        -0.1219,
+        -0.5349,
+        0.3666
+      ],
+      "snippet": "We will also sometimes write $K(t)\\ =\\ I(t)\\ +J(t)$ to denote the whole set of infectives; the fract…"
+    },
+    {
+      "id": 60,
+      "section": "IV.2",
+      "title": "The fraction of symptomatic infectives",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        -0.4029,
+        -0.4799
+      ],
+      "xyz": [
+        -0.4129,
+        -0.4047,
+        0.2022
+      ],
+      "snippet": "Note that here $S$ is itself changing in time, so there is not a nontrivial fixed point for $x(t)$ .…"
+    },
+    {
+      "id": 61,
+      "section": "IV.2",
+      "title": "The fraction of symptomatic infectives",
+      "part": 2,
+      "cluster": 0,
+      "xy": [
+        -0.4532,
+        -0.4675
+      ],
+      "xyz": [
+        -0.3604,
+        -0.5,
+        0.2651
+      ],
+      "snippet": "These lead to $x(t)<\\xi$ ; this is easily understood qualitatively: in fact, asymptomatic infectives…"
+    },
+    {
+      "id": 62,
+      "section": "IV.2",
+      "title": "The fraction of symptomatic infectives",
+      "part": 3,
+      "cluster": 0,
+      "xy": [
+        -0.3798,
+        0.4191
+      ],
+      "xyz": [
+        0.3428,
+        -0.3059,
+        0.0957
+      ],
+      "snippet": "The situation is just opposite if we look at $R(t)$ and $U(t)$ : the fraction of registered removed …"
+    },
+    {
+      "id": 63,
+      "section": "IV.3",
+      "title": "Epidemic peaks in the A-SIR model",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        -0.1692,
+        -0.1676
+      ],
+      "xyz": [
+        -0.1572,
+        -0.1837,
+        0.1284
+      ],
+      "snippet": "One striking feature of the A-SIR model is that the epidemic threshold is different for the $I$ and …"
+    },
+    {
+      "id": 64,
+      "section": "IV.3",
+      "title": "Epidemic peaks in the A-SIR model",
+      "part": 1,
+      "cluster": 1,
+      "xy": [
+        -0.3291,
+        -1
+      ],
+      "xyz": [
+        -0.9122,
+        -0.2875,
+        0.4138
+      ],
+      "snippet": "$\\displaystyle\\frac{dI}{dS}$ $\\displaystyle=$ $\\displaystyle-\\xi+\\frac{\\beta}{\\alpha}\\frac{x}{S},$ $…"
+    },
+    {
+      "id": 65,
+      "section": "IV.3",
+      "title": "Epidemic peaks in the A-SIR model",
+      "part": 2,
+      "cluster": 1,
+      "xy": [
+        -0.4329,
+        -0.7917
+      ],
+      "xyz": [
+        -0.8613,
+        -0.5493,
+        0.0783
+      ],
+      "snippet": "In turn, this equation can be used to eliminate $J$ from the system (24) and to obtain an autonomous…"
+    },
+    {
+      "id": 66,
+      "section": "IV.3",
+      "title": "Epidemic peaks in the A-SIR model",
+      "part": 3,
+      "cluster": 1,
+      "xy": [
+        -0.3845,
+        -0.8323
+      ],
+      "xyz": [
+        -0.9523,
+        -0.4371,
+        0.0806
+      ],
+      "snippet": "$\\frac{I}{J}\\geq\\frac{\\eta\\xi}{\\beta(1-\\xi}.$ (30) For values of $S$ in the region $S\\gg\\gamma_{1},\\…"
+    },
+    {
+      "id": 67,
+      "section": "V",
+      "title": "Epidemic management in the A-SIR framework",
+      "part": 0,
+      "cluster": 4,
+      "xy": [
+        0.003,
+        0.0427
+      ],
+      "xyz": [
+        -0.0457,
+        0.0727,
+        0.1098
+      ],
+      "snippet": "We have seen above that in the frame of the standard SIR model the epidemic peak can be reduced in s…"
+    },
+    {
+      "id": 68,
+      "section": "V",
+      "title": "Epidemic management in the A-SIR framework",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        -0.2183,
+        -0.3259
+      ],
+      "xyz": [
+        -0.4064,
+        -0.4193,
+        -0.152
+      ],
+      "snippet": "Remark 11. We have seen in Sect. IV that the epidemic threshold is different for the $I$ and the $J$…"
+    },
+    {
+      "id": 69,
+      "section": "V",
+      "title": "Epidemic management in the A-SIR framework",
+      "part": 2,
+      "cluster": 3,
+      "xy": [
+        -0.3543,
+        0.663
+      ],
+      "xyz": [
+        0.6512,
+        -0.2209,
+        -0.1844
+      ],
+      "snippet": "We can thus act on our system in three independent ways, i.e. by social distancing (reducing $\\alpha…"
+    },
+    {
+      "id": 70,
+      "section": "V",
+      "title": "Epidemic management in the A-SIR framework",
+      "part": 3,
+      "cluster": 3,
+      "xy": [
+        -0.4081,
+        0.6262
+      ],
+      "xyz": [
+        0.6069,
+        -0.3167,
+        -0.0974
+      ],
+      "snippet": "One could also imagine, if tests were widely available, that specific classes of citizens (e.g.sanit…"
+    },
+    {
+      "id": 71,
+      "section": "V",
+      "title": "Epidemic management in the A-SIR framework",
+      "part": 4,
+      "cluster": 1,
+      "xy": [
+        -0.5275,
+        -0.111
+      ],
+      "xyz": [
+        -0.2608,
+        0.1538,
+        0.6478
+      ],
+      "snippet": "In order to do this, we resort to numerical computations for a system with parameters strongly relat…"
+    },
+    {
+      "id": 72,
+      "section": "V",
+      "title": "Epidemic management in the A-SIR framework",
+      "part": 5,
+      "cluster": 0,
+      "xy": [
+        -0.0687,
+        -0.1007
+      ],
+      "xyz": [
+        -0.2422,
+        -0.0223,
+        0.2174
+      ],
+      "snippet": "Figure 5: Effect of varying parameters in the A-SIR model while keeping $\\gamma$ constant. We have c…"
+    },
+    {
+      "id": 73,
+      "section": "V",
+      "title": "Epidemic management in the A-SIR framework",
+      "part": 6,
+      "cluster": 0,
+      "xy": [
+        0.4423,
+        -0.415
+      ],
+      "xyz": [
+        -0.4026,
+        0.3717,
+        -0.1781
+      ],
+      "snippet": "Figure 6: Contrasting the epidemic through different strategies. We plot $K(t)/N$ (upper plot) and $…"
+    },
+    {
+      "id": 74,
+      "section": "V",
+      "title": "Epidemic management in the A-SIR framework",
+      "part": 7,
+      "cluster": 0,
+      "xy": [
+        0.3239,
+        -0.6511
+      ],
+      "xyz": [
+        -0.6124,
+        0.2517,
+        0.1143
+      ],
+      "snippet": "$\\alpha/\\alpha_{0}$ | $\\beta/\\beta_{0}$ | $\\eta/\\eta_{0}$ | $\\gamma/\\gamma_{0}$ | $K_{*}/N$ | $I_{*}…"
+    },
+    {
+      "id": 75,
+      "section": "V",
+      "title": "Epidemic management in the A-SIR framework",
+      "part": 8,
+      "cluster": 4,
+      "xy": [
+        0.1474,
+        0.0787
+      ],
+      "xyz": [
+        0.1186,
+        0.1351,
+        -0.0724
+      ],
+      "snippet": "It is rather clear that the same general phenomenon observed in the SIR framework is also displayed …"
+    },
+    {
+      "id": 76,
+      "section": "VI",
+      "title": "The ongoing COVID epidemic – Italy",
+      "part": 0,
+      "cluster": 2,
+      "xy": [
+        0.1408,
+        0.6071
+      ],
+      "xyz": [
+        0.461,
+        0.5915,
+        -0.0755
+      ],
+      "snippet": "Our considerations were so far quite general, and in the numerical computations considered so far we…"
+    },
+    {
+      "id": 77,
+      "section": "VI",
+      "title": "The ongoing COVID epidemic – Italy",
+      "part": 1,
+      "cluster": 3,
+      "xy": [
+        0.5617,
+        0.5163
+      ],
+      "xyz": [
+        0.6421,
+        0.0225,
+        -0.3295
+      ],
+      "snippet": "Our data and considerations refer to the moment of closing the first submitted version of this paper…"
+    },
+    {
+      "id": 78,
+      "section": "VI.1",
+      "title": "Fit of real data by the SIR and A-SIR dynamics",
+      "part": 0,
+      "cluster": 4,
+      "xy": [
+        0.1921,
+        0.2887
+      ],
+      "xyz": [
+        0.1222,
+        0.1301,
+        0.3151
+      ],
+      "snippet": "In related works [18, 19] we have considered the SIR and the A-SIR models, and estimated parameters …"
+    },
+    {
+      "id": 79,
+      "section": "VI.1",
+      "title": "Fit of real data by the SIR and A-SIR dynamics",
+      "part": 1,
+      "cluster": 4,
+      "xy": [
+        0.2808,
+        0.2992
+      ],
+      "xyz": [
+        0.1555,
+        0.0332,
+        0.4033
+      ],
+      "snippet": "In Italy (total population $N\\simeq 6*10^{7}$ ) a first set of restrictive measures all over the nat…"
+    },
+    {
+      "id": 80,
+      "section": "VI.1",
+      "title": "Fit of real data by the SIR and A-SIR dynamics",
+      "part": 2,
+      "cluster": 4,
+      "xy": [
+        0.6666,
+        0.3946
+      ],
+      "xyz": [
+        0.5214,
+        -0.1213,
+        0.4028
+      ],
+      "snippet": "See [19] for details on how these estimates are obtained. When looking at data in the following time…"
+    },
+    {
+      "id": 81,
+      "section": "VI.1",
+      "title": "Fit of real data by the SIR and A-SIR dynamics",
+      "part": 3,
+      "cluster": 4,
+      "xy": [
+        0.7714,
+        0.2266
+      ],
+      "xyz": [
+        0.3786,
+        -0.0762,
+        0.7136
+      ],
+      "snippet": "Figure 7: Fit of epidemiological data (points) by the function $R(t)$ arising from numerical solutio…"
+    },
+    {
+      "id": 82,
+      "section": "VI.1",
+      "title": "Fit of real data by the SIR and A-SIR dynamics",
+      "part": 4,
+      "cluster": 4,
+      "xy": [
+        -0.3325,
+        0.1909
+      ],
+      "xyz": [
+        0.0956,
+        -0.2743,
+        0.188
+      ],
+      "snippet": "If we were considering the SIR model, some care should be put on the estimation of $\\beta$ ; to avoi…"
+    },
+    {
+      "id": 83,
+      "section": "VI.1",
+      "title": "Fit of real data by the SIR and A-SIR dynamics",
+      "part": 5,
+      "cluster": 4,
+      "xy": [
+        0.5937,
+        0.3666
+      ],
+      "xyz": [
+        0.4366,
+        0.0097,
+        0.418
+      ],
+      "snippet": "$B\\ \\simeq\\ \\beta\\,\\xi\\ +\\ \\eta\\,(1-\\xi)\\ ;$ (34) with the values given above for the A-SIR paramete…"
+    },
+    {
+      "id": 84,
+      "section": "VI.1",
+      "title": "Fit of real data by the SIR and A-SIR dynamics",
+      "part": 6,
+      "cluster": 4,
+      "xy": [
+        0.7406,
+        0.2398
+      ],
+      "xyz": [
+        0.3313,
+        -0.0631,
+        0.6071
+      ],
+      "snippet": "$\\alpha_{0}\\ =\\ 3.1*10^{-9}\\ .$ (36) Figure 9: Fit of the epidemiological data for Italy by the SIR …"
+    },
+    {
+      "id": 85,
+      "section": "VI.1",
+      "title": "Fit of real data by the SIR and A-SIR dynamics",
+      "part": 7,
+      "cluster": 4,
+      "xy": [
+        0.4198,
+        0.423
+      ],
+      "xyz": [
+        0.6566,
+        0.1842,
+        0.3213
+      ],
+      "snippet": "We note that Figures 7, 8 and 9 are reproduced from arxiv:2003.08720v3; the published version of thi…"
+    },
+    {
+      "id": 86,
+      "section": "VI.2",
+      "title": "Simulating further interventions. The SIR picture",
+      "part": 0,
+      "cluster": 4,
+      "xy": [
+        0.0118,
+        0.1806
+      ],
+      "xyz": [
+        0.081,
+        0.2392,
+        0.1389
+      ],
+      "snippet": "Albeit we believe that the A-SIR dynamics is better suited to describe the COVID epidemics, we will …"
+    },
+    {
+      "id": 87,
+      "section": "VI.2",
+      "title": "Simulating further interventions. The SIR picture",
+      "part": 1,
+      "cluster": 4,
+      "xy": [
+        -0.1363,
+        0.0313
+      ],
+      "xyz": [
+        -0.1942,
+        0.116,
+        0.4352
+      ],
+      "snippet": "The more detailed analysis in terms of the A-SIR model, to be conducted in the next subsection, will…"
+    },
+    {
+      "id": 88,
+      "section": "VI.3",
+      "title": "Simulating further interventions. The A-SIR picture",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        -0.7124,
+        0.0261
+      ],
+      "xyz": [
+        0.1309,
+        -0.3757,
+        -0.6633
+      ],
+      "snippet": "We can now simulate further intervention, with four possible strategies: Do nothing, i.e. keep $\\alp…"
+    },
+    {
+      "id": 89,
+      "section": "VI.3",
+      "title": "Simulating further interventions. The A-SIR picture",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        -0.401,
+        -0.2663
+      ],
+      "xyz": [
+        -0.2893,
+        -0.5446,
+        -0.4948
+      ],
+      "snippet": "Despite these practical considerations, as already announced, we consider the same factor for the re…"
+    },
+    {
+      "id": 90,
+      "section": "VI.3",
+      "title": "Simulating further interventions. The A-SIR picture",
+      "part": 2,
+      "cluster": 0,
+      "xy": [
+        0.5291,
+        -0.5129
+      ],
+      "xyz": [
+        -0.4537,
+        0.4931,
+        -0.0265
+      ],
+      "snippet": "$R(t)$ $I(t)$ $K(t)$ $x(t)$ Figure 11: Simulation of different strategies after day 55 for Italy. St…"
+    },
+    {
+      "id": 91,
+      "section": "VI.3",
+      "title": "Simulating further interventions. The A-SIR picture",
+      "part": 3,
+      "cluster": 3,
+      "xy": [
+        0.274,
+        0.6995
+      ],
+      "xyz": [
+        0.6959,
+        0.3735,
+        -0.1539
+      ],
+      "snippet": "We also report in Table 3 the relevant expected data for the time $t_{s}$ at which a safety level $I…"
+    },
+    {
+      "id": 92,
+      "section": "VI.3",
+      "title": "Simulating further interventions. The A-SIR picture",
+      "part": 4,
+      "cluster": 3,
+      "xy": [
+        0.3909,
+        0.5506
+      ],
+      "xyz": [
+        0.6484,
+        0.1691,
+        0.0198
+      ],
+      "snippet": "Remark 12. In this regard, it may be interesting to note that according to our model at the end of A…"
+    },
+    {
+      "id": 93,
+      "section": "VI.3",
+      "title": "Simulating further interventions. The A-SIR picture",
+      "part": 5,
+      "cluster": 4,
+      "xy": [
+        0.3043,
+        0.4445
+      ],
+      "xyz": [
+        0.48,
+        0.2034,
+        0.1173
+      ],
+      "snippet": "Remark 13. Needless to say, these plots and the figures given in Table 3 should not be seen as forec…"
+    },
+    {
+      "id": 94,
+      "section": "VI.3",
+      "title": "Simulating further interventions. The A-SIR picture",
+      "part": 6,
+      "cluster": 3,
+      "xy": [
+        0.357,
+        -0.6592
+      ],
+      "xyz": [
+        -0.6152,
+        0.3543,
+        0.1406
+      ],
+      "snippet": "| $\\alpha/\\alpha_{2}$ | $\\beta/\\beta_{0}$ | $\\eta/\\eta_{0}$ | $t_{s}$ | $\\tau$ | $R_{E}$ | $x_{E}$ 1…"
+    },
+    {
+      "id": 95,
+      "section": "VI.4",
+      "title": "Discussion",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        0.4419,
+        0.7604
+      ],
+      "xyz": [
+        0.6484,
+        0.3938,
+        -0.4414
+      ],
+      "snippet": "Table 3 shows, in our opinion quite clearly, that: Continuing with present measures is simply untena…"
+    },
+    {
+      "id": 96,
+      "section": "VI.4",
+      "title": "Discussion",
+      "part": 1,
+      "cluster": 3,
+      "xy": [
+        -0.3491,
+        0.784
+      ],
+      "xyz": [
+        0.6082,
+        -0.183,
+        -0.3671
+      ],
+      "snippet": "A campaign of early detection could be equally effective in reducing the number of infected and henc…"
+    },
+    {
+      "id": 97,
+      "section": "VI.4",
+      "title": "Discussion",
+      "part": 2,
+      "cluster": 3,
+      "xy": [
+        0.2918,
+        0.6929
+      ],
+      "xyz": [
+        0.6007,
+        0.333,
+        -0.239
+      ],
+      "snippet": "In all cases except if no action is undertaken, the faction of symptomatic infectives should soon fa…"
+    },
+    {
+      "id": 98,
+      "section": "VI.4",
+      "title": "Discussion",
+      "part": 3,
+      "cluster": 2,
+      "xy": [
+        0.094,
+        0.7131
+      ],
+      "xyz": [
+        0.5846,
+        0.6102,
+        0.0807
+      ],
+      "snippet": "Remark 14. We would like to stress an important point. There are by now many papers discussing what …"
+    },
+    {
+      "id": 99,
+      "section": "VI.4",
+      "title": "Discussion",
+      "part": 4,
+      "cluster": 4,
+      "xy": [
+        -0.2135,
+        0.6446
+      ],
+      "xyz": [
+        0.813,
+        -0.101,
+        -0.0731
+      ],
+      "snippet": "Remark 15. When it comes to translate the indications of the models into concrete action, the word s…"
+    },
+    {
+      "id": 100,
+      "section": "VII",
+      "title": "Conclusions",
+      "part": 0,
+      "cluster": 4,
+      "xy": [
+        0.1211,
+        0.1697
+      ],
+      "xyz": [
+        0.2343,
+        0.199,
+        0.0449
+      ],
+      "snippet": "We have considered – in the framework of “mean field” epidemiological models of the SIR type, hence …"
+    },
+    {
+      "id": 101,
+      "section": "VII",
+      "title": "Conclusions",
+      "part": 1,
+      "cluster": 4,
+      "xy": [
+        0.1482,
+        0.4852
+      ],
+      "xyz": [
+        0.4013,
+        0.3925,
+        -0.0038
+      ],
+      "snippet": "On the other hand, in a real epidemic – as the ongoing COVID one – growing public awareness and gove…"
+    }
+  ],
+  "ms": {
+    "embed": 4260,
+    "total": 7085,
+    "label": 2285
+  },
+  "cost": 0.0012325
+}

@@ -1,0 +1,802 @@
+{
+  "schema": 1,
+  "version": 1,
+  "key": "dadff19741fc4c53",
+  "title": "Attention Is All You Need",
+  "n": 43,
+  "method": "tsne",
+  "perplexity": 14,
+  "warning": null,
+  "embed_model": "Xenova/bge-small-en-v1.5",
+  "label_model": "claude-haiku-5-5",
+  "label_error": null,
+  "k": 4,
+  "silhouette": 0.1553,
+  "tried": [
+    {
+      "k": 3,
+      "silhouette": 0.1501
+    },
+    {
+      "k": 4,
+      "silhouette": 0.1553
+    },
+    {
+      "k": 5,
+      "silhouette": 0.1437
+    },
+    {
+      "k": 6,
+      "silhouette": 0.1385
+    },
+    {
+      "k": 7,
+      "silhouette": 0.1217
+    },
+    {
+      "k": 8,
+      "silhouette": 0.1316
+    }
+  ],
+  "clusters": [
+    {
+      "id": 0,
+      "label": "self-attention versus recurrent complexity",
+      "size": 22
+    },
+    {
+      "id": 1,
+      "label": "scaled dot-product attention mechanics",
+      "size": 8
+    },
+    {
+      "id": 2,
+      "label": "training hardware and optimizer",
+      "size": 2
+    },
+    {
+      "id": 3,
+      "label": "experiments results and training data",
+      "size": 11
+    }
+  ],
+  "chunks": [
+    {
+      "id": 0,
+      "section": "abstract",
+      "title": "Abstract",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        0.3703,
+        0.0026
+      ],
+      "xyz": [
+        0.0106,
+        0.4014,
+        0.0053
+      ],
+      "snippet": "The dominant sequence transduction models are based on complex recurrent or convolutional neural net…"
+    },
+    {
+      "id": 1,
+      "section": "1",
+      "title": "Introduction",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        0.1567,
+        0.0543
+      ],
+      "xyz": [
+        0.1622,
+        0.1703,
+        -0.0459
+      ],
+      "snippet": "Provided proper attribution is provided, Google hereby grants permission to reproduce the tables and…"
+    },
+    {
+      "id": 2,
+      "section": "1",
+      "title": "Introduction",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        0.2043,
+        -0.0917
+      ],
+      "xyz": [
+        0.0655,
+        0.1887,
+        0.1507
+      ],
+      "snippet": "Attention mechanisms have become an integral part of compelling sequence modeling and transduction m…"
+    },
+    {
+      "id": 3,
+      "section": "2",
+      "title": "Background",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        0.0129,
+        -0.0796
+      ],
+      "xyz": [
+        0.0073,
+        -0.0187,
+        0.0646
+      ],
+      "snippet": "The goal of reducing sequential computation also forms the foundation of the Extended Neural GPU [16…"
+    },
+    {
+      "id": 4,
+      "section": "2",
+      "title": "Background",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        -0.7718,
+        0.091
+      ],
+      "xyz": [
+        0.0977,
+        -0.316,
+        0.5549
+      ],
+      "snippet": "Self-attention, sometimes called intra-attention is an attention mechanism relating different positi…"
+    },
+    {
+      "id": 5,
+      "section": "2",
+      "title": "Background",
+      "part": 2,
+      "cluster": 0,
+      "xy": [
+        0.3542,
+        -0.3231
+      ],
+      "xyz": [
+        -0.216,
+        0.2777,
+        0.298
+      ],
+      "snippet": "To the best of our knowledge, however, the Transformer is the first transduction model relying entir…"
+    },
+    {
+      "id": 6,
+      "section": "3",
+      "title": "Model Architecture",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        0.2314,
+        -0.2695
+      ],
+      "xyz": [
+        -0.2712,
+        0.2526,
+        0.0936
+      ],
+      "snippet": "Figure 1: The Transformer - model architecture. Most competitive neural sequence transduction models…"
+    },
+    {
+      "id": 7,
+      "section": "3.1",
+      "title": "Encoder and Decoder Stacks",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        -0.2419,
+        0.1419
+      ],
+      "xyz": [
+        -0.1021,
+        -0.2885,
+        -0.1707
+      ],
+      "snippet": "**Encoder:** The encoder is composed of a stack of $N=6$ identical layers. Each layer has two sub-la…"
+    },
+    {
+      "id": 8,
+      "section": "3.1",
+      "title": "Encoder and Decoder Stacks",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        -0.3405,
+        0.0976
+      ],
+      "xyz": [
+        -0.1778,
+        -0.3602,
+        -0.0513
+      ],
+      "snippet": "**Decoder:** The decoder is also composed of a stack of $N=6$ identical layers. In addition to the t…"
+    },
+    {
+      "id": 9,
+      "section": "3.2",
+      "title": "Attention",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.9708,
+        -0.5242
+      ],
+      "xyz": [
+        -0.4363,
+        -1,
+        0.3476
+      ],
+      "snippet": "An attention function can be described as mapping a query and a set of key-value pairs to an output,…"
+    },
+    {
+      "id": 10,
+      "section": "3.2.1",
+      "title": "Scaled Dot-Product Attention",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.8678,
+        -0.4019
+      ],
+      "xyz": [
+        -0.3852,
+        -0.9232,
+        0.1722
+      ],
+      "snippet": "We call our particular attention \"Scaled Dot-Product Attention\" (Figure 2). The input consists of qu…"
+    },
+    {
+      "id": 11,
+      "section": "3.2.1",
+      "title": "Scaled Dot-Product Attention",
+      "part": 1,
+      "cluster": 1,
+      "xy": [
+        -0.9253,
+        -0.297
+      ],
+      "xyz": [
+        -0.3076,
+        -0.9788,
+        0.022
+      ],
+      "snippet": "The two most commonly used attention functions are additive attention [2], and dot-product (multipli…"
+    },
+    {
+      "id": 12,
+      "section": "3.2.1",
+      "title": "Scaled Dot-Product Attention",
+      "part": 2,
+      "cluster": 1,
+      "xy": [
+        -0.81,
+        -0.2586
+      ],
+      "xyz": [
+        -0.4372,
+        -0.8487,
+        0.0052
+      ],
+      "snippet": "While for small values of $d_{k}$ the two mechanisms perform similarly, additive attention outperfor…"
+    },
+    {
+      "id": 13,
+      "section": "3.2.2",
+      "title": "Multi-Head Attention",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.7452,
+        -0.442
+      ],
+      "xyz": [
+        -0.2157,
+        -0.8683,
+        0.2057
+      ],
+      "snippet": "Scaled Dot-Product Attention Multi-Head Attention Figure 2: (left) Scaled Dot-Product Attention. (ri…"
+    },
+    {
+      "id": 14,
+      "section": "3.2.2",
+      "title": "Multi-Head Attention",
+      "part": 1,
+      "cluster": 1,
+      "xy": [
+        -0.6338,
+        -0.4956
+      ],
+      "xyz": [
+        -0.0583,
+        -0.8228,
+        0.2494
+      ],
+      "snippet": "Multi-head attention allows the model to jointly attend to information from different representation…"
+    },
+    {
+      "id": 15,
+      "section": "3.2.3",
+      "title": "Applications of Attention in our Model",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        -0.4945,
+        0.0686
+      ],
+      "xyz": [
+        -0.1916,
+        -0.366,
+        0.194
+      ],
+      "snippet": "The Transformer uses multi-head attention in three different ways: In \"encoder-decoder attention\" la…"
+    },
+    {
+      "id": 16,
+      "section": "3.2.3",
+      "title": "Applications of Attention in our Model",
+      "part": 1,
+      "cluster": 1,
+      "xy": [
+        -0.5899,
+        -0.1436
+      ],
+      "xyz": [
+        -0.3168,
+        -0.5789,
+        -0.0112
+      ],
+      "snippet": "Similarly, self-attention layers in the decoder allow each position in the decoder to attend to all …"
+    },
+    {
+      "id": 17,
+      "section": "3.3",
+      "title": "Position-wise Feed-Forward Networks",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        -0.2365,
+        0.0004
+      ],
+      "xyz": [
+        0.0343,
+        -0.3434,
+        -0.0413
+      ],
+      "snippet": "In addition to attention sub-layers, each of the layers in our encoder and decoder contains a fully …"
+    },
+    {
+      "id": 18,
+      "section": "3.4",
+      "title": "Embeddings and Softmax",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        0.1861,
+        0.2286
+      ],
+      "xyz": [
+        -0.126,
+        0.1876,
+        -0.1811
+      ],
+      "snippet": "Similarly to other sequence transduction models, we use learned embeddings to convert the input toke…"
+    },
+    {
+      "id": 19,
+      "section": "3.5",
+      "title": "Positional Encoding",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        0.1187,
+        0.3387
+      ],
+      "xyz": [
+        -0.2052,
+        0.1585,
+        -0.3354
+      ],
+      "snippet": "Since our model contains no recurrence and no convolution, in order for the model to make use of the…"
+    },
+    {
+      "id": 20,
+      "section": "3.5",
+      "title": "Positional Encoding",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        0.1062,
+        0.5528
+      ],
+      "xyz": [
+        -0.2517,
+        0.2434,
+        -0.5587
+      ],
+      "snippet": "$\\displaystyle PE_{(pos,2i)}=sin(pos/10000^{2i/d_{\\text{model}}})$ $\\displaystyle PE_{(pos,2i+1)}=co…"
+    },
+    {
+      "id": 21,
+      "section": "4",
+      "title": "Why Self-Attention",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        -0.1787,
+        -0.181
+      ],
+      "xyz": [
+        0.1284,
+        -0.2155,
+        0.1891
+      ],
+      "snippet": "In this section we compare various aspects of self-attention layers to the recurrent and convolution…"
+    },
+    {
+      "id": 22,
+      "section": "4",
+      "title": "Why Self-Attention",
+      "part": 1,
+      "cluster": 0,
+      "xy": [
+        -0.0063,
+        -0.462
+      ],
+      "xyz": [
+        0.4991,
+        -0.06,
+        0.1283
+      ],
+      "snippet": "The third is the path length between long-range dependencies in the network. Learning long-range dep…"
+    },
+    {
+      "id": 23,
+      "section": "4",
+      "title": "Why Self-Attention",
+      "part": 2,
+      "cluster": 0,
+      "xy": [
+        -0.1638,
+        -0.4211
+      ],
+      "xyz": [
+        0.4209,
+        -0.2494,
+        0.199
+      ],
+      "snippet": "Table 1: Maximum path lengths, per-layer complexity and minimum number of sequential operations for …"
+    },
+    {
+      "id": 24,
+      "section": "4",
+      "title": "Why Self-Attention",
+      "part": 3,
+      "cluster": 0,
+      "xy": [
+        -0.2349,
+        -0.2553
+      ],
+      "xyz": [
+        0.203,
+        -0.208,
+        0.3231
+      ],
+      "snippet": "As noted in Table 1, a self-attention layer connects all positions with a constant number of sequent…"
+    },
+    {
+      "id": 25,
+      "section": "4",
+      "title": "Why Self-Attention",
+      "part": 4,
+      "cluster": 0,
+      "xy": [
+        -0.2495,
+        -0.4949
+      ],
+      "xyz": [
+        0.4194,
+        -0.3815,
+        0.0896
+      ],
+      "snippet": "A single convolutional layer with kernel width $k does not connect all pairs of input and output pos…"
+    },
+    {
+      "id": 26,
+      "section": "4",
+      "title": "Why Self-Attention",
+      "part": 5,
+      "cluster": 0,
+      "xy": [
+        -0.7412,
+        0.2463
+      ],
+      "xyz": [
+        -0.0968,
+        -0.3442,
+        0.6158
+      ],
+      "snippet": "As side benefit, self-attention could yield more interpretable models. We inspect attention distribu…"
+    },
+    {
+      "id": 27,
+      "section": "5.1",
+      "title": "Training Data and Batching",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        0.7547,
+        0.2305
+      ],
+      "xyz": [
+        0.3048,
+        0.7686,
+        -0.1597
+      ],
+      "snippet": "This section describes the training regime for our models. We trained on the standard WMT 2014 Engli…"
+    },
+    {
+      "id": 28,
+      "section": "5.2",
+      "title": "Hardware and Schedule",
+      "part": 0,
+      "cluster": 2,
+      "xy": [
+        0.5995,
+        0.5306
+      ],
+      "xyz": [
+        0.4442,
+        0.4007,
+        -0.4829
+      ],
+      "snippet": "We trained our models on one machine with 8 NVIDIA P100 GPUs. For our base models using the hyperpar…"
+    },
+    {
+      "id": 29,
+      "section": "5.3",
+      "title": "Optimizer",
+      "part": 0,
+      "cluster": 2,
+      "xy": [
+        0.4562,
+        0.5736
+      ],
+      "xyz": [
+        0.3298,
+        0.2312,
+        -0.5273
+      ],
+      "snippet": "We used the Adam optimizer [20] with $\\beta_{1}=0.9$ , $\\beta_{2}=0.98$ and $\\epsilon=10^{-9}$ . We …"
+    },
+    {
+      "id": 30,
+      "section": "5.4",
+      "title": "Regularization",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        -0.1516,
+        0.3494
+      ],
+      "xyz": [
+        0.0002,
+        -0.1284,
+        -0.4289
+      ],
+      "snippet": "We employ three types of regularization during training: **Residual Dropout** We apply dropout [33] …"
+    },
+    {
+      "id": 31,
+      "section": "6.1",
+      "title": "Machine Translation",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        0.6628,
+        -0.0289
+      ],
+      "xyz": [
+        -0.0242,
+        0.7363,
+        -0.3345
+      ],
+      "snippet": "Table 2: The Transformer achieves better BLEU scores than previous state-of-the-art models on the En…"
+    },
+    {
+      "id": 32,
+      "section": "6.1",
+      "title": "Machine Translation",
+      "part": 1,
+      "cluster": 3,
+      "xy": [
+        0.6171,
+        0.0638
+      ],
+      "xyz": [
+        0.0795,
+        0.6627,
+        -0.2338
+      ],
+      "snippet": "On the WMT 2014 English-to-German translation task, the big transformer model (Transformer (big) in …"
+    },
+    {
+      "id": 33,
+      "section": "6.1",
+      "title": "Machine Translation",
+      "part": 2,
+      "cluster": 3,
+      "xy": [
+        0.5845,
+        0.3783
+      ],
+      "xyz": [
+        0.3571,
+        0.4923,
+        -0.3302
+      ],
+      "snippet": "For the base models, we used a single model obtained by averaging the last 5 checkpoints, which were…"
+    },
+    {
+      "id": 34,
+      "section": "6.2",
+      "title": "Model Variations",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        0.8897,
+        -0.2027
+      ],
+      "xyz": [
+        0.329,
+        0.8297,
+        0.1952
+      ],
+      "snippet": "Table 3: Variations on the Transformer architecture. Unlisted values are identical to those of the b…"
+    },
+    {
+      "id": 35,
+      "section": "6.2",
+      "title": "Model Variations",
+      "part": 1,
+      "cluster": 3,
+      "xy": [
+        0.1552,
+        0.7055
+      ],
+      "xyz": [
+        -0.2072,
+        0.4449,
+        -0.6338
+      ],
+      "snippet": "| $N$ | $d_{\\text{model}}$ | $d_{\\text{ff}}$ | $h$ | $d_{k}$ | $d_{v}$ | $P_{drop}$ | $\\epsilon_{ls}…"
+    },
+    {
+      "id": 36,
+      "section": "6.2",
+      "title": "Model Variations",
+      "part": 2,
+      "cluster": 3,
+      "xy": [
+        0.6265,
+        -0.2013
+      ],
+      "xyz": [
+        0.2704,
+        0.5427,
+        0.1722
+      ],
+      "snippet": "To evaluate the importance of different components of the Transformer, we varied our base model in d…"
+    },
+    {
+      "id": 37,
+      "section": "6.2",
+      "title": "Model Variations",
+      "part": 3,
+      "cluster": 0,
+      "xy": [
+        0.0336,
+        0.4226
+      ],
+      "xyz": [
+        -0.1911,
+        0.063,
+        -0.4757
+      ],
+      "snippet": "In Table 3 rows (B), we observe that reducing the attention key size $d_{k}$ hurts model quality. Th…"
+    },
+    {
+      "id": 38,
+      "section": "6.3",
+      "title": "English Constituency Parsing",
+      "part": 0,
+      "cluster": 3,
+      "xy": [
+        1,
+        0.0226
+      ],
+      "xyz": [
+        0.0223,
+        0.9007,
+        0.1634
+      ],
+      "snippet": "Table 4: The Transformer generalizes well to English constituency parsing (Results are on Section 23…"
+    },
+    {
+      "id": 39,
+      "section": "6.3",
+      "title": "English Constituency Parsing",
+      "part": 1,
+      "cluster": 3,
+      "xy": [
+        0.9307,
+        0.0814
+      ],
+      "xyz": [
+        0.011,
+        0.7851,
+        0.0788
+      ],
+      "snippet": "To evaluate if the Transformer can generalize to other tasks we performed experiments on English con…"
+    },
+    {
+      "id": 40,
+      "section": "6.3",
+      "title": "English Constituency Parsing",
+      "part": 2,
+      "cluster": 3,
+      "xy": [
+        0.6154,
+        0.2072
+      ],
+      "xyz": [
+        0.2369,
+        0.5848,
+        -0.1457
+      ],
+      "snippet": "We performed only a small number of experiments to select the dropout, both attention and residual (…"
+    },
+    {
+      "id": 41,
+      "section": "7",
+      "title": "Conclusion",
+      "part": 0,
+      "cluster": 0,
+      "xy": [
+        0.3226,
+        -0.0812
+      ],
+      "xyz": [
+        -0.0161,
+        0.3307,
+        0.1354
+      ],
+      "snippet": "In this work, we presented the Transformer, the first sequence transduction model based entirely on …"
+    },
+    {
+      "id": 42,
+      "section": "attention visualizations",
+      "title": "Attention Visualizations",
+      "part": 0,
+      "cluster": 1,
+      "xy": [
+        -0.6355,
+        0.2667
+      ],
+      "xyz": [
+        -0.1999,
+        -0.3533,
+        0.495
+      ],
+      "snippet": "Figure 3: An example of the attention mechanism following long-distance dependencies in the encoder …"
+    }
+  ],
+  "ms": {
+    "embed": 2045,
+    "total": 5009,
+    "label": 2820
+  },
+  "cost": 0.00014198
+}
