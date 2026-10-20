@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bump Machine</title>
+<style>
+  /* Layout: caption row; controls | the machine | numbers; then the explanations as collapsible sections. */
+  :root {
+    color-scheme: light;
+    --bg:#e9eaea; --panel:#f6f6f5; --edge:#d6d8d8;
+    --line:#7b8084; --detail:#c3c6c8; --body:#ececeb; --deck:#f7f7f6;
+    --ink:#6a6f73; --ink-hi:#16181a; --glass:#e2e4e4;
+    --a:#2a78d6; --b:#eb6834; --good:#006300; --bad:#d03b3b;
+    --brick:color-mix(in srgb, var(--a) 22%, var(--body)); --brick-top:color-mix(in srgb, var(--a) 14%, var(--deck));
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:#0c0d0e; --panel:#141516; --edge:#222426;
+    --line:#4a4f53; --detail:#2b2e30; --body:#17181a; --deck:#1d1f21;
+    --ink:#868b8f; --ink-hi:#e6e8e9; --glass:#0b0c0c;
+    --a:#3987e5; --b:#d95926; --good:#3fbf3f; --bad:#f07272;
+    --brick:color-mix(in srgb, var(--a) 30%, var(--body)); --brick-top:color-mix(in srgb, var(--a) 40%, var(--deck));
+  } }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg:#0c0d0e; --panel:#141516; --edge:#222426;
+    --line:#4a4f53; --detail:#2b2e30; --body:#17181a; --deck:#1d1f21;
+    --ink:#868b8f; --ink-hi:#e6e8e9; --glass:#0b0c0c;
+    --a:#3987e5; --b:#d95926; --good:#3fbf3f; --bad:#f07272;
+    --brick:color-mix(in srgb, var(--a) 30%, var(--body)); --brick-top:color-mix(in srgb, var(--a) 40%, var(--deck));
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:13px/1.55 var(--mono); padding:20px 16px; }
+  main { max-width:1160px; margin:0 auto; background:var(--panel); border:1px solid var(--edge); border-radius:22px; padding:22px 26px; }
+  @media (max-width:640px) { body { padding:0; } main { border-radius:0; border-width:0; padding:16px; } }
+  .cap { display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 18px; text-transform:uppercase; letter-spacing:.14em; font-size:12px; }
+  .cap .hi { color:var(--ink-hi); text-transform:none; letter-spacing:.04em; font-weight:600; font-size:14px; }
+  .cap #readout { color:var(--ink-hi); text-transform:none; letter-spacing:.05em; font-variant-numeric:tabular-nums; }
+  .grid { display:grid; grid-template-columns:200px minmax(0,1fr) 170px; gap:18px; align-items:start; margin:14px 0; }
+  @media (max-width:860px) { .grid { grid-template-columns:minmax(0,1fr); } .side { flex-direction:row !important; flex-wrap:wrap; } .stats { text-align:left !important; } }
+  .side { display:flex; flex-direction:column; gap:9px; }
+  .side h3 { margin:8px 0 0; font-size:11px; font-weight:normal; letter-spacing:.14em; text-transform:uppercase; width:100%; }
+  .side h3:first-child { margin-top:0; }
+  button { font:inherit; color:var(--ink-hi); background:none; border:1.5px solid var(--line); border-radius:999px; padding:7px 15px; cursor:pointer; text-align:left; display:inline-flex; align-items:center; gap:8px; }
+  button:hover { border-color:var(--ink-hi); }
+  button[aria-pressed=true] { border-color:var(--c, var(--ink-hi)); }
+  button .dot { width:8px; height:8px; border-radius:50%; background:var(--c); flex:none; }
+  button.small { padding:3px 10px; font-size:12px; }
+  .row { display:flex; gap:8px; }
+  .row button { flex:1; justify-content:center; padding:7px 0; }
+  label.sl { display:flex; flex-direction:column; gap:4px; width:100%; }
+  label.sl span { display:flex; justify-content:space-between; }
+  label.sl b { color:var(--ink-hi); font-weight:normal; font-variant-numeric:tabular-nums; }
+  input[type=range] { width:100%; accent-color:var(--b); margin:0; }
+  /* the explain toggle */
+  .tog { display:flex; align-items:center; gap:10px; cursor:pointer; color:var(--ink-hi); }
+  .tog input { appearance:none; width:34px; height:20px; border-radius:999px; border:1.5px solid var(--line); position:relative; margin:0; cursor:pointer; flex:none; }
+  .tog input::after { content:""; position:absolute; top:2px; left:2px; width:13px; height:13px; border-radius:50%; background:var(--line); transition:left .15s, background .15s; }
+  .tog input:checked { border-color:var(--b); }
+  .tog input:checked::after { left:16px; background:var(--b); }
+  .stats { text-align:right; }
+  .stat { display:flex; flex-direction:column; }
+  .stat .k { font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
+  .stat .v { color:var(--ink-hi); font-size:30px; font-weight:600; line-height:1.15; font-variant-numeric:tabular-nums; }
+  .stat .v.small { font-size:20px; }
+  .ok { color:var(--good); } .bad { color:var(--bad); }
+  .claimres { font-size:12px; line-height:1.45; }
+  /* the figure */
+  .fig { position:relative; min-width:0; }
+  svg { width:100%; height:auto; display:block; touch-action:none; user-select:none; -webkit-user-select:none; overflow:visible; cursor:grab; }
+  svg.rotating { cursor:grabbing; }
+  svg:focus { outline:none; }
+  svg:focus-visible { outline:2px solid var(--ink-hi); outline-offset:4px; border-radius:8px; }
+  .viewhint { position:absolute; right:0; bottom:0; display:flex; gap:8px; align-items:center; font-size:11px; letter-spacing:.06em; }
+  .face { fill:var(--body); stroke:var(--line); stroke-width:1; vector-effect:non-scaling-stroke; stroke-linejoin:round; }
+  .face.top { fill:var(--deck); }
+  .face.brick { fill:var(--brick); }
+  .face.brick.top { fill:var(--brick-top); }
+  .glass { fill:var(--glass); }
+  .lamp { fill:var(--b); pointer-events:none; }
+  .lbl { fill:var(--ink); font-family:var(--mono); font-size:11px; letter-spacing:.08em; pointer-events:none; }
+  .lbl.hi { fill:var(--ink-hi); }
+  .goal { fill:none; stroke:var(--ink-hi); stroke-width:1.5; stroke-dasharray:5 4; vector-effect:non-scaling-stroke; pointer-events:none; }
+  .trace { fill:none; stroke:var(--b); stroke-width:2; vector-effect:non-scaling-stroke; stroke-linejoin:round; }
+  .trace.dim { opacity:.3; }
+  .cursor { stroke:var(--b); stroke-width:1; vector-effect:non-scaling-stroke; }
+  .brickg { cursor:ns-resize; }
+  .brickg:hover .face, .brickg.drag .face { stroke:var(--ink-hi); }
+  .brickg.on .face.top { fill:color-mix(in srgb, var(--b) 55%, var(--deck)); }
+  .carriage { cursor:ew-resize; }
+  .rail { cursor:ew-resize; }
+  .carriage .face { stroke:var(--ink-hi); }
+  .carriage .face.top { fill:var(--b); }
+  .tower .face.top { fill:var(--b); }
+  .ring { fill:none; stroke:var(--ink-hi); stroke-width:1.5; stroke-dasharray:4 3; vector-effect:non-scaling-stroke; }
+  /* focus: everything but the part being explained fades back */
+  .obj { transition:opacity .25s; }
+  svg.dim .obj:not(.focus) { opacity:.38; }
+  svg.dim .obj.focus .face { stroke:var(--ink-hi); }
+  /* the step callout */
+  .bubble { position:absolute; width:min(300px, 90%); background:var(--panel); border:1.5px solid var(--b); border-radius:14px; padding:10px 12px; box-shadow:0 6px 24px rgb(0 0 0 / .12); z-index:2; transition:left .3s, top .3s; }
+  .bubble[hidden] { display:none; }
+  .bubble .bh { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--b); }
+  .bubble .bh button { border:0; padding:0 2px; color:var(--ink); }
+  .bubble h4 { margin:4px 0 4px; color:var(--ink-hi); font-size:14px; }
+  .bubble p { margin:0; }
+  .bubble .bnav { display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+  .bubble .dots { display:flex; gap:5px; }
+  .bubble .dots i { width:6px; height:6px; border-radius:50%; background:var(--detail); }
+  .bubble .dots i.on { background:var(--b); }
+  /* explanations */
+  .learn { display:flex; flex-direction:column; border-top:1px solid var(--edge); margin-top:16px; }
+  details { border-bottom:1px solid var(--edge); }
+  summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:12px; padding:13px 2px; color:var(--ink-hi); font-size:14px; }
+  summary::-webkit-details-marker { display:none; }
+  summary::before { content:"+"; width:18px; height:18px; flex:none; border:1px solid var(--line); border-radius:50%; display:grid; place-items:center; font-size:13px; line-height:1; color:var(--ink); }
+  details[open] > summary::before { content:"−"; }
+  summary .sub { color:var(--ink); font-size:12px; margin-left:auto; text-align:right; }
+  .body { padding:0 2px 18px 30px; display:flex; flex-direction:column; gap:10px; max-width:860px; }
+  .body p { margin:0; max-width:75ch; }
+  .lead { color:var(--ink-hi); }
+  .parts { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:8px; margin:0; padding:0; list-style:none; }
+  .parts li { border:1px solid var(--edge); border-radius:12px; padding:9px 12px; cursor:default; transition:border-color .15s; }
+  .parts li:hover { border-color:var(--ink-hi); }
+  .parts b { display:flex; align-items:center; gap:8px; color:var(--ink-hi); font-weight:600; }
+  .sw { width:12px; height:12px; border-radius:3px; flex:none; border:1px solid var(--line); background:var(--c); }
+  .sw.dash { background:none; border:1.5px dashed var(--ink-hi); }
+  .tries { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:8px; }
+  .try { border:1px solid var(--edge); border-radius:12px; padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+  .try b { color:var(--ink-hi); }
+  .try button { align-self:flex-start; }
+  ol.steps { margin:0; padding:0; list-style:none; counter-reset:s; display:flex; flex-direction:column; gap:8px; }
+  ol.steps li { counter-increment:s; display:grid; grid-template-columns:26px 1fr auto; gap:4px 10px; align-items:baseline; }
+  ol.steps li::before { content:counter(s); color:var(--b); font-weight:600; }
+  ol.steps b { color:var(--ink-hi); }
+  .quote { border-left:2px solid var(--c, var(--detail)); padding:2px 0 2px 12px; }
+  .quote q { color:var(--ink-hi); }
+  .quote small { display:block; color:var(--ink); }
+  dl { margin:0; display:grid; grid-template-columns:max-content 1fr; gap:6px 18px; }
+  dt { color:var(--ink-hi); }
+  dd { margin:0; }
+  @media (max-width:640px) { dl { grid-template-columns:1fr; } dd { margin-bottom:6px; } .body { padding-left:2px; } }
+  kbd { font:inherit; color:var(--ink-hi); border:1px solid var(--edge); border-radius:4px; padding:0 4px; }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="cap"><span class="hi">Fig 1 — The bump machine: how a neural network draws any curve</span><span>drag the carriage · drag a brick · drag the background to turn</span></div>
+  <div class="grid">
+    <div class="side">
+      <h3>Play</h3>
+      <button id="send">▶ Send one input</button>
+      <label class="tog"><input type="checkbox" id="explain" checked> Explain each step</label>
+      <button id="sweep">↦ Sweep every input</button>
+      <h3>The chapter's two cases</h3>
+      <button id="c1" style="--c:var(--a)"><i class="dot"></i>1 · Paper's case</button>
+      <button id="c2" style="--c:var(--b)"><i class="dot"></i>2 · Comparison</button>
+      <h3>Build it yourself</h3>
+      <div class="row"><button id="minus" aria-label="remove a neuron pair">− pair</button><button id="plus" aria-label="add a neuron pair">+ pair</button></div>
+      <label class="sl"><span>switch sharpness w <b id="wv">1000</b></span><input id="w" type="range" min="0" max="1000" step="1"></label>
+      <button id="auto">Auto-fit the bricks</button>
+      <button id="reset">Start over</button>
+    </div>
+    <div class="fig" id="fig">
+      <svg id="stage" tabindex="0" role="img" aria-label="A neural network built as a machine: an input rail, two rows of hidden-neuron lamps, a row of bricks whose heights are the output weights, an output tower and a screen. Drag the carriage or use the arrow keys to change the input; drag a brick to change its height; drag the background to turn the view."></svg>
+      <div class="bubble" id="bubble" hidden role="dialog" aria-live="polite">
+        <div class="bh"><span id="bstep"></span><button id="bclose" aria-label="turn off step explanations">✕</button></div>
+        <h4 id="btitle"></h4>
+        <p id="btext"></p>
+        <div class="bnav"><button class="small" id="bback">‹ Back</button><span class="dots" id="bdots"></span><button class="small" id="bnext">Next ›</button></div>
+      </div>
+      <div class="viewhint"><span>drag to turn</span><button class="small" id="view">Reset view</button></div>
+    </div>
+    <div class="side stats">
+      <div class="stat"><span class="k">Hidden neurons</span><span class="v" id="sn">10</span></div>
+      <div class="stat"><span class="k">Input x</span><span class="v small" id="sx">0.40</span></div>
+      <div class="stat"><span class="k">Output · goal</span><span class="v small" id="so">0.00</span></div>
+      <div class="stat"><span class="k">Average gap</span><span class="v" id="sg">0.000</span></div>
+      <div class="claimres" id="res"></div>
+    </div>
+  </div>
+  <div class="cap"><span>each brick is two neurons · its height is their output weight</span><span id="readout"></span></div>
+
+  <div class="learn">
+    <details open>
+      <summary>What you're looking at<span class="sub">the parts of the machine</span></summary>
+      <div class="body">
+        <p class="lead">A neural network can copy any curve. This machine is one, built by hand: one input, a layer of hidden neurons, one output. Hover a part to find it on the machine.</p>
+        <ul class="parts" id="parts">
+          <li data-part="input"><b><i class="sw" style="--c:var(--b)"></i>Rail and carriage · the input</b>The number x, from 0 to 1, that goes into the network. Drag the carriage to change it.</li>
+          <li data-part="lamps"><b><i class="sw" style="--c:color-mix(in srgb, var(--b) 60%, var(--deck))"></i>Lamps · the hidden neurons</b>Each one is a switch with its own switch point. It lights up once the input passes that point. Front row: "on" switches. Back row: "off" switches.</li>
+          <li data-part="bricks"><b><i class="sw" style="--c:var(--brick)"></i>Bricks · pairs of neurons</b>One "on" and one "off" switch together make a brick. Its height is how much the pair adds to the output: their output weight.</li>
+          <li data-part="goal"><b><i class="sw dash"></i>Dashed wire · the goal</b>The curve the network is supposed to copy, f(x). The closer the brick tops are to it, the better the copy.</li>
+          <li data-part="tower"><b><i class="sw" style="--c:var(--b)"></i>Tower · the output</b>What the network answers for the current input. The dashed ring is where the goal is.</li>
+          <li data-part="screen"><b><i class="sw" style="--c:var(--glass)"></i>Screen · every answer at once</b>The output for every input from 0 to 1 (orange) against the goal (dashed). The cursor is the current input.</li>
+        </ul>
+      </div>
+    </details>
+    <details>
+      <summary>How one input goes through, step by step<span class="sub">5 steps</span></summary>
+      <div class="body">
+        <p>Every input takes the same path. Turn on "Explain each step" and press "Send one input" to watch it happen, or jump to a step here.</p>
+        <ol class="steps" id="stepsList"></ol>
+      </div>
+    </details>
+    <details>
+      <summary>Try this<span class="sub">4 experiments</span></summary>
+      <div class="body">
+        <div class="tries">
+          <div class="try"><b>1 · The paper's case</b><span>5 pairs of neurons, sharp switches. The copy follows the curve in blocky steps.</span><button class="small" data-try="c1">Run it</button></div>
+          <div class="try"><b>2 · Add neurons</b><span>40 pairs. Thin bricks follow every wiggle, and the average gap shrinks to under a quarter.</span><button class="small" data-try="c2">Run it</button></div>
+          <div class="try"><b>3 · Soften the switches</b><span>A low sharpness w turns each switch into a slow ramp. Bricks bleed into each other and the copy blurs.</span><button class="small" data-try="soft">Set w = 15</button></div>
+          <div class="try"><b>4 · Beat the auto-fit</b><span>Drag the bricks up and down yourself. Can you get the average gap lower than the chapter's recipe?</span><button class="small" data-try="beat">Start with 8 pairs</button></div>
+        </div>
+      </div>
+    </details>
+    <details>
+      <summary>What the chapter says<span class="sub">two claims, checked live</span></summary>
+      <div class="body">
+        <div class="quote" style="--c:var(--a)"><q>You've now figured out all the elements necessary for the network to approximately compute the function f(x)! It's only a coarse approximation</q><small>With 5 pairs the average gap should be under 0.15. <span id="q1"></span></small></div>
+        <div class="quote" style="--c:var(--b)"><q>we could easily do much better, merely by increasing the number of pairs of hidden neurons, allowing more bumps.</q><small>With 40 pairs the gap should be under a quarter of the 5-pair gap. <span id="q2"></span></small></div>
+        <p>From Michael Nielsen, <i>Neural Networks and Deep Learning</i>, chapter 4, "A visual proof that neural nets can compute any function", section "Universality with one input and one output". The goal is the chapter's f(x) = 0.2 + 0.4x² + 0.3x·sin 15x + 0.05·cos 50x.</p>
+      </div>
+    </details>
+    <details>
+      <summary>What to take away</summary>
+      <div class="body">
+        <p class="lead">If a network's copy of a function is too rough, more hidden neurons can always make it better, as long as each one switches sharply.</p>
+        <p>This is why one hidden layer is enough to compute any function, in principle. It's a proof, not a recipe: real networks learn their weights from examples instead of having them set by hand, and they rarely look this tidy inside.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Glossary</summary>
+      <div class="body">
+        <dl>
+          <dt>neuron</dt><dd>A unit that takes a number in and gives a number out. Here: a switch that is off (0) or on (1).</dd>
+          <dt>switch point s</dt><dd>Where along the input a hidden neuron flips on. Set by its bias b = −w·s.</dd>
+          <dt>input weight w</dt><dd>How sharply every switch flips. Large w: an instant step. Small w: a slow ramp.</dd>
+          <dt>output weight h</dt><dd>How much a neuron adds to the output when it's on. A pair gets +h and −h: that's the brick's height.</dd>
+          <dt>σ (sigmoid)</dt><dd>The squashing function σ(z) = 1 / (1 + e^−z). It turns any number into one between 0 and 1. Every neuron here uses it.</dd>
+          <dt>average gap</dt><dd>The average distance between the network's output and the goal over 200 inputs. 0 is a perfect copy.</dd>
+        </dl>
+      </div>
+    </details>
+  </div>
+</main>
+
+<script>
+// ---- the network (chapter 4): pair j switches on at j/N and off at (j+1)/N; output σ(Σ h_j (a_on − a_off)) ----
+const sig = z => 1 / (1 + Math.exp(-z)), logit = q => Math.log(q / (1 - q)), clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const f = x => 0.2 + 0.4 * x * x + 0.3 * x * Math.sin(15 * x) + 0.05 * Math.cos(50 * x);
+const XS = Array.from({ length: 200 }, (_, i) => (i + 0.5) / 200);
+const autoH = N => Array.from({ length: N }, (_, j) => logit(f((j + 0.5) / N)));
+const z = (st, x) => { let s = 0; for (let j = 0; j < st.N; j++) s += st.h[j] * (sig(st.w * (x - j / st.N)) - sig(st.w * (x - (j + 1) / st.N))); return s; };
+const out = (st, x) => sig(z(st, x));
+const avgGap = st => XS.reduce((a, x) => a + Math.abs(out(st, x) - f(x)), 0) / XS.length;
+
+// ---- orbit camera: an orthographic view turned by yaw about the vertical and tilted by pitch.
+// yaw 45°, pitch 35.26° is the standard isometric view. Flat shapes are placed on 3D planes with one SVG matrix. ----
+const ISO = { yaw: Math.PI / 4, pitch: Math.asin(Math.tan(Math.PI / 6)) }, SC = 1.2247;
+let yaw = ISO.yaw, pitch = ISO.pitch, cy, sy, ca, sa, OX = 0, OY = 0;
+const BASE = { w: 690, d: 290, h: 20 }, B = BASE.h, CEN = [BASE.w / 2, BASE.d / 2, 0];
+const setView = () => { cy = Math.cos(yaw); sy = Math.sin(yaw); ca = Math.cos(pitch); sa = Math.sin(pitch); };
+const D = (x, y, zz) => { const a = x * cy - y * sy, b = x * sy + y * cy; return [SC * a, SC * (b * sa - zz * ca)]; };
+const P = (x, y, zz) => { const d = D(x - CEN[0], y - CEN[1], zz); return [d[0] + OX, d[1] + OY]; };
+const depth = (x, y) => (x - CEN[0]) * sy + (y - CEN[1]) * cy;   // larger = nearer the viewer
+const plane = (O, U, V) => { const o = P(...O), u = D(...U), v = D(...V); return `matrix(${u[0]} ${u[1]} ${v[0]} ${v[1]} ${o[0]} ${o[1]})`; };
+const TOP = (x, y, zz) => plane([x, y, zz], [1, 0, 0], [0, 1, 0]);
+const FRONT = (x, y, zz) => plane([x, y, zz], [1, 0, 0], [0, 0, -1]);   // the +y face, read left to right
+const rect = (t, w, h, r = 0, cls = 'face') => `<g transform="${t}"><rect class="${cls}" width="${w}" height="${h}" rx="${r}"/></g>`;
+// a box shows the side faces that point toward the viewer, then its top
+function box(x, y, zz, w, d, h, r = 0, cls = '') {
+  const rs = Math.min(r, h / 4), c = `face ${cls}`; let s = '';
+  if (cy < 0) s += rect(plane([x + w, y, zz + h], [-1, 0, 0], [0, 0, -1]), w, h, rs, c);
+  if (sy < 0) s += rect(plane([x, y, zz + h], [0, 1, 0], [0, 0, -1]), d, h, rs, c);
+  if (cy > 0) s += rect(plane([x, y + d, zz + h], [1, 0, 0], [0, 0, -1]), w, h, rs, c);
+  if (sy > 0) s += rect(plane([x + w, y + d, zz + h], [0, -1, 0], [0, 0, -1]), d, h, rs, c);
+  return s + rect(TOP(x, y, zz + h), w, d, r, `face top ${cls}`);
+}
+// text painted on the deck, turned so it never reads upside down
+const deckText = (x, y, t, cls = 'lbl') => {
+  const flip = D(1, 0, 0)[0] < 0;
+  return flip ? `<g transform="${plane([x, y, B], [-1, 0, 0], [0, -1, 0])}"><text class="${cls}" text-anchor="end">${t}</text></g>`
+    : `<g transform="${TOP(x, y, B)}"><text class="${cls}">${t}</text></g>`;
+};
+
+// ---- scene layout (3D units). x runs along the input axis; bricks, lamps, rail and screen share it ----
+const X0 = 70, L = 480, X = x => X0 + L * x;
+const HMAX = 200;
+const ROW = { brick: [110, 50], on: [178, 14], off: [198, 14], rail: [228, 22] };
+const TW = { x: 600, y: 110, w: 50, d: 50 };
+const PANEL = { x: 50, y: 12, w: 520, d: 22, h: 400 }, GL = { u: 20, v: 18, w: 480, h: 132 };
+const ASPECT = 1.18;   // the viewBox keeps this shape so turning the view never changes the page layout
+
+// ---- state ----
+const fresh = () => ({ N: 5, w: 1000, x: 0.47, h: autoH(5), tuned: false, claim: null });
+let st = fresh(), sweep = null, drag = null, focus = null;
+const tour = { on: true, k: -1, timer: null };
+const res = {};
+
+const bumpAt = j => sig(st.w * (st.x - j / st.N)) - sig(st.w * (st.x - (j + 1) / st.N));
+const topBrick = () => { let best = 0; for (let j = 1; j < st.N; j++) if (bumpAt(j) > bumpAt(best)) best = j; return best; };
+const activeBrick = () => { const j = topBrick(); return bumpAt(j) > 0.5 ? j : -1; };
+
+// every solid object: its footprint and height (for depth order), the part it belongs to, and its SVG
+function objects() {
+  const N = st.N, x = st.x, os = [], bw = L / N, gap = Math.min(2, bw * 0.15), aj = activeBrick();
+  const add = (o) => os.push(o);
+  add({ x0: PANEL.x, x1: PANEL.x + PANEL.w, y0: PANEL.y, y1: PANEL.y + PANEL.d, z0: B, z1: B + PANEL.h, part: 'screen', svg: () => {
+    let s = box(PANEL.x, PANEL.y, B, PANEL.w, PANEL.d, PANEL.h, 10);
+    if (cy <= 0) return s;
+    const u = xx => X(xx) - PANEL.x, v = val => GL.v + 12 + (GL.h - 24) * (1 - val);
+    const pts = (fn, a = 0, b = 1) => { const p = []; for (let i = 0; i <= 240; i++) { const xx = a + (b - a) * i / 240; p.push(`${u(xx).toFixed(1)},${v(fn(xx)).toFixed(1)}`); } return p.join(' '); };
+    return s + `<g transform="${FRONT(PANEL.x, PANEL.y + PANEL.d, PANEL.h + B)}">
+      <rect class="face glass" x="${GL.u}" y="${GL.v}" width="${GL.w}" height="${GL.h}" rx="8"/>
+      <polyline class="goal" points="${pts(f)}"/>
+      <polyline class="trace dim" points="${pts(xx => out(st, xx))}"/>
+      <polyline class="trace" points="${pts(xx => out(st, xx), 0, Math.max(0.001, x))}"/>
+      <line class="cursor" x1="${u(x)}" x2="${u(x)}" y1="${GL.v + 4}" y2="${GL.v + GL.h - 4}"/>
+      <text class="lbl" x="${GL.u}" y="${GL.v + GL.h + 20}">- - goal f(x)</text>
+      <text class="lbl" x="${GL.u + 110}" y="${GL.v + GL.h + 20}" style="fill:var(--b)">── network output, for every input 0 → 1</text>
+    </g>`;
+  } });
+  for (let j = 0; j < N; j++) {
+    const H = Math.max(2, HMAX * sig(st.h[j])), x0 = X(j / N) + gap / 2;
+    add({ x0, x1: x0 + bw - gap, y0: ROW.brick[0], y1: ROW.brick[0] + ROW.brick[1], z0: B, z1: B + H, part: 'bricks', j,
+      cls: `brickg${j === aj ? ' on' : ''}${drag?.j === j ? ' drag' : ''}`, attrs: `data-role="h" data-j="${j}"`,
+      svg: () => box(x0, ROW.brick[0], B, bw - gap, ROW.brick[1], H, Math.min(3, bw / 4), 'brick') });
+  }
+  const g = out(st, x), TH = Math.max(2, HMAX * g);
+  add({ x0: TW.x, x1: TW.x + TW.w, y0: TW.y, y1: TW.y + TW.d, z0: B, z1: B + TH, part: 'tower', cls: 'tower', svg: () =>
+    box(TW.x, TW.y, B, TW.w, TW.d, TH, 4) + (cy > 0 ? `<g transform="${FRONT(TW.x, TW.y + TW.d, B)}"><text class="lbl hi" x="4" y="16">out</text></g>` : '') });
+  const nw = Math.max(2, Math.min(12, bw * 0.55));
+  for (const [row, shift, kind] of [[ROW.on, 0, 'on'], [ROW.off, 1, 'off']]) {
+    for (let j = 0; j < N; j++) {
+      const sp = (j + shift) / N, a = sig(st.w * (x - sp)), cx = X(sp) - nw / 2;
+      add({ x0: cx, x1: cx + nw, y0: row[0], y1: row[0] + row[1], z0: B, z1: B + 6, part: 'lamps', j, kind, svg: () =>
+        box(cx, row[0], B, nw, row[1], 6, 2) + `<g transform="${TOP(cx, row[0], B + 6)}"><rect class="lamp" width="${nw}" height="${row[1]}" rx="2" opacity="${a.toFixed(3)}"/></g>` });
+    }
+  }
+  add({ x0: X0 - 12, x1: X0 + L + 12, y0: ROW.rail[0], y1: ROW.rail[0] + ROW.rail[1], z0: B, z1: B + 6, part: 'input', cls: 'rail', attrs: 'data-role="x"',
+    svg: () => box(X0 - 12, ROW.rail[0], B, L + 24, ROW.rail[1], 6, 3) });
+  add({ x0: X(x) - 9, x1: X(x) + 9, y0: ROW.rail[0] - 5, y1: ROW.rail[0] + ROW.rail[1] + 5, z0: B + 6, z1: B + 24, part: 'input', cls: 'carriage', attrs: 'data-role="x"',
+    svg: () => box(X(x) - 9, ROW.rail[0] - 5, B + 6, 18, ROW.rail[1] + 10, 18, 4) });
+  return os;
+}
+
+// painter's order for boxes that don't intersect: a plane that separates two boxes says which one is nearer
+function order(os) {
+  for (const o of os) {
+    const cs = [];
+    for (const xx of [o.x0, o.x1]) for (const yy of [o.y0, o.y1]) for (const zz of [o.z0, o.z1]) cs.push(P(xx, yy, zz));
+    o.bb = [Math.min(...cs.map(c => c[0])), Math.max(...cs.map(c => c[0])), Math.min(...cs.map(c => c[1])), Math.max(...cs.map(c => c[1]))];
+    o.dp = depth((o.x0 + o.x1) / 2, (o.y0 + o.y1) / 2); o.in = 0; o.next = [];
+  }
+  const behind = (a, b) => {   // true if a must be painted before b
+    if (a.x1 <= b.x0) return sy > 0; if (b.x1 <= a.x0) return sy < 0;
+    if (a.y1 <= b.y0) return cy > 0; if (b.y1 <= a.y0) return cy < 0;
+    if (a.z1 <= b.z0) return true; if (b.z1 <= a.z0) return false;
+    return a.dp < b.dp;
+  };
+  for (let i = 0; i < os.length; i++) for (let k = i + 1; k < os.length; k++) {
+    const a = os[i], b = os[k];
+    if (a.bb[1] < b.bb[0] || b.bb[1] < a.bb[0] || a.bb[3] < b.bb[2] || b.bb[3] < a.bb[2]) continue;
+    if (behind(a, b)) { a.next.push(b); b.in++; } else { b.next.push(a); a.in++; }
+  }
+  const ready = os.filter(o => !o.in), outL = [];
+  while (ready.length) {
+    ready.sort((p, q) => q.dp - p.dp); const o = ready.pop(); outL.push(o);
+    for (const n of o.next) if (!--n.in) ready.push(n);
+  }
+  if (outL.length < os.length) outL.push(...os.filter(o => !outL.includes(o)).sort((p, q) => p.dp - q.dp));
+  return outL;
+}
+
+// focus sets, by tour step or hovered part
+const STEP_FOCUS = [
+  o => o.part === 'input',
+  o => o.part === 'lamps' || o.cls === 'carriage',
+  o => { const j = topBrick(); return (o.part === 'bricks' && o.j === j) || (o.part === 'lamps' && ((o.kind === 'on' && o.j === j) || (o.kind === 'off' && o.j === j))); },
+  o => o.part === 'bricks' || o.part === 'tower',
+  o => o.part === 'tower' || o.part === 'screen' || o.part === 'goal',
+];
+const isFocus = o => focus ? focus(o) : true;
+
+function scene() {
+  setView();
+  let s = box(0, 0, 0, BASE.w, BASE.d, B, 14);
+  s += deckText(10, ROW.brick[0] + 30, 'bricks') + deckText(10, ROW.on[0] + 11, 'on') + deckText(10, ROW.off[0] + 11, 'off') + deckText(10, ROW.rail[0] + 15, 'input');
+  s += deckText(X0, BASE.d - 14, `0 ─── input x = ${st.x.toFixed(2)} ─── 1`);
+  // overlays: the goal as a dashed wire along the bricks, and the goal ring over the tower
+  const wire = []; for (let i = 0; i <= 240; i++) { const xx = i / 240; wire.push(P(X(xx), ROW.brick[0] + ROW.brick[1] / 2, B + HMAX * f(xx)).map(n => n.toFixed(1)).join(',')); }
+  const wireSvg = `<g class="obj${isFocus({ part: 'goal' }) ? ' focus' : ''}"><polyline class="goal" points="${wire.join(' ')}"/></g>`;
+  const ringSvg = `<g class="obj${isFocus({ part: 'tower' }) ? ' focus' : ''}"><g transform="${TOP(TW.x - 6, TW.y - 6, B + HMAX * f(st.x))}"><rect class="ring" width="${TW.w + 12}" height="${TW.d + 12}" rx="6"/></g></g>`;
+  const ord = order(objects()), lastBrick = ord.findLastIndex(o => o.part === 'bricks');
+  ord.forEach((o, i) => {
+    s += `<g class="obj ${o.cls || ''}${isFocus(o) ? ' focus' : ''}" ${o.attrs || ''}>${o.svg()}</g>`;
+    if (i === lastBrick) s += wireSvg;
+    if (o.part === 'tower') s += ringSvg;
+  });
+  return s;
+}
+
+// frame: fit the current view, padded to a fixed aspect (called on load, after turning, and on reset)
+function fit() {
+  setView(); OX = OY = 0;
+  const pts = [];
+  for (const xx of [0, BASE.w]) for (const yy of [0, BASE.d]) pts.push(P(xx, yy, 0), P(xx, yy, B));
+  for (const xx of [PANEL.x, PANEL.x + PANEL.w]) for (const yy of [PANEL.y, PANEL.y + PANEL.d]) pts.push(P(xx, yy, B + PANEL.h));
+  let u0 = Math.min(...pts.map(p => p[0])), u1 = Math.max(...pts.map(p => p[0])), v0 = Math.min(...pts.map(p => p[1])), v1 = Math.max(...pts.map(p => p[1]));
+  const m = 24; let W = u1 - u0 + 2 * m, H = v1 - v0 + 2 * m;
+  if (W / H < ASPECT) { const nw = H * ASPECT; u0 -= (nw - W) / 2; W = nw; } else { const nh = W / ASPECT; v0 -= (nh - H) / 2; H = nh; }
+  OX = m - u0; OY = m - v0;
+  svg.setAttribute('viewBox', `0 0 ${W.toFixed(0)} ${H.toFixed(0)}`);
+}
+
+// ---- tour: what happens to one input, one step at a time ----
+const STEPS = [
+  { name: 'Input', title: 'The input goes in', text: () => `The network gets one number: x = ${st.x.toFixed(2)}. Everything that follows is its answer to this number.`, anchor: () => P(X(st.x), ROW.rail[0], B + 24) },
+  { name: 'Hidden neurons', title: 'Every hidden neuron checks the input', text: () => {
+      const on = Array.from({ length: st.N }, (_, j) => sig(st.w * (st.x - j / st.N)) > 0.5).filter(Boolean).length;
+      const off = Array.from({ length: st.N }, (_, j) => sig(st.w * (st.x - (j + 1) / st.N)) > 0.5).filter(Boolean).length;
+      return `Each of the ${2 * st.N} neurons is a switch with its own switch point. The input has passed ${on} "on" switches and ${off} "off" switches, so those lamps light up. How fast a switch flips is set by w = ${st.w}.`;
+    }, anchor: () => P(X(st.x), ROW.on[0], B + 6) },
+  { name: 'Pairs make bricks', title: 'Pairs turn into bricks', text: () => {
+      const j = activeBrick();
+      return j < 0 ? 'Each brick is a pair: its "on" switch adds the brick, its "off" switch takes it away again. Right at this input no brick is fully on, because the input sits on a switch point.'
+        : `Each brick is a pair: its "on" switch adds the brick, its "off" switch takes it away again. Only brick ${j + 1} has its "on" lamp lit and its "off" lamp dark, so it's the only one that counts here.`;
+    }, anchor: () => { const j = topBrick(); return P(X((j + 0.5) / st.N), ROW.brick[0], B + HMAX * sig(st.h[j])); } },
+  { name: 'Weighted sum', title: 'The output neuron adds everything up', text: () => {
+      const j = activeBrick();
+      return `It adds each lit neuron times its output weight. For every brick already passed, the +h and −h cancel out. What's left is ${j < 0 ? 'a mix of the neighbouring bricks' : `brick ${j + 1}'s weight h = ${st.h[j].toFixed(2)}`}: the sum is z = ${z(st, st.x).toFixed(2)}.`;
+    }, anchor: () => P(TW.x + TW.w / 2, TW.y, B + HMAX * out(st, st.x)) },
+  { name: 'Output', title: 'Squash it into the answer', text: () => {
+      const g = out(st, st.x), gl = f(st.x);
+      return `The output neuron squashes z through σ, giving ${g.toFixed(2)}. The goal here is ${gl.toFixed(2)} (dashed ring), a gap of ${Math.abs(g - gl).toFixed(2)}. The screen shows this answer for every input at once.`;
+    }, anchor: () => P(TW.x + TW.w / 2, TW.y + TW.d / 2, B + HMAX * Math.max(out(st, st.x), f(st.x)) + 10) },
+];
+const bubble = document.getElementById('bubble');
+function placeBubble() {
+  if (tour.k < 0 || !tour.on) { bubble.hidden = true; return; }
+  const s = STEPS[tour.k];
+  document.getElementById('bstep').textContent = `Step ${tour.k + 1} of ${STEPS.length} · ${s.name}`;
+  document.getElementById('btitle').textContent = s.title;
+  document.getElementById('btext').textContent = s.text();
+  document.getElementById('bdots').innerHTML = STEPS.map((_, i) => `<i class="${i === tour.k ? 'on' : ''}"></i>`).join('');
+  document.getElementById('bback').disabled = tour.k === 0;
+  document.getElementById('bnext').textContent = tour.k === STEPS.length - 1 ? 'Done' : 'Next ›';
+  bubble.hidden = false;
+  // place beside the part: viewBox point → position inside the figure box
+  const [ax, ay] = s.anchor(), vb = svg.viewBox.baseVal, r = svg.getBoundingClientRect(), k = r.width / vb.width;
+  const px = ax * k, py = ay * k, bw = bubble.offsetWidth, bh = bubble.offsetHeight, W = r.width, H = r.height;
+  let left = px + 24, top = py - bh - 16;
+  if (left + bw > W) left = px - bw - 24;
+  bubble.style.left = `${clamp(left, 0, Math.max(0, W - bw))}px`;
+  bubble.style.top = `${clamp(top, 0, Math.max(0, H - bh))}px`;
+}
+const setStep = k => { tour.k = k; focus = k >= 0 ? STEP_FOCUS[k] : null; render(); };
+const stopAuto = () => { clearTimeout(tour.timer); tour.timer = null; };
+function sendThrough() {
+  stopAuto(); sweep = null;
+  const dwell = tour.on ? 3600 : 450;
+  const go = k => { setStep(k); tour.timer = setTimeout(() => k + 1 < STEPS.length ? go(k + 1) : (tour.on ? (tour.timer = null) : (setStep(-1), tour.timer = null)), dwell); };
+  go(0);
+}
+
+// ---- render ----
+const $ = id => document.getElementById(id), svg = $('stage');
+const WPOS = { toPos: w => Math.round(1000 * Math.log(w / 5) / Math.log(200)), fromPos: p => Math.round(5 * 200 ** (p / 1000)) };
+function render() {
+  svg.innerHTML = scene();
+  svg.classList.toggle('dim', !!focus);
+  const g = out(st, st.x), gap = avgGap(st);
+  $('sn').textContent = `${2 * st.N}`;
+  $('sx').textContent = st.x.toFixed(2);
+  $('so').textContent = `${g.toFixed(2)} · ${f(st.x).toFixed(2)}`;
+  $('sg').textContent = gap.toFixed(3);
+  $('w').value = WPOS.toPos(st.w); $('wv').textContent = st.w;
+  $('readout').textContent = `${st.N} pairs · w ${st.w}${st.tuned ? ' · hand-tuned' : ''}`;
+  $('c1').setAttribute('aria-pressed', String(st.claim === 1)); $('c2').setAttribute('aria-pressed', String(st.claim === 2));
+  const ref = res[1] ?? avgGap(fresh());
+  const r1 = res[1] != null ? `<span class="${res[1] < 0.15 ? 'ok' : 'bad'}">${res[1] < 0.15 ? '✓' : '✗'} 1 · gap ${res[1].toFixed(4)} &lt; 0.15</span>` : '';
+  const r2 = res[2] != null ? `<span class="${res[2] < 0.25 * ref ? 'ok' : 'bad'}">${res[2] < 0.25 * ref ? '✓' : '✗'} 2 · gap ${res[2].toFixed(4)} &lt; ${(0.25 * ref).toFixed(4)}</span>` : '';
+  $('res').innerHTML = [r1, r2].filter(Boolean).join('<br>');
+  $('q1').innerHTML = r1 ? `This machine: ${r1}` : 'Run case 1 to check.';
+  $('q2').innerHTML = r2 ? `This machine: ${r2}` : 'Run case 2 to check.';
+  placeBubble();
+}
+
+// ---- actions ----
+const setN = N => { N = clamp(N, 1, 40); if (N === st.N) return; st.N = N; st.h = autoH(N); st.tuned = false; st.claim = null; render(); };
+const runSweep = then => {
+  stopAuto(); if (tour.k >= 0) setStep(-1);
+  const t0 = performance.now(), dur = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 3200;
+  sweep = { then };
+  const tick = now => {
+    if (!sweep) return;
+    st.x = dur ? Math.min(0.99, 0.99 * (now - t0) / dur) : 0.99; render();
+    if (st.x < 0.99) requestAnimationFrame(tick); else { const t = sweep.then; sweep = null; t && t(); }
+  };
+  requestAnimationFrame(tick);
+};
+const claim = k => { st = { ...fresh(), N: k === 1 ? 5 : 40, h: autoH(k === 1 ? 5 : 40), claim: k }; runSweep(() => { res[k] = avgGap(st); render(); }); };
+$('send').onclick = sendThrough;
+$('explain').onchange = e => { tour.on = e.target.checked; if (!tour.on) { stopAuto(); setStep(-1); } else render(); };
+$('sweep').onclick = () => { st.x = 0; runSweep(); };
+$('c1').onclick = () => claim(1);
+$('c2').onclick = () => claim(2);
+$('plus').onclick = () => setN(st.N + 1);
+$('minus').onclick = () => setN(st.N - 1);
+$('w').oninput = e => { st.w = WPOS.fromPos(+e.target.value); st.claim = null; render(); };
+$('auto').onclick = () => { st.h = autoH(st.N); st.tuned = false; render(); };
+$('reset').onclick = () => { sweep = null; stopAuto(); st = fresh(); for (const k in res) delete res[k]; setStep(-1); };
+$('view').onclick = () => { yaw = ISO.yaw; pitch = ISO.pitch; fit(); render(); };
+$('bnext').onclick = () => { stopAuto(); setStep(tour.k + 1 < STEPS.length ? tour.k + 1 : -1); };
+$('bback').onclick = () => { stopAuto(); setStep(Math.max(0, tour.k - 1)); };
+$('bclose').onclick = () => { $('explain').checked = false; $('explain').onchange({ target: $('explain') }); };
+document.querySelectorAll('[data-try]').forEach(b => b.onclick = () => {
+  const t = b.dataset.try;
+  if (t === 'c1' || t === 'c2') return claim(t === 'c1' ? 1 : 2);
+  if (t === 'soft') { st.w = 15; st.claim = null; render(); }
+  if (t === 'beat') { st = { ...fresh(), N: 8, h: autoH(8) }; render(); }
+  svg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+// the step list mirrors the tour
+$('stepsList').innerHTML = STEPS.map((s, i) => `<li><span><b>${s.title}.</b> <span data-st="${i}"></span></span><button class="small" data-go="${i}">Show me</button></li>`).join('');
+const fillSteps = () => document.querySelectorAll('[data-st]').forEach(e => { e.textContent = STEPS[+e.dataset.st].text(); });
+document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
+  stopAuto(); if (!tour.on) { $('explain').checked = true; tour.on = true; }
+  setStep(+b.dataset.go); svg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+document.querySelector('.learn details:nth-of-type(2)').addEventListener('toggle', fillSteps);
+// hover a part in the list to find it on the machine
+document.querySelectorAll('#parts li').forEach(li => {
+  li.onmouseenter = () => { if (tour.k < 0) { focus = o => o.part === li.dataset.part; render(); } };
+  li.onmouseleave = () => { if (tour.k < 0) { focus = null; render(); } };
+});
+
+// direct manipulation: carriage/rail → input, brick → height, anywhere else → turn the view
+const toView = e => { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+const xFromView = p => {   // nearest point on the rail's projected line
+  const A = P(X0, ROW.rail[0] + ROW.rail[1] / 2, B + 6), Bq = P(X0 + L, ROW.rail[0] + ROW.rail[1] / 2, B + 6);
+  const dx = Bq[0] - A[0], dy = Bq[1] - A[1], l2 = dx * dx + dy * dy || 1;
+  return clamp(((p.x - A[0]) * dx + (p.y - A[1]) * dy) / l2, 0, 1);
+};
+svg.addEventListener('pointerdown', e => {
+  const t = e.target.closest('[data-role]');
+  sweep = null; svg.setPointerCapture(e.pointerId); e.preventDefault();
+  const p = toView(e);
+  if (!t) { drag = { role: 'turn', cx: e.clientX, cy: e.clientY, yaw, pitch }; svg.classList.add('rotating'); return; }
+  if (t.dataset.role === 'x') { drag = { role: 'x' }; st.x = xFromView(p); }
+  else { const j = +t.dataset.j; drag = { role: 'h', j, y0: p.y, q0: sig(st.h[j]) }; }
+  render();
+});
+svg.addEventListener('pointermove', e => {
+  if (!drag) return;
+  if (drag.role === 'turn') {
+    yaw = drag.yaw - (e.clientX - drag.cx) * 0.008;
+    pitch = clamp(drag.pitch + (e.clientY - drag.cy) * 0.005, 0.2, 1.25);
+    render(); return;
+  }
+  const p = toView(e);
+  if (drag.role === 'x') st.x = xFromView(p);
+  else { st.h[drag.j] = logit(clamp(drag.q0 - (p.y - drag.y0) / (SC * ca * HMAX), 0.02, 0.98)); st.tuned = true; st.claim = null; }
+  render();
+});
+const drop = () => { if (!drag) return; const turned = drag.role === 'turn'; drag = null; svg.classList.remove('rotating'); if (turned) fit(); render(); };
+svg.addEventListener('pointerup', drop); svg.addEventListener('pointercancel', drop); addEventListener('blur', drop);
+addEventListener('resize', () => placeBubble());
+
+addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey || e.target.tagName === 'INPUT' || e.target.tagName === 'SUMMARY') return;
+  const step = e.shiftKey ? 0.05 : 0.01;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { sweep = null; st.x = clamp(st.x + (e.key === 'ArrowRight' ? step : -step), 0, 1); render(); }
+  else if (e.key === '+' || e.key === '=') setN(st.N + 1);
+  else if (e.key === '-' || e.key === '_') setN(st.N - 1);
+  else if (e.key === ' ' && e.target.tagName !== 'BUTTON') sendThrough();
+  else if (e.key === 'a') $('auto').click();
+  else if (e.key === 'Escape' && tour.k >= 0) { stopAuto(); setStep(-1); }
+  else return;
+  e.preventDefault();
+});
+fit(); render();
+</script>
+</body>
+</html>

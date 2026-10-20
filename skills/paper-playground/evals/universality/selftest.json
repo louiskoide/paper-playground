@@ -1,0 +1,139 @@
+{
+  "file": "playground.html",
+  "ok": true,
+  "selftest": {
+    "type": "pp:selftest",
+    "ok": true,
+    "kernel": "0.1.0",
+    "ms": 40,
+    "checks": [
+      {
+        "id": "default",
+        "ok": true,
+        "msg": "ok in 5 ms",
+        "ms": 5
+      },
+      {
+        "id": "metrics",
+        "ok": true,
+        "msg": "missing or non-numeric: "
+      },
+      {
+        "id": "determinism",
+        "ok": true,
+        "msg": "same seed and params gave different output (Math.random, Date, or state leaking between runs?)"
+      },
+      {
+        "id": "sweep:N=5",
+        "ok": true,
+        "msg": "ok in 5 ms",
+        "ms": 5
+      },
+      {
+        "id": "sweep:N=1",
+        "ok": true,
+        "msg": "ok in 1 ms",
+        "ms": 1
+      },
+      {
+        "id": "sweep:N=50",
+        "ok": true,
+        "msg": "ok in 10 ms",
+        "ms": 10
+      },
+      {
+        "id": "decorative:N",
+        "ok": true,
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
+      },
+      {
+        "id": "sweep:w=1000",
+        "ok": true,
+        "msg": "ok in 5 ms",
+        "ms": 5
+      },
+      {
+        "id": "sweep:w=5",
+        "ok": true,
+        "msg": "ok in 2 ms",
+        "ms": 2
+      },
+      {
+        "id": "decorative:w",
+        "ok": true,
+        "msg": "no metric and no plotted data changes at any swept value (moving only titles, axes, text or hline/vline guides does not count)"
+      },
+      {
+        "id": "reproduce",
+        "ok": true,
+        "msg": " (§Universality with one input and one output)",
+        "observed": {
+          "avg_dev": 0.0924709,
+          "hidden_dev": 0.49858
+        },
+        "status": "ok",
+        "section": "Universality with one input and one output"
+      },
+      {
+        "id": "contrast",
+        "ok": true,
+        "msg": " (§Universality with one input and one output)",
+        "observed": {
+          "avg_dev": 0.0105287,
+          "hidden_dev": 0.0566947
+        },
+        "status": "ok",
+        "section": "Universality with one input and one output"
+      },
+      {
+        "id": "varies:avg_dev",
+        "ok": true,
+        "msg": "avg_dev is identical in every run (hard-coded?)"
+      },
+      {
+        "id": "varies:hidden_dev",
+        "ok": true,
+        "msg": "hidden_dev is identical in every run (hard-coded?)"
+      }
+    ],
+    "failures": []
+  },
+  "drive": {
+    "ok": true,
+    "controls": [
+      {
+        "name": "bump pairs n",
+        "kind": "range",
+        "tried": [
+          "max"
+        ],
+        "readoutChanged": true,
+        "canvasChanged": true,
+        "ok": true
+      },
+      {
+        "name": "input weight w",
+        "kind": "range",
+        "tried": [
+          "max",
+          "min"
+        ],
+        "readoutChanged": true,
+        "canvasChanged": true,
+        "ok": true
+      }
+    ],
+    "transport": {
+      "reset": "stage 1/5 · goal",
+      "step": "stage 2/5 · hidden neurons",
+      "playing": "stage 3/5 · bumps",
+      "ok": true
+    }
+  },
+  "consoleErrors": [],
+  "shots": {
+    "dark": "dark.png",
+    "light": "light.png",
+    "phoneOverflow": false
+  }
+}

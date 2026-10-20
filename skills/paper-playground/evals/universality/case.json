@@ -1,0 +1,1 @@
+{ "name": "universality", "input": { "url": "http://neuralnetworksanddeeplearning.com/chap4.html" }, "expect": { "archetype": "pipeline" }, "notes": "Michael Nielsen, Neural Networks and Deep Learning, ch. 4, A visual proof that neural nets can compute any function. A network whose hidden neurons and weights are the figure." }
