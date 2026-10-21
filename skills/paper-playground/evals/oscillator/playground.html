@@ -6,51 +6,69 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Forced Oscillations</title>
 <style>
-:root{--page:#e9eaea;--panel:#f6f6f5;--line:#7d8083;--dim:#d6d8d9;--text:#5a5d60;--live:#111213;--neg:#b5583c;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--page:#0c0d0e;--panel:#141516;--line:#6f7276;--dim:#2a2c2e;--text:#9b9ea2;--live:#f3f3f1;--neg:#e08a6c;color-scheme:dark}}
-:root[data-theme=dark]{--page:#0c0d0e;--panel:#141516;--line:#6f7276;--dim:#2a2c2e;--text:#9b9ea2;--live:#f3f3f1;--neg:#e08a6c;color-scheme:dark}
+:root{--page:#e9eaea;--panel:#f6f6f5;--line:#7d8083;--dim:#d6d8d9;--text:#5a5d60;--live:#111213;--a:#2a78d6;--b:#eb6834;--good:#006300;--neg:#b5583c;--bad:#d03b3b;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--page:#0c0d0e;--panel:#141516;--line:#6f7276;--dim:#2a2c2e;--text:#9b9ea2;--live:#f3f3f1;--a:#3987e5;--b:#d95926;--good:#3fbf3f;--neg:#e08a6c;--bad:#f07272;color-scheme:dark}}
+:root[data-theme=dark]{--page:#0c0d0e;--panel:#141516;--line:#6f7276;--dim:#2a2c2e;--text:#9b9ea2;--live:#f3f3f1;--a:#3987e5;--b:#d95926;--good:#3fbf3f;--neg:#e08a6c;--bad:#f07272;color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--page);color:var(--text);font:13px/1.45 var(--mono)}
-.plate{max-width:1080px;margin:16px auto;padding:14px 18px 12px;background:var(--panel);border:1px solid var(--dim);border-radius:16px}
-@media (max-width:640px){.plate{margin:0;border-radius:0;border-width:0 0 1px;padding:12px 16px}}
+html,body{margin:0;background:var(--page);color:var(--text);font:13px/1.5 var(--mono)}
+/* one plate: caption, figure, caption; then the controls; then the paper's own words, folded */
+.plate{max-width:1000px;margin:20px auto;padding:22px 26px 18px;background:var(--panel);border:1px solid var(--dim);border-radius:22px}
+@media (max-width:640px){.plate{margin:0;border-radius:0;border-width:0 0 1px;padding:14px 16px}}
 .cap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 18px;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
 .cap .fig,.cap .readout{text-transform:none;letter-spacing:.05em}
+.cap .fig{color:var(--live)}
 .cap .title,.cap .readout{margin-left:auto;text-align:right}
 .cap .readout{color:var(--live);font-variant-numeric:tabular-nums}
 .cap .keep{text-transform:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
-.body{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:18px;margin:12px 0}
-@media (max-width:760px){.body{grid-template-columns:minmax(0,1fr)}}
-.stage{min-width:0}
+.intro{display:flex;flex-direction:column;gap:6px;margin:18px 0 6px}
+.intro p{margin:0;max-width:78ch}
+.lead{color:var(--live);font-size:14px}
+.look{color:var(--line)}
+.stage{min-width:0;margin:14px 0 10px}
 canvas{display:block;width:100%;touch-action:none;border-radius:6px}
 .stages{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .stages button.pending{opacity:.45}
-.side{display:flex;flex-direction:column;gap:14px;min-width:0}
-.transport{display:flex;gap:6px}
-.transport[hidden],.stages[hidden]{display:none}
-button{font:inherit;font-size:12px;color:var(--text);background:none;border:1px solid var(--dim);border-radius:8px;padding:4px 9px;min-width:34px;cursor:pointer}
+.stages[hidden],.transport[hidden],.steps[hidden],.key[hidden]{display:none}
+.key{display:flex;flex-wrap:wrap;gap:4px 20px;margin-top:6px;font-size:12px}
+.sw{display:inline-block;width:18px;height:2px;margin-right:8px;vertical-align:middle;background:var(--c)}
+button{font:inherit;font-size:12px;color:var(--text);background:none;border:1px solid var(--dim);border-radius:8px;padding:5px 10px;min-width:34px;cursor:pointer}
 button:hover{border-color:var(--line);color:var(--live)}
 button[aria-pressed=true],.stages button.on{border-color:var(--live);color:var(--live)}
-.guide{display:flex;flex-direction:column;gap:10px;margin:12px 0 4px}
-.guide p{margin:0}
-.lead{color:var(--live);max-width:80ch}
-.claims{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.claims[hidden]{display:none}
-@media (max-width:760px){.claims{grid-template-columns:minmax(0,1fr)}}
-.claim{display:flex;flex-direction:column;gap:6px;min-width:0;border:1px solid var(--dim);border-radius:10px;padding:10px 12px}
-.claim.on{border-color:var(--live)}
-.claim button{align-self:flex-start}
+.controls{display:flex;flex-direction:column;gap:14px;margin-top:18px;padding-top:18px;border-top:1px solid var(--dim)}
+.bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.steps,.transport{display:flex;flex-wrap:wrap;gap:8px}
+.step{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:6px 14px}
+.step .dot{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.step[aria-pressed=true]{border-color:var(--c);color:var(--live)}
+.note{border-left:2px solid var(--c,var(--dim));padding:2px 0 2px 14px;display:flex;flex-direction:column;gap:6px;min-height:2.6em}
+.note p{margin:0;max-width:80ch}
+.hint{color:var(--line)}
 .ctext{color:var(--live)}
-.quote,.settings{font-size:11.5px;color:var(--line);overflow-wrap:anywhere}
-.result{font-variant-numeric:tabular-nums;color:var(--live)}
+.result{font-variant-numeric:tabular-nums}
 .result span{display:block}
-.result .bad{color:var(--neg)}
-.params{display:flex;flex-direction:column;gap:12px}
-.param{display:flex;flex-direction:column;gap:4px}
+.result .ok{color:var(--good)}
+.result .bad{color:var(--bad)}
+.params{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px 28px}
+.param{display:flex;flex-direction:column;gap:4px;min-width:0}
 .phead{display:flex;align-items:baseline;gap:8px}
 .plabel{flex:1;font-size:12px;letter-spacing:.04em}
 .pval{color:var(--live);font-variant-numeric:tabular-nums}
-.src{font-size:10.5px;color:var(--line);border:1px solid var(--dim);border-radius:5px;padding:0 4px;cursor:help}
+.src{font-size:10.5px;color:var(--line);border:1px solid var(--dim);border-radius:5px;padding:0 4px;cursor:help;max-width:8em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phint{margin:0;font-size:11.5px;color:var(--line);overflow-wrap:anywhere}
+.take{margin-top:18px;padding-top:16px;border-top:1px solid var(--dim)}
+.take p{margin:0;max-width:80ch}
+.take p:last-child{color:var(--live)}
+.shead{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--line);margin-bottom:4px!important}
+.more{margin-top:16px;padding-top:12px;border-top:1px solid var(--dim)}
+.more summary{cursor:pointer;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--line)}
+.more summary:hover{color:var(--live)}
+.mbody{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+.mbody p{margin:0;max-width:80ch}
+.mbody .shead{margin-top:10px!important}
+.quote{font-size:11.5px;color:var(--line);overflow-wrap:anywhere}
+.terms{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;font-size:12px;max-width:80ch}
+.terms b{font-weight:normal;color:var(--live)}
 input[type=range]{width:100%;margin:0;accent-color:var(--live)}
 input[type=checkbox]{margin:0;accent-color:var(--live)}
 select{font:inherit;font-size:12px;background:var(--panel);color:var(--live);border:1px solid var(--dim);border-radius:6px;padding:3px 6px}
@@ -161,7 +179,8 @@ const hex = c => { c = (c || '#888').replace('#', ''); if (c.length === 3) c = [
 const mixRGB = (A, B, t) => { t = clamp(t, 0, 1); return `rgb(${Math.round(A[0] + (B[0] - A[0]) * t)},${Math.round(A[1] + (B[1] - A[1]) * t)},${Math.round(A[2] + (B[2] - A[2]) * t)})`; };
 function readTheme() {
   const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
-  const T = { panel: v('--panel'), line: v('--line'), dim: v('--dim'), text: v('--text'), live: v('--live'), neg: v('--neg'), mono: v('--mono') || 'monospace' };
+  const T = { panel: v('--panel'), line: v('--line'), dim: v('--dim'), text: v('--text'), live: v('--live'), neg: v('--neg'), a: v('--a'), b: v('--b'), mono: v('--mono') || 'monospace' };
+  T.s0 = T.live;
   T.rgb = { panel: hex(T.panel), live: hex(T.live), neg: hex(T.neg) };
   return T;
 }
@@ -186,16 +205,28 @@ function ticks(a, b, n, log) {
   return out;
 }
 const GREEK = /([\u0370-\u03FF\u1F00-\u1FFF]+)/, GREEK_RUNS_NOT = /[^\u0370-\u03FF\u1F00-\u1FFF]+/g; // uppercase captions must not turn σ into Σ
-const SERIES = [['live', []], ['line', []], ['line', [5, 4]], ['line', [1.5, 3]]];
+// wrap by an estimated monospace width (0.6 em), so layout is the same with or without a canvas
+const wrapText = (s, w, px, max = 3) => {
+  const per = Math.max(8, Math.floor(w / (px * 0.6))), out = [];
+  let cur = '';
+  for (const word of String(s).split(/\s+/).filter(Boolean)) {
+    if (cur && (cur + ' ' + word).length > per) { out.push(cur); cur = word; } else cur = cur ? `${cur} ${word}` : word;
+  }
+  if (cur) out.push(cur);
+  if (out.length > max) { out.length = max; out[max - 1] = out[max - 1].replace(/\s*\S*$/, '') + '…'; }
+  return out;
+};
+const SERIES = [['s0', []], ['line', []], ['line', [5, 4]], ['line', [1.5, 3]]];
 
 class G {
-  constructor(ctx, rect, H, T, hits) {
-    Object.assign(this, { ctx, rect, H, T, hits, legend: [], subs: [], top: 0, hasAxes: false });
+  // o.log collects each axes() domain in call order; a ghost G (o.ghost) replays them and draws only data marks
+  constructor(ctx, rect, H, T, hits, o = {}) {
+    Object.assign(this, { ctx, rect, H, T, hits, o, legend: [], subs: [], top: 0, bottom: 0, hasAxes: false });
     this.frame([0, 1], [0, 1]);
   }
   frame(x, y, xlog = false, ylog = false, pad = { l: 8, r: 8, t: 8, b: 8 }) {
     const R = this.rect;
-    const P = this.plot = { x: R.x + pad.l, y: R.y + this.top + pad.t, w: Math.max(10, R.w - pad.l - pad.r), h: Math.max(10, R.h - this.top - pad.t - pad.b) };
+    const P = this.plot = { x: R.x + pad.l, y: R.y + this.top + pad.t, w: Math.max(10, R.w - pad.l - pad.r), h: Math.max(10, R.h - this.top - this.bottom - pad.t - pad.b) };
     this.xd = x; this.yd = y;
     this.sx = scale(x, P.x, P.x + P.w, xlog); this.sy = scale(y, P.y + P.h, P.y, ylog);
   }
@@ -206,23 +237,33 @@ class G {
   split(spec = '1x2', gap = 20) {
     const [r, c] = typeof spec === 'number' ? [1, spec] : String(spec).split('x').map(Number), R = this.rect, out = [];
     const cw = (R.w - gap * (c - 1)) / c, rh = (R.h - gap * (r - 1)) / r;
-    for (let i = 0; i < r; i++) for (let j = 0; j < c; j++) out.push(new G(this.ctx, { x: R.x + j * (cw + gap), y: R.y + i * (rh + gap), w: cw, h: rh }, this.H, this.T, this.hits));
+    for (let i = 0; i < r; i++) for (let j = 0; j < c; j++) out.push(new G(this.ctx, { x: R.x + j * (cw + gap), y: R.y + i * (rh + gap), w: cw, h: rh }, this.H, this.T, this.hits, this.o));
     this.rec('split', r, c); this.subs.push(...out); return out;
   }
-  title(s) {
-    this.rec('title', String(s)); this.top = 18; this.frame(this.xd, this.yd);
-    if (!this.ctx) return this;
+  title(s, { explain = '', takeaway = '' } = {}) {
+    const R = this.rect, lh = 14, ex = explain ? wrapText(explain, R.w - 4, 11) : [], tk = takeaway ? wrapText(`→ ${takeaway}`, R.w - 4, 11, 2) : [];
+    this.rec('title', String(s), ex.join(' '), tk.join(' '));
+    // fixed space (3 lines explain, 2 lines takeaway) so side-by-side panels align and the plot doesn't jump as the takeaway changes
+    this.top = 18 + (explain ? 3 * lh + 4 : 0); this.bottom = takeaway ? 2 * lh + 10 : 0;
+    this.frame(this.xd, this.yd);
+    if (!this.ctx || this.o.ghost) return this;
     const c = this.ctx; c.font = this.font(10.5); c.fillStyle = this.T.text; c.textAlign = 'left'; c.textBaseline = 'top';
     if ('letterSpacing' in c) c.letterSpacing = '1.5px';
-    c.fillText(String(s).replace(GREEK_RUNS_NOT, m => m.toUpperCase()), this.rect.x + 2, this.rect.y + 2);
+    c.fillText(String(s).replace(GREEK_RUNS_NOT, m => m.toUpperCase()), R.x + 2, R.y + 2);
     if ('letterSpacing' in c) c.letterSpacing = '0px';
+    c.font = this.font(11);
+    ex.forEach((l, i) => c.fillText(l, R.x + 2, R.y + 19 + i * lh));
+    c.fillStyle = this.T.live;
+    tk.forEach((l, i) => c.fillText(l, R.x + 2, R.y + R.h - this.bottom + 8 + i * lh));
     return this;
   }
-  axes({ x = [0, 1], y = [0, 1], xlabel = '', ylabel = '', xlog = false, ylog = false, xticks = true, yticks = true } = {}) {
+  axes({ x = [0, 1], y = [0, 1], xlabel = '', ylabel = '', xexplain = '', yexplain = '', xlog = false, ylog = false, xticks = true, yticks = true } = {}) {
     x = dom(x, xlog); y = dom(y, ylog);
-    this.rec('axes', x, y, xlabel, ylabel, xlog, ylog); this.hasAxes = true;
-    this.frame(x, y, xlog, ylog, { l: yticks ? 50 : 12, r: 12, t: ylabel ? 20 : 8, b: xlabel ? 36 : 24 });
-    if (!this.ctx) return this;
+    if (this.o.ghost) { const d = this.o.replay?.[this.o.i++]; if (d) [x, y] = d; } else this.o.log?.push([x, y]);
+    this.rec('axes', x, y, xlabel, ylabel, xlog, ylog, xexplain, yexplain); this.hasAxes = true;
+    const yx = ylabel && yexplain, xx = xlabel && xexplain;
+    this.frame(x, y, xlog, ylog, { l: yticks ? 50 : 12, r: 12, t: ylabel ? (yx ? 34 : 20) : 8, b: xlabel ? (xx ? 50 : 36) : 24 });
+    if (!this.ctx || this.o.ghost) return this;
     const c = this.ctx, P = this.plot, T = this.T;
     c.setLineDash([]); c.strokeStyle = T.line; c.lineWidth = 1;
     c.beginPath(); c.moveTo(P.x, P.y); c.lineTo(P.x, P.y + P.h); c.lineTo(P.x + P.w, P.y + P.h); c.stroke();
@@ -235,8 +276,12 @@ class G {
       c.textAlign = 'right'; c.textBaseline = 'middle';
       for (const v of ticks(y[0], y[1], P.h / 50, ylog)) { const Y = this.sy(v); c.beginPath(); c.moveTo(P.x - 4, Y); c.lineTo(P.x, Y); c.stroke(); c.fillText(fmt(v), P.x - 7, Y); }
     }
-    if (xlabel) { c.textAlign = 'right'; c.textBaseline = 'bottom'; c.fillText(xlabel, P.x + P.w, this.rect.y + this.rect.h); }
-    if (ylabel) { c.textAlign = 'left'; c.textBaseline = 'bottom'; c.fillText(ylabel, P.x + 6, P.y - 6); }
+    // axis labels in the live colour, each with an optional one-line plain explanation under it
+    const one = (s, w) => wrapText(s, w, 10.5, 1)[0];
+    const xb = this.rect.y + this.rect.h - this.bottom;
+    c.textBaseline = 'bottom';
+    if (xlabel) { c.textAlign = 'right'; c.fillStyle = T.live; c.fillText(xlabel, P.x + P.w, xx ? xb - 14 : xb); if (xx) { c.fillStyle = T.line; c.fillText(one(xexplain, P.w), P.x + P.w, xb); } }
+    if (ylabel) { c.textAlign = 'left'; c.fillStyle = T.live; c.fillText(ylabel, P.x + 6, yx ? P.y - 20 : P.y - 6); if (yx) { c.fillStyle = T.line; c.fillText(one(yexplain, P.w - 6), P.x + 6, P.y - 6); } }
     return this;
   }
   line(xs, ys, o = {}) {
@@ -273,7 +318,7 @@ class G {
     this.rec('bars', labels, values, series, live);
     const n = values.length, v = finite(values);
     if (!this.hasAxes) this.axes({ x: [0, n], y: y || [Math.min(0, ...v), Math.max(1e-9, ...v) * 1.12], xticks: false });
-    if (!this.ctx) return this;
+    if (!this.ctx || this.o.ghost) return this;
     const c = this.ctx, T = this.T, P = this.plot;
     this.clip(() => {
       for (let i = 0; i < n; i++) {
@@ -296,7 +341,7 @@ class G {
     if (!this.ctx) return this;
     this.clip(c => {
       c.fillStyle = this.T.dim;
-      for (let k = 0; k < bins; k++) { const x0 = this.sx(a + k * w), x1 = this.sx(a + (k + 1) * w), y1 = this.sy(ys[k]), y0 = this.sy(0); c.fillRect(x0, y1, x1 - x0, y0 - y1); }
+      if (!this.o.ghost) for (let k = 0; k < bins; k++) { const x0 = this.sx(a + k * w), x1 = this.sx(a + (k + 1) * w), y1 = this.sy(ys[k]), y0 = this.sy(0); c.fillRect(x0, y1, x1 - x0, y0 - y1); }
       this.stroke(series); c.beginPath(); c.moveTo(this.sx(a), this.sy(0));
       for (let k = 0; k < bins; k++) { c.lineTo(this.sx(a + k * w), this.sy(ys[k])); c.lineTo(this.sx(a + (k + 1) * w), this.sy(ys[k])); }
       c.lineTo(this.sx(b), this.sy(0)); c.stroke(); c.setLineDash([]);
@@ -313,7 +358,7 @@ class G {
     const cs = Math.max(0.5, Math.min((P.w - L) / Math.max(1, cols), (P.h - B) / Math.max(1, rows)));
     const x0 = P.x + L + (P.w - L - cs * cols) / 2, y0 = P.y + (P.h - B - cs * rows) / 2;
     this.sx = scale([0, cols], x0, x0 + cs * cols); this.sy = scale([0, rows], y0, y0 + cs * rows); this.xd = [0, cols]; this.yd = [0, rows];
-    if (!this.ctx) return this;
+    if (!this.ctx || this.o.ghost) return this;
     const c = this.ctx, T = this.T, R = T.rgb;
     for (let i = 0; i < rows; i++) for (let j = 0; j < cols; j++) {
       const v = at(i, j), t = diverging ? v / hi : (v - lo) / (hi - lo);
@@ -332,7 +377,7 @@ class G {
     const [x0, x1] = this.xd, [y0, y1] = this.yd, V = [];
     for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const x = lerp(x0, x1, (j + 0.5) / n), y = lerp(y0, y1, (i + 0.5) / n), [u, v] = fn(x, y); V.push(x, y, u, v); }
     this.rec('field', V, series);
-    if (!this.ctx) return this;
+    if (!this.ctx || this.o.ghost) return this;
     const P = this.plot, kx = P.w / (x1 - x0), ky = P.h / (y1 - y0), cell = Math.min(P.w, P.h) / n;
     let max = 0; for (let k = 0; k < V.length; k += 4) { const m = Math.hypot(V[k + 2] * kx, V[k + 3] * ky); if (Number.isFinite(m)) max = Math.max(max, m); }
     this.clip(c => {
@@ -347,7 +392,7 @@ class G {
   }
   graph(nodes, edges = [], { r = 6, arrows = false } = {}) {
     this.rec('graph', nodes.map(n => [n.x, n.y, n.label, !!n.live]), edges.map(e => Array.isArray(e) ? e : [e.a, e.b, e.label, !!e.live]));
-    if (!this.ctx) return this;
+    if (!this.ctx || this.o.ghost) return this;
     const c = this.ctx, T = this.T;
     c.font = this.font(10.5);
     for (const e of edges) {
@@ -372,14 +417,14 @@ class G {
   }
   text(x, y, s, { anchor = 'start', live = false, size = 10.5, baseline = 'middle' } = {}) {
     this.rec('text', x, y, String(s));
-    if (!this.ctx) return this;
+    if (!this.ctx || this.o.ghost) return this;
     const c = this.ctx; c.font = this.font(size); c.fillStyle = live ? this.T.live : this.T.text;
     c.textAlign = anchor === 'middle' ? 'center' : anchor; c.textBaseline = baseline; c.fillText(String(s), this.sx(x), this.sy(y));
     return this;
   }
   marker(x, y, { label, r = 4 } = {}) {
     this.rec('marker', x, y, label);
-    if (!this.ctx) return this;
+    if (!this.ctx || this.o.ghost) return this;
     const c = this.ctx, X = this.sx(x), Y = this.sy(y); if (!Number.isFinite(X) || !Number.isFinite(Y)) return this;
     this.stroke(0, 1.5); c.beginPath(); c.arc(X, Y, r, 0, 7); c.stroke();
     if (label != null) { c.font = this.font(10.5); c.fillStyle = this.T.live; c.textAlign = 'left'; c.textBaseline = 'bottom'; c.fillText(String(label), X + r + 3, Y - 2); }
@@ -389,7 +434,7 @@ class G {
   hline(y, { label, series = 1, dash = [3, 3] } = {}) { return this.rule('h', y, label, series, dash); }
   rule(kind, v, label, series, dash) {
     this.rec('rule', kind, v, label, series);
-    if (!this.ctx) return this;
+    if (!this.ctx || this.o.ghost) return this;
     const c = this.ctx, P = this.plot;
     this.clip(() => {
       this.stroke(series, 1); c.setLineDash(dash); c.beginPath();
@@ -615,25 +660,35 @@ const caps = (cls, text) => { const e = el('span', cls); String(text).split(GREE
 
 function mount(def) {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // figure first, between its caption rows; one strip of controls under it; the paper's own words last, folded away
   const plate = el('figure', 'plate');
   const top = el('div', 'cap top'); top.append(el('span', 'fig', `Fig ${SPEC.fig ?? 1}`), caps('title', SPEC.title || ''));
-  const body = el('div', 'body'), stage = el('div', 'stage'), side = el('div', 'side');
-  const chips = el('div', 'stages'), canvas = el('canvas');
+  const plain = SPEC.plain || {}, intro = el('div', 'intro');
+  if (plain.idea || SPEC.experiment) intro.append(el('p', 'lead', plain.idea || SPEC.experiment));
+  if (plain.look) intro.append(el('p', 'look', plain.look));
+  const stage = el('div', 'stage'), chips = el('div', 'stages'), canvas = el('canvas'), key = el('div', 'key');
   canvas.setAttribute('role', 'img'); canvas.tabIndex = 0;
   canvas.setAttribute('aria-label', [SPEC.experiment, def.caption].filter(Boolean).join(' '));
-  stage.append(chips, canvas);
-  const transport = el('div', 'transport'), params = el('div', 'params');
-  side.append(transport, params);
-  body.append(stage, side);
+  key.hidden = true;
+  stage.append(chips, canvas, key);
   const bot = el('div', 'cap bot'), readout = el('span', 'readout'), live = el('span', 'sr');
   live.setAttribute('aria-live', 'polite');
   bot.append(caps('instr', def.caption || ''), readout, live);
-  const guide = el('div', 'guide'), claimsEl = el('div', 'claims');
-  if (SPEC.experiment) guide.append(el('p', 'lead', SPEC.experiment));
-  guide.append(claimsEl);
-  plate.append(top, guide, body, bot);
+  const controls = el('div', 'controls'), bar = el('div', 'bar'), stepsEl = el('div', 'steps'), transport = el('div', 'transport');
+  const note = el('div', 'note'), params = el('div', 'params');
+  bar.append(stepsEl, transport); controls.append(bar, note, params);
+  const take = el('div', 'take');
+  if (plain.conclusion) take.append(el('p', 'shead', 'what to take away'), el('p', null, plain.conclusion));
+  const more = el('details', 'more'), mbody = el('div', 'mbody');
+  more.append(el('summary', null, "the paper's own words"), mbody);
+  if (plain.summary) mbody.append(el('p', 'shead', 'what the paper is about'), el('p', null, plain.summary));
+  if (plain.idea && SPEC.experiment) mbody.append(el('p', 'shead', 'the experiment'), el('p', null, SPEC.experiment));
+  const terms = METRICS.filter(m => m.plain);
+  if (terms.length) { const ul = el('ul', 'terms'); for (const m of terms) { const li = el('li'); li.append(el('b', null, m.label || m.name), ` — ${m.plain}`); ul.append(li); } mbody.append(el('p', 'shead', 'what the numbers mean'), ul); }
+  plate.append(top, intro, stage, bot, controls);
+  if (take.childNodes.length) plate.append(take);
   document.body.append(plate);
-  ui = { P: defaults(), claim: null, sim: null, view: null, target: 0, playing: false, dirty: true, last: 0, settled: false, hits: [], drag: null, controls: {}, canvas, readout, live };
+  ui = { P: defaults(), claim: null, compared: false, sim: null, view: null, target: 0, playing: false, dirty: true, last: 0, settled: false, hits: [], drag: null, controls: {}, canvas, readout, live };
   if (MOUNT_ERR) { readout.textContent = `error · ${MOUNT_ERR.message}`; return; }
 
   const rebuild = () => { ui.sim = newSim(ui.P); simInit(ui.sim); ui.view = null; ui.settled = false; ui.dirty = true; };
@@ -698,6 +753,7 @@ function mount(def) {
       head.append(src);
     }
     if (q.kind === 'toggle') row.append(head);
+    if (q.plain) row.append(el('p', 'phint', q.plain));
     params.append(row);
     ui.controls[q.name] = { sync: show }; show(ui.P[q.name]);
   }
@@ -712,21 +768,26 @@ function mount(def) {
   const claimSteps = c => c.steps ?? SPEC.steps ?? HORIZON;
   let repRun = null;
   const runOf = key => key === 'reproduce' ? (repRun ||= headless(claimP(SPEC.reproduce), claimSteps(SPEC.reproduce))) : headless(claimP(SPEC[key]), claimSteps(SPEC[key]));
+  const NAMES = { reproduce: "the paper's case", contrast: 'the comparison' }, ACCENT = { reproduce: 'var(--a)', contrast: 'var(--b)' };
   const claims = ['reproduce', 'contrast'].filter(key => SPEC[key]?.params).map((key, i) => {
-    const c = SPEC[key], box = el('div', 'claim'), b = el('button', null, `${i + 1} · ${key === 'reproduce' ? "the paper's claim" : 'the contrast'}`), result = el('p', 'result');
-    b.type = 'button'; result.hidden = true;
+    const c = SPEC[key], b = el('button', 'step');
+    b.type = 'button'; b.style.setProperty('--c', ACCENT[key]);
+    b.append(el('i', 'dot'), `${i + 1} · ${NAMES[key]}`);
+    stepsEl.append(b);
+    // the paper's wording, quote and exact settings go in the folded section
     const settings = Object.entries(c.params).map(([k, v]) => { const q = PARAMS.find(q => q.name === k); return q && `${q.label || k} ${pval(q, v)}`; }).filter(Boolean).join(' · ');
-    box.append(b, el('p', 'ctext', c.claim || ''));
-    if (c.source?.quote) box.append(el('p', 'quote', `“${c.source.quote}”${c.source.section ? ` §${c.source.section}` : ''}`));
-    if (settings) box.append(el('p', 'settings', `sets ${settings}`));
-    box.append(result); claimsEl.append(box);
+    mbody.append(el('p', 'shead', `${i + 1} · ${NAMES[key]}`));
+    if (c.claim) mbody.append(el('p', null, c.claim));
+    if (c.source?.quote) mbody.append(el('p', 'quote', `“${c.source.quote}”${c.source.section ? ` §${c.source.section}` : ''}`));
+    if (settings) mbody.append(el('p', 'quote', `sets ${settings}`));
     b.addEventListener('click', () => {
-      ui.playing = false; ui.claim = key; setParams(claimP(c));
+      ui.playing = false; ui.claim = key; ui.compared = true; setParams(claimP(c));
       if (reduced || TIMELESS) ui.target = HORIZON; else { ui.target = 0; ui.playing = true; }
     });
-    return { key, c, box, b, result, lines: null };
+    return { key, c, b, lines: null };
   });
-  if (!claims.length) claimsEl.hidden = true;
+  if (!claims.length) stepsEl.hidden = true;
+  if (mbody.childNodes.length) plate.append(more);
   const resultLines = cl => cl.lines ||= (() => {
     const r = runOf(cl.key), rep = SPEC.reproduce?.params ? runOf('reproduce') : null;
     return (cl.c.expect || []).map(e => {
@@ -735,14 +796,30 @@ function mount(def) {
       return { ok: x.ok, text: `${x.ok ? '✓' : '✗'} ${e.metric ? label(e.metric) : 'run'}: paper says ${x.want ?? e.op}, this run ${got}` };
     });
   })();
+  // the note under the buttons: what the active claim says and, once it has run, whether the run agrees
+  let noteKey = null;
   const syncGuide = () => {
-    for (const cl of claims) {
-      const on = ui.claim === cl.key, done = on && (TIMELESS || ui.sim.status !== 'ok' || ui.sim.t >= Math.min(claimSteps(cl.c), HORIZON));
-      cl.box.classList.toggle('on', on); cl.b.setAttribute('aria-pressed', String(on));
-      if (done && cl.result.hidden) cl.result.replaceChildren(...resultLines(cl).map(l => el('span', l.ok ? null : 'bad', l.text)));
-      cl.result.hidden = !done;
-    }
+    const cl = claims.find(c => c.key === ui.claim), done = !!cl && (TIMELESS || ui.sim.status !== 'ok' || ui.sim.t >= Math.min(claimSteps(cl.c), HORIZON));
+    for (const c of claims) { c.b.classList.toggle('on', c === cl); c.b.setAttribute('aria-pressed', String(c === cl)); }
+    const k = `${ui.claim}|${done}`; if (k === noteKey) return; noteKey = k;
+    note.style.setProperty('--c', cl ? ACCENT[cl.key] : 'var(--dim)');
+    if (!cl) { note.replaceChildren(el('p', 'hint', claims.length ? `Press 1 to load the paper's own setting and run it${claims.length > 1 ? ', then 2 to compare' : ''}. Or move the sliders yourself.` : 'Move the sliders to change the run.')); return; }
+    note.replaceChildren(el('p', 'ctext', cl.c.plain || cl.c.claim || ''));
+    if (done) { const r = el('p', 'result'); r.append(...resultLines(cl).map(l => el('span', l.ok ? 'ok' : 'bad', l.text))); note.append(r); }
   };
+  // once a claim has been run, the paper's case stays on the figure as a faint reference whenever the current run differs
+  let ghost = null;
+  const ghostSim = () => {
+    const rep = SPEC.reproduce;
+    if (!rep?.params || !ui.compared || matches(rep)) return null;
+    if (!ghost) {
+      ghost = newSim(claimP(rep)); simInit(ghost);
+      const n = TIMELESS ? 0 : ARCH === 'pipeline' ? HORIZON : Math.min(claimSteps(rep), HORIZON), t0 = performance.now();
+      while (ghost.status === 'ok' && ghost.t < n && performance.now() - t0 < 300) simStep(ghost);
+    }
+    return ghost.status === 'ok' ? ghost : null;
+  };
+  const sw = (color, text) => { const s = el('span'); const i = el('i', 'sw'); i.style.setProperty('--c', color); s.append(i, text); return s; };
 
   // pipeline stage chips
   const chipEls = ARCH === 'pipeline' ? def.stages.map((st, k) => {
@@ -783,7 +860,7 @@ function mount(def) {
     while (v.status === 'ok' && v.t < ui.sim.divergedAt - 1 && performance.now() - t0 < 200) simStep(v);
     if (v.status === 'ok' && v.t === ui.sim.divergedAt - 1) ui.view = v;
   };
-  let lastLive = 0;
+  let lastLive = 0, keyState = '';
   const readoutText = () => {
     const sim = ui.sim, v = ui.view || sim;
     if (sim.status === 'error') return `error · ${sim.err?.message || sim.err}`;
@@ -798,11 +875,24 @@ function mount(def) {
     const sim = ui.view || ui.sim, W = Math.max(240, stage.clientWidth || 640), H = Math.round(clamp(W / (def.aspect || 1.6), 220, 640)), dpr = window.devicePixelRatio || 1;
     if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) { canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); canvas.style.height = `${H}px`; }
     const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
-    const T = THEME ||= readTheme(); ui.hits = [];
+    const T0 = THEME ||= readTheme(), gs = ghostSim(), R = { x: 0, y: 0, w: W, h: H }; ui.hits = [];
+    const T = { ...T0, s0: ui.claim === 'reproduce' ? T0.a : ui.claim === 'contrast' ? T0.b : T0.live };
     if (sim.s && sim.status !== 'error') {
-      const g = new G(ctx, { x: 0, y: 0, w: W, h: H }, hasher(), T, ui.hits);
-      try { withRng(sim.rng, () => drawSim(g, sim)); drawLegends(g); }
+      const o = { log: [] }, g = new G(ctx, R, hasher(), T, ui.hits, o);
+      try {
+        withRng(sim.rng, () => drawSim(g, sim)); drawLegends(g);
+        // ghost: painted underneath, on the current run's axes, in the paper's-case colour
+        if (gs) {
+          if (ARCH === 'pipeline') gs.s.view = clamp(sim.s.view ?? 0, 0, gs.s.outs.length - 1); // same stage as on screen
+          ctx.save(); ctx.globalCompositeOperation = 'destination-over'; ctx.globalAlpha = 0.45;
+          try { withRng(gs.rng, () => drawSim(new G(ctx, R, hasher(), { ...T0, s0: T0.a, live: T0.a, line: T0.a }, [], { ghost: true, replay: o.log, i: 0 }), gs)); } finally { ctx.restore(); }
+        }
+      }
       catch (e) { ui.sim.status = 'error'; ui.sim.err = e; ERRORS.push(`draw: ${e.message}`); }
+    }
+    if (keyState !== (gs ? `${ui.claim}` : '')) {
+      keyState = gs ? `${ui.claim}` : ''; key.hidden = !gs;
+      if (gs) key.replaceChildren(sw('var(--a)', "faint: the paper's case"), sw(ui.claim === 'contrast' ? 'var(--b)' : 'var(--live)', ui.claim === 'contrast' ? 'bold: the comparison' : 'bold: your settings'));
     }
     if (ui.sim.status !== 'ok') {
       const msg = ui.sim.status === 'diverged' ? `diverged at step ${ui.sim.divergedAt}` : 'error';

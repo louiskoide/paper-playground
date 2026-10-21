@@ -1,0 +1,183 @@
+{
+  "schema": 1,
+  "title": "A visual proof that neural nets can compute any function",
+  "playable": true,
+  "unplayable_reason": null,
+  "experiment": "Raising the number N of hidden-neuron pairs, each pair a step-up and a step-down that together make one bump, turns the network's blocky five-bump copy of the wiggly goal f(x) into a close fit, cutting the average deviation several-fold, which is the chapter's claim that more hidden neurons improve the approximation (Universality with one input and one output).",
+  "archetype": "pipeline",
+  "archetype_reason": "The construction is a fixed chain, input x → 2N step-like hidden neurons → N bumps (pairs weighted +h, −h) → weighted sum → sigmoid output neuron, and the intermediates (each neuron's step, each bump, their sum) are what the chapter asks the reader to look at.",
+  "plain": {
+    "idea": "Mathematicians proved that a simple network of artificial neurons can copy any smooth curve as closely as you like. This chapter shows why with pictures instead of heavy maths. Each hidden neuron acts like a switch that flips from off to on at one spot along the input. Two switches, one adding and one subtracting, make a flat-topped bump, and enough bumps of the right heights placed side by side trace out any curve, like building a hill out of bricks.",
+    "look": "Start at 5 bumps (10 hidden neurons) and note how blocky the copy is and how big the average gap is; then raise the number of bumps and watch the gap shrink. Then lower the input weight and watch the switches go soft and the copy blur.",
+    "summary": "The chapter explains the universality theorem: a neural network, even one with a single hidden layer, can approximate any continuous function to any accuracy you want. It builds such networks by hand, without any training, then extends the trick to many inputs and to other kinds of neurons. So the question is never whether a network can compute a function, but how to find a good one.",
+    "conclusion": "If a network's copy of a function is too rough, adding hidden neurons can always make it better, as long as each one switches sharply. This hand-built construction is a proof, not a practical recipe: real networks learn their weights instead."
+  },
+  "fixed": {
+    "goal": "f(x) = 0.2 + 0.4 x^2 + 0.3 x sin(15 x) + 0.05 cos(50 x) on x in [0, 1] (Eq. 113; the chapter's goal function, values between about 0.095 and 0.853)",
+    "sigma": "σ(z) = 1/(1+e^(−z)); σ^(−1)(p) = ln(p/(1−p))",
+    "hidden_layer": "2N sigmoid neurons in N pairs; pair j (j = 1..N) has step points s = (j−1)/N and s = j/N; every hidden neuron has input weight w and bias b = −w·s, so its activation is a(x) = σ(w x + b) = σ(w (x − s))",
+    "output_weights": "pair j's two neurons connect to the output with weights +h_j and −h_j, where h_j = σ^(−1)(f((j − 0.5)/N)), i.e. the bump height is the target σ^(−1)∘f at the middle of its subinterval",
+    "weighted_output": "z(x) = Σ_j h_j (σ(w (x − (j−1)/N)) − σ(w (x − j/N)))",
+    "output_neuron": "bias 0; network output g(x) = σ(z(x))",
+    "sample_points": "200 points x_i = (i + 0.5)/200, i = 0..199; all metrics are averages over these points",
+    "stages": "1) input x and goal f; 2) each hidden neuron's activation a(x); 3) each pair's bump h_j (a_up − a_down); 4) weighted sum z(x) against the target σ^(−1)∘f; 5) output g(x) = σ(z) against f"
+  },
+  "params": [
+    {
+      "name": "N",
+      "label": "bump pairs n",
+      "kind": "range",
+      "min": 1,
+      "max": 50,
+      "step": 1,
+      "default": 5,
+      "unit": "",
+      "plain": "how many bumps build the curve, each made by two hidden neurons; more bumps means thinner, finer blocks",
+      "source": {
+        "section": "Universality with one input and one output",
+        "quote": "divide the interval $[0, 1]$ up into a large number, $N$, of subintervals, and use $N$ pairs of hidden neurons to set up peaks"
+      }
+    },
+    {
+      "name": "w",
+      "label": "input weight w",
+      "kind": "range",
+      "min": 5,
+      "max": 1000,
+      "step": 1,
+      "default": 1000,
+      "scale": "log",
+      "unit": "",
+      "plain": "how strongly each hidden neuron reacts to the input; large values make it snap sharply from off to on",
+      "source": {
+        "section": "Universality with one input and one output",
+        "quote": "The first layer of weights all have some large, constant value, say $w = 1000$."
+      }
+    }
+  ],
+  "metrics": [
+    {
+      "name": "avg_dev",
+      "label": "average deviation",
+      "unit": "",
+      "meaning": "mean over the 200 sample points x_i of |g(x_i) − f(x_i)|, where g is the network output σ(z(x)) defined in fixed",
+      "plain": "the average gap between the network's output and the goal curve; smaller is better, zero is a perfect copy"
+    },
+    {
+      "name": "hidden_dev",
+      "label": "hidden-layer deviation",
+      "unit": "",
+      "meaning": "mean over the 200 sample points x_i of |z(x_i) − σ^(−1)(f(x_i))|, the deviation of the weighted output from the hidden layer from its target σ^(−1)∘f",
+      "plain": "the same gap measured on the hidden neurons' added-up total, before the output neuron squashes it; smaller is better"
+    }
+  ],
+  "steps": 1,
+  "reproduce": {
+    "claim": "With N = 5 pairs (10 hidden neurons) and w = 1000, the network output follows f(x) only coarsely: average deviation below 0.15.",
+    "plain": "With 5 bumps (10 hidden neurons) the network already follows the goal curve's rises and dips, but in blocky steps; on average it is off by less than 0.15.",
+    "source": {
+      "section": "Universality with one input and one output",
+      "quote": "You've now figured out all the elements necessary for the network to approximately compute the function $f(x)$! It's only a coarse approximation"
+    },
+    "params": { "N": 5, "w": 1000 },
+    "expect": [
+      { "metric": "avg_dev", "op": "<", "value": 0.15 }
+    ]
+  },
+  "contrast": {
+    "claim": "With N = 40 pairs (80 hidden neurons) at the same w, both deviations fall below a quarter of their N = 5 values.",
+    "plain": "With 40 bumps (80 hidden neurons) the blocks are thin enough to follow every wiggle, and the average gap shrinks to less than a quarter of the 5-bump gap.",
+    "source": {
+      "section": "Universality with one input and one output",
+      "quote": "we could easily do much better, merely by increasing the number of pairs of hidden neurons, allowing more bumps."
+    },
+    "params": { "N": 40, "w": 1000 },
+    "expect": [
+      { "metric": "avg_dev", "op": "<", "ref": "reproduce", "factor": 0.25 },
+      { "metric": "hidden_dev", "op": "<", "ref": "reproduce", "factor": 0.25 }
+    ]
+  },
+  "fallback": {
+    "schema": 1,
+    "title": "A visual proof that neural nets can compute any function",
+    "playable": true,
+    "unplayable_reason": null,
+    "experiment": "Setting the output weights of two step-function hidden neurons to w1 = 0.8 and w2 = −0.8 turns their two steps into a bump of height 0.8 between s1 and s2; setting w2 to 0 leaves a single step that never comes back down (Universality with one input and one output).",
+    "archetype": "diagram",
+    "archetype_reason": "A two-hidden-neuron network diagram whose configuration (step points and output weights) yields the weighted output's value at chosen points.",
+    "plain": {
+      "idea": "A neural network can copy any smooth curve, and this chapter shows why with pictures. A hidden neuron with a big input weight acts like a switch that turns on at one spot. Two switches, one adding and one subtracting, make a flat-topped bump, the brick from which any curve can be built.",
+      "look": "Set the first weight to 0.8 and the second to −0.8 and read the bump's height; then set the second weight to 0 and see the output stay up instead of coming back down.",
+      "summary": "The chapter explains the universality theorem: a neural network, even one with a single hidden layer, can approximate any continuous function to any accuracy you want. It builds such networks by hand from bumps like this one. So the question is never whether a network can compute a function, but how to find a good one.",
+      "conclusion": "One switch gives a step; a pair of switches with opposite weights gives a bump whose height is the weight. Bumps, unlike steps, can be placed side by side without disturbing each other."
+    },
+    "fixed": {
+      "hidden_neurons": "two sigmoid neurons with input weight 1000 and bias b = −1000·s, so a_k(x) = σ(1000 (x − s_k))",
+      "weighted_output": "z(x) = w1·a1(x) + w2·a2(x), output bias ignored (the chapter plots the weighted output)",
+      "probe_points": "height is z at x = (s1 + s2)/2; after is z at x = 0.98"
+    },
+    "params": [
+      {
+        "name": "s1",
+        "label": "step point s1",
+        "kind": "range", "min": 0, "max": 0.95, "step": 0.01, "default": 0.4, "unit": "",
+        "plain": "where the top hidden neuron switches on along the input",
+        "source": { "section": "Universality with one input and one output", "quote": "Try increasing and decreasing the step point $s_1$ of the top hidden neuron." }
+      },
+      {
+        "name": "s2",
+        "label": "step point s2",
+        "kind": "range", "min": 0, "max": 0.95, "step": 0.01, "default": 0.6, "unit": "",
+        "plain": "where the bottom hidden neuron switches on along the input",
+        "source": { "section": "Universality with one input and one output", "quote": "Similarly, try manipulating the step point $s_2$ of the bottom hidden neuron" }
+      },
+      {
+        "name": "w1",
+        "label": "output weight w1",
+        "kind": "range", "min": -1, "max": 1, "step": 0.01, "default": 0.8, "unit": "",
+        "plain": "how much the top neuron adds to the total once it is switched on; negative values subtract",
+        "source": { "section": "Universality with one input and one output", "quote": "And they'll have respective output weights $w_1$ and $w_2$." }
+      },
+      {
+        "name": "w2",
+        "label": "output weight w2",
+        "kind": "range", "min": -1, "max": 1, "step": 0.01, "default": -0.8, "unit": "",
+        "plain": "how much the bottom neuron adds once switched on; set it opposite to the first to close the bump",
+        "source": { "section": "Universality with one input and one output", "quote": "Finally, try setting $w_1$ to be $0.8$ and $w_2$ to be $-0.8$." }
+      }
+    ],
+    "metrics": [
+      {
+        "name": "height", "label": "bump height", "unit": "",
+        "meaning": "weighted output z at x = (s1 + s2)/2",
+        "plain": "how high the total is between the two switch points"
+      },
+      {
+        "name": "after", "label": "value after both steps", "unit": "",
+        "meaning": "weighted output z at x = 0.98",
+        "plain": "the total once both neurons are switched on; zero means the bump came back down"
+      }
+    ],
+    "steps": 0,
+    "reproduce": {
+      "claim": "With w1 = 0.8, w2 = −0.8, s1 = 0.4, s2 = 0.6 the weighted output is a bump of height 0.8 that returns to 0 after s2.",
+      "plain": "One neuron adds 0.8 at 0.4 and the other takes 0.8 away at 0.6, so the total is a flat bump 0.8 high between them and zero after.",
+      "source": { "section": "Universality with one input and one output", "quote": "You get a \"bump\" function, which starts at point $s_1$, ends at point $s_2$, and has height $0.8$." },
+      "params": { "s1": 0.4, "s2": 0.6, "w1": 0.8, "w2": -0.8 },
+      "expect": [
+        { "metric": "height", "op": "between", "value": [0.78, 0.82] },
+        { "metric": "after", "op": "between", "value": [-0.02, 0.02] }
+      ]
+    },
+    "contrast": {
+      "claim": "With w2 = 0 the bottom neuron contributes nothing, so the output stays at 0.8 after s2: a step, not a bump.",
+      "plain": "Switch off the subtracting neuron and nothing brings the total back down, so it stays 0.8 high all the way to the end.",
+      "source": { "section": "Universality with one input and one output", "quote": "if input >= step point: add 1 to the weighted output else: add 0 to the weighted output" },
+      "params": { "s1": 0.4, "s2": 0.6, "w1": 0.8, "w2": 0 },
+      "expect": [
+        { "metric": "after", "op": ">", "ref": "reproduce", "by": 0.7 }
+      ]
+    },
+    "fallback": null
+  }
+}

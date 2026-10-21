@@ -5,13 +5,13 @@
     "type": "pp:selftest",
     "ok": true,
     "kernel": "0.1.0",
-    "ms": 43,
+    "ms": 53,
     "checks": [
       {
         "id": "default",
         "ok": true,
-        "msg": "ok in 6 ms",
-        "ms": 6
+        "msg": "ok in 10 ms",
+        "ms": 10
       },
       {
         "id": "metrics",
@@ -26,14 +26,14 @@
       {
         "id": "sweep:alpha_factor=1",
         "ok": true,
-        "msg": "ok in 6 ms",
-        "ms": 6
+        "msg": "ok in 10 ms",
+        "ms": 10
       },
       {
         "id": "sweep:alpha_factor=0.1",
         "ok": true,
-        "msg": "ok in 2 ms",
-        "ms": 2
+        "msg": "ok in 3 ms",
+        "ms": 3
       },
       {
         "id": "sweep:alpha_factor=4",
@@ -49,20 +49,20 @@
       {
         "id": "sweep:beta_factor=1",
         "ok": true,
-        "msg": "ok in 6 ms",
-        "ms": 6
+        "msg": "ok in 10 ms",
+        "ms": 10
       },
       {
         "id": "sweep:beta_factor=0.25",
         "ok": true,
-        "msg": "ok in 3 ms",
-        "ms": 3
+        "msg": "ok in 5 ms",
+        "ms": 5
       },
       {
         "id": "sweep:beta_factor=4",
         "ok": true,
-        "msg": "ok in 2 ms",
-        "ms": 2
+        "msg": "ok in 3 ms",
+        "ms": 3
       },
       {
         "id": "decorative:beta_factor",
@@ -138,7 +138,7 @@
     "transport": {
       "reset": "step 0 · peak 1.67e-7 N · day 0 · safe day – · N/γ 6",
       "step": "step 1 · peak 1.84e-7 N · day 0.2 · safe day – · N/γ 6",
-      "playing": "step 151 · peak 0.318 N · day 30.2 · safe day – · N/γ 6",
+      "playing": "step 152 · peak 0.334 N · day 30.4 · safe day – · N/γ 6",
       "ok": true
     }
   },
