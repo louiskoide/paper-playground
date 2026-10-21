@@ -167,10 +167,10 @@
     <div class="fig" id="fig">
       <svg id="stage" tabindex="0" role="img" aria-label="A neural network built as a machine: an input rail, two rows of hidden-neuron lamps, a row of bricks whose heights are the output weights, an output tower and a screen. Drag the carriage or use the arrow keys to change the input; drag a brick to change its height; drag the background to turn the view."></svg>
       <div class="bubble" id="bubble" hidden role="dialog" aria-live="polite">
-        <div class="bh"><span id="bstep"></span><button id="bclose" aria-label="turn off step explanations">✕</button></div>
+        <div class="bh"><span id="bstep"></span><button id="bclose" aria-label="continue">✕</button></div>
         <h4 id="btitle"></h4>
         <p id="btext"></p>
-        <div class="bnav"><button class="small" id="bback">‹ Back</button><span class="dots" id="bdots"></span><button class="small" id="bnext">Next ›</button></div>
+        <div class="bnav"><span class="dots" id="bdots"></span><button class="small" id="bnext">Continue ›</button></div>
       </div>
       <div class="viewhint"><span>drag to turn</span><button class="small" id="view">Reset view</button></div>
     </div>
@@ -202,7 +202,7 @@
     <details>
       <summary>How one input goes through, step by step<span class="sub">5 steps</span></summary>
       <div class="body">
-        <p>Every input takes the same path. Turn on "Explain each step" and press "Send one input" to watch it happen, or jump to a step here.</p>
+        <p>Every input takes the same path. With "Explain each step" on, "Send one input" stops at each step and "Sweep every input" stops at a few checkpoints; close each explanation to carry on. Or jump to a step here.</p>
         <ol class="steps" id="stepsList"></ol>
       </div>
     </details>
@@ -439,16 +439,34 @@ const STEPS = [
       return `The output neuron squashes z through σ, giving ${g.toFixed(2)}. The goal here is ${gl.toFixed(2)} (dashed ring), a gap of ${Math.abs(g - gl).toFixed(2)}. The screen shows this answer for every input at once.`;
     }, anchor: () => P(TW.x + TW.w / 2, TW.y + TW.d / 2, B + HMAX * Math.max(out(st, st.x), f(st.x)) + 10) },
 ];
+// ---- sweep checkpoints: with explanations on, the sweep stops at each one until the reader closes it ----
+function sweepStops() {
+  const N = st.N, mid = Math.floor(N / 2), near = j => o => (o.part === 'bricks' || o.part === 'lamps') && o.j === j;
+  const all = [
+    { x: 0.5 / N, name: 'First brick', title: 'The sweep starts in brick 1', text: () => `The input slides from 0 to 1, and the curve on the screen is the machine's answer along the way. At x = ${st.x.toFixed(2)} only brick 1's pair is switched on, so the output is brick 1's height: ${out(st, st.x).toFixed(2)}, against a goal of ${f(st.x).toFixed(2)}.`,
+      focus: o => o.part === 'input' || o.part === 'tower' || o.part === 'goal' || near(0)(o), anchor: () => P(X(st.x), ROW.rail[0], B + 24) },
+    { x: 1 / N, name: 'Switch point', title: 'Crossing a switch point', text: () => `At x = ${(1 / N).toFixed(2)} brick 1's "off" switch and brick 2's "on" switch flip together, so the output hands over from brick 1 to brick 2. With w = ${st.w} the handover is ${st.w >= 200 ? 'almost instant: that jump is the step you see on the screen' : 'a slow ramp, so the steps on the screen blur into slopes'}.`,
+      focus: o => o.part === 'input' || (o.part === 'bricks' && o.j <= 1) || (o.part === 'lamps' && ((o.kind === 'off' && o.j === 0) || (o.kind === 'on' && o.j === 1))), anchor: () => P(X(st.x), ROW.on[0], B + 6) },
+    { x: (mid + 0.5) / N, name: 'Every brick', title: `Brick ${mid + 1}: the same story`, text: () => `${mid} bricks are behind the input now. Each has both lamps lit, so its +h and −h cancel. Only brick ${mid + 1} counts: z = ${z(st, st.x).toFixed(2)}, output ${out(st, st.x).toFixed(2)}, goal ${f(st.x).toFixed(2)}. Every brick looks after its own stretch of inputs like this.`,
+      focus: o => o.part === 'input' || o.part === 'tower' || o.part === 'goal' || ((o.part === 'bricks' || o.part === 'lamps') && o.j <= mid), anchor: () => P(TW.x + TW.w / 2, TW.y, B + HMAX * out(st, st.x)) },
+    { x: 0.99, name: 'Finished', title: 'The whole curve is drawn', text: () => `Every input has been through. The screen's curve is ${N} flat step${N > 1 ? 's' : ''}, one per brick, and it sits an average of ${avgGap(st).toFixed(3)} from the dashed goal. More pairs make narrower steps and a closer copy.`,
+      focus: o => o.part === 'screen' || o.part === 'goal', anchor: () => P(PANEL.x + PANEL.w / 2, PANEL.y, B + PANEL.h) },
+  ];
+  const keep = [];
+  all.forEach((s, i) => { if ((i === all.length - 1 || s.x < 0.99) && (!keep.length || s.x > keep[keep.length - 1].x)) keep.push(s); });
+  return keep;
+}
+
 const bubble = document.getElementById('bubble');
 function placeBubble() {
-  if (tour.k < 0 || !tour.on) { bubble.hidden = true; return; }
-  const s = STEPS[tour.k];
-  document.getElementById('bstep').textContent = `Step ${tour.k + 1} of ${STEPS.length} · ${s.name}`;
+  const stop = sweep && sweep.stop;
+  if (!stop && (tour.k < 0 || !tour.on)) { bubble.hidden = true; return; }
+  const s = stop || STEPS[tour.k], list = stop ? sweep.stops : STEPS, n = stop ? sweep.i : tour.k;
+  document.getElementById('bstep').textContent = stop ? `Sweep · stop ${n + 1} of ${list.length} · ${s.name}` : `Step ${n + 1} of ${list.length} · ${s.name}`;
   document.getElementById('btitle').textContent = s.title;
   document.getElementById('btext').textContent = s.text();
-  document.getElementById('bdots').innerHTML = STEPS.map((_, i) => `<i class="${i === tour.k ? 'on' : ''}"></i>`).join('');
-  document.getElementById('bback').disabled = tour.k === 0;
-  document.getElementById('bnext').textContent = tour.k === STEPS.length - 1 ? 'Done' : 'Next ›';
+  document.getElementById('bdots').innerHTML = list.map((_, i) => `<i class="${i === n ? 'on' : ''}"></i>`).join('');
+  document.getElementById('bnext').textContent = n === list.length - 1 ? 'Done' : 'Continue ›';
   bubble.hidden = false;
   // place beside the part: viewBox point → position inside the figure box
   const [ax, ay] = s.anchor(), vb = svg.viewBox.baseVal, r = svg.getBoundingClientRect(), k = r.width / vb.width;
@@ -461,11 +479,13 @@ function placeBubble() {
 const setStep = k => { tour.k = k; focus = k >= 0 ? STEP_FOCUS[k] : null; render(); };
 const stopAuto = () => { clearTimeout(tour.timer); tour.timer = null; };
 function sendThrough() {
-  stopAuto(); sweep = null;
-  const dwell = tour.on ? 3600 : 450;
-  const go = k => { setStep(k); tour.timer = setTimeout(() => k + 1 < STEPS.length ? go(k + 1) : (tour.on ? (tour.timer = null) : (setStep(-1), tour.timer = null)), dwell); };
+  stopAuto(); cancelSweep();
+  if (tour.on) return setStep(0);   // explanations on: each step waits until the reader closes it, like the sweep's stops
+  const go = k => { setStep(k); tour.timer = setTimeout(() => k + 1 < STEPS.length ? go(k + 1) : (setStep(-1), tour.timer = null), 450); };
   go(0);
 }
+// ✕, Continue and Esc all do the same thing: carry the demonstration on to its next stop
+const advance = () => { if (sweep && sweep.stop) return sweep.go(); stopAuto(); setStep(tour.k + 1 < STEPS.length ? tour.k + 1 : -1); };
 
 // ---- render ----
 const $ = id => document.getElementById(id), svg = $('stage');
@@ -494,30 +514,34 @@ function render() {
 const setN = N => { N = clamp(N, 1, 40); if (N === st.N) return; st.N = N; st.h = autoH(N); st.tuned = false; st.claim = null; render(); };
 const runSweep = then => {
   stopAuto(); if (tour.k >= 0) setStep(-1);
-  const t0 = performance.now(), dur = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 3200;
-  sweep = { then };
+  const dur = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 3200;
+  const sw = sweep = { then, stops: tour.on ? sweepStops() : [], i: 0, stop: null };
+  let last = null; st.x = 0;
   const tick = now => {
-    if (!sweep) return;
-    st.x = dur ? Math.min(0.99, 0.99 * (now - t0) / dur) : 0.99; render();
-    if (st.x < 0.99) requestAnimationFrame(tick); else { const t = sweep.then; sweep = null; t && t(); }
+    if (sweep !== sw || sw.stop) return;
+    const dt = last == null ? 0 : now - last, next = sw.stops[sw.i]; last = now;
+    const x = dur ? Math.min(0.99, st.x + 0.99 * dt / dur) : 0.99;
+    if (next && x >= next.x) { st.x = next.x; sw.stop = next; focus = next.focus; render(); return; }   // pause here until the reader closes the explanation
+    st.x = x; render();
+    if (x < 0.99) requestAnimationFrame(tick); else { sweep = null; focus = null; then && then(); render(); }
   };
+  sw.go = () => { sw.stop = null; sw.i++; focus = null; last = null; render(); requestAnimationFrame(tick); };
   requestAnimationFrame(tick);
 };
+const cancelSweep = () => { if (sweep && sweep.stop) focus = null; sweep = null; };
 const claim = k => { st = { ...fresh(), N: k === 1 ? 5 : 40, h: autoH(k === 1 ? 5 : 40), claim: k }; runSweep(() => { res[k] = avgGap(st); render(); }); };
 $('send').onclick = sendThrough;
-$('explain').onchange = e => { tour.on = e.target.checked; if (!tour.on) { stopAuto(); setStep(-1); } else render(); };
-$('sweep').onclick = () => { st.x = 0; runSweep(); };
+$('explain').onchange = e => { tour.on = e.target.checked; if (!tour.on) { stopAuto(); setStep(-1); if (sweep) { sweep.stops = []; if (sweep.stop) sweep.go(); } } else render(); };
+$('sweep').onclick = () => runSweep();
 $('c1').onclick = () => claim(1);
 $('c2').onclick = () => claim(2);
 $('plus').onclick = () => setN(st.N + 1);
 $('minus').onclick = () => setN(st.N - 1);
 $('w').oninput = e => { st.w = WPOS.fromPos(+e.target.value); st.claim = null; render(); };
 $('auto').onclick = () => { st.h = autoH(st.N); st.tuned = false; render(); };
-$('reset').onclick = () => { sweep = null; stopAuto(); st = fresh(); for (const k in res) delete res[k]; setStep(-1); };
+$('reset').onclick = () => { cancelSweep(); stopAuto(); st = fresh(); for (const k in res) delete res[k]; setStep(-1); };
 $('view').onclick = () => { yaw = ISO.yaw; pitch = ISO.pitch; fit(); render(); };
-$('bnext').onclick = () => { stopAuto(); setStep(tour.k + 1 < STEPS.length ? tour.k + 1 : -1); };
-$('bback').onclick = () => { stopAuto(); setStep(Math.max(0, tour.k - 1)); };
-$('bclose').onclick = () => { $('explain').checked = false; $('explain').onchange({ target: $('explain') }); };
+$('bnext').onclick = $('bclose').onclick = advance;
 document.querySelectorAll('[data-try]').forEach(b => b.onclick = () => {
   const t = b.dataset.try;
   if (t === 'c1' || t === 'c2') return claim(t === 'c1' ? 1 : 2);
@@ -535,8 +559,8 @@ document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
 document.querySelector('.learn details:nth-of-type(2)').addEventListener('toggle', fillSteps);
 // hover a part in the list to find it on the machine
 document.querySelectorAll('#parts li').forEach(li => {
-  li.onmouseenter = () => { if (tour.k < 0) { focus = o => o.part === li.dataset.part; render(); } };
-  li.onmouseleave = () => { if (tour.k < 0) { focus = null; render(); } };
+  li.onmouseenter = () => { if (tour.k < 0 && !(sweep && sweep.stop)) { focus = o => o.part === li.dataset.part; render(); } };
+  li.onmouseleave = () => { if (tour.k < 0 && !(sweep && sweep.stop)) { focus = null; render(); } };
 });
 
 // direct manipulation: carriage/rail → input, brick → height, anywhere else → turn the view
@@ -548,7 +572,7 @@ const xFromView = p => {   // nearest point on the rail's projected line
 };
 svg.addEventListener('pointerdown', e => {
   const t = e.target.closest('[data-role]');
-  sweep = null; svg.setPointerCapture(e.pointerId); e.preventDefault();
+  cancelSweep(); svg.setPointerCapture(e.pointerId); e.preventDefault();
   const p = toView(e);
   if (!t) { drag = { role: 'turn', cx: e.clientX, cy: e.clientY, yaw, pitch }; svg.classList.add('rotating'); return; }
   if (t.dataset.role === 'x') { drag = { role: 'x' }; st.x = xFromView(p); }
@@ -574,12 +598,12 @@ addEventListener('resize', () => placeBubble());
 addEventListener('keydown', e => {
   if (e.metaKey || e.ctrlKey || e.altKey || e.target.tagName === 'INPUT' || e.target.tagName === 'SUMMARY') return;
   const step = e.shiftKey ? 0.05 : 0.01;
-  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { sweep = null; st.x = clamp(st.x + (e.key === 'ArrowRight' ? step : -step), 0, 1); render(); }
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { cancelSweep(); st.x = clamp(st.x + (e.key === 'ArrowRight' ? step : -step), 0, 1); render(); }
   else if (e.key === '+' || e.key === '=') setN(st.N + 1);
   else if (e.key === '-' || e.key === '_') setN(st.N - 1);
   else if (e.key === ' ' && e.target.tagName !== 'BUTTON') sendThrough();
   else if (e.key === 'a') $('auto').click();
-  else if (e.key === 'Escape' && tour.k >= 0) { stopAuto(); setStep(-1); }
+  else if (e.key === 'Escape' && ((sweep && sweep.stop) || tour.k >= 0)) advance();
   else return;
   e.preventDefault();
 });
